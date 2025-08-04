@@ -45,6 +45,30 @@ func main() {
     }
     
     fmt.Println("文档内容:", content)
+    
+    // 获取段落
+    paragraphs, err := doc.GetParagraphs()
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    for i, paragraph := range paragraphs {
+        fmt.Printf("段落 %d: %s\n", i+1, paragraph.Text)
+        for j, run := range paragraph.Runs {
+            fmt.Printf("  运行 %d: '%s' (粗体: %v, 斜体: %v)\n", 
+                j+1, run.Text, run.Bold, run.Italic)
+        }
+    }
+    
+    // 获取表格
+    tables, err := doc.GetTables()
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    for i, table := range tables {
+        fmt.Printf("表格 %d: %d行 x %d列\n", i+1, len(table.Rows), table.Columns)
+    }
 }
 ```
 
@@ -66,10 +90,10 @@ go-word/
 ## 开发状态
 
 - [x] 项目初始化
-- [ ] OPC 容器基础功能
-- [ ] WordprocessingML 解析
-- [ ] 文档内容提取
-- [ ] 样式和格式解析
+- [x] OPC 容器基础功能
+- [x] WordprocessingML 解析
+- [x] 文档内容提取
+- [x] 样式和格式解析
 - [ ] 文档修改功能
 - [ ] 高级操作功能
 
