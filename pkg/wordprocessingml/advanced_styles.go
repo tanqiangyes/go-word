@@ -39,6 +39,18 @@ type StyleManager struct {
 	Properties *StyleManagerProperties
 }
 
+// StyleManagerProperties represents style manager properties
+type StyleManagerProperties struct {
+	// 基础设置
+	Language    string
+	Theme       string
+	Version     string
+	
+	// 其他属性
+	Hidden      bool
+	Locked      bool
+}
+
 // StyleDefinition represents a complete style definition
 type StyleDefinition struct {
 	// 基础信息
@@ -715,7 +727,7 @@ func (ass *AdvancedStyleSystem) applyCharacterStyle(run *types.Run, styleID stri
 				run.FontName = style.Properties.Font.Name
 			}
 			if style.Properties.Font.Size > 0 {
-				run.FontSize = style.Properties.Font.Size
+				run.FontSize = int(style.Properties.Font.Size)
 			}
 			if style.Properties.Font.Bold {
 				run.Bold = true

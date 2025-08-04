@@ -246,18 +246,7 @@ type AdvancedTableCell struct {
 	Locked      bool
 }
 
-// CellContent represents cell content
-type CellContent struct {
-	// 文本内容
-	Text        string
-	Paragraphs  []types.Paragraph
-	
-	// 图片内容
-	Images      []CellImage
-	
-	// 其他内容
-	Objects     []CellObject
-}
+// CellContent 使用 advanced_formatting.go 中的定义
 
 // CellImage represents a cell image
 type CellImage struct {
@@ -325,19 +314,7 @@ type CellBackground struct {
 	PatternColor string
 }
 
-// CellBorders represents cell borders
-type CellBorders struct {
-	// 边框样式
-	Top         *BorderStyle
-	Bottom      *BorderStyle
-	Left        *BorderStyle
-	Right       *BorderStyle
-	
-	// 其他属性
-	Shadow      bool
-	ShadowColor string
-	ShadowSize  float64
-}
+// CellBorders 使用 advanced_formatting.go 中的定义
 
 // CellFont represents cell font
 type CellFont struct {
@@ -705,8 +682,7 @@ func (ats *AdvancedTableSystem) CreateAdvancedTable(name string, rows, cols int)
 				Content:     &CellContent{
 					Text:       fmt.Sprintf("单元格 %d-%d", i+1, j+1),
 					Paragraphs: make([]types.Paragraph, 0),
-					Images:     make([]CellImage, 0),
-					Objects:    make([]CellObject, 0),
+					Images:     make([]Image, 0),
 				},
 				Style:       &CellStyle{},
 				Hidden:      false,

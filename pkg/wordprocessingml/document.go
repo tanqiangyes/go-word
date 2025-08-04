@@ -18,11 +18,7 @@ type Document struct {
 	documentParts *DocumentParts
 }
 
-// MainDocumentPart represents the main document part
-type MainDocumentPart struct {
-	Part     *opc.Part
-	Content  *types.DocumentContent
-}
+// MainDocumentPart 使用 document_parts.go 中的定义
 
 // Paragraph represents a paragraph in the document
 type Paragraph = types.Paragraph
@@ -129,7 +125,7 @@ func (d *Document) loadMainDocumentPart() error {
 	}
 	
 	d.mainPart = &MainDocumentPart{
-		Part: mainPart,
+		ID: "main",
 	}
 	
 	// Parse the document content
@@ -165,4 +161,14 @@ func parseDocumentContent(content []byte) (*types.DocumentContent, error) {
 		Tables:     tables,
 		Text:       text,
 	}, nil
+}
+
+// GetMainPart returns the main document part
+func (d *Document) GetMainPart() *MainDocumentPart {
+	return d.mainPart
+}
+
+// SetMainPart sets the main document part
+func (d *Document) SetMainPart(mainPart *MainDocumentPart) {
+	d.mainPart = mainPart
 } 

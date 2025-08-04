@@ -3,7 +3,6 @@ package wordprocessingml
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/tanqiangyes/go-word/pkg/types"
 )

@@ -44,7 +44,7 @@ type MainDocumentPart struct {
 	Content  *types.DocumentContent
 	
 	// 文档属性
-	DocumentProperties DocumentProperties
+	DocumentProperties map[string]interface{}
 	
 	// 关系
 	Relationships []Relationship
@@ -198,8 +198,8 @@ const (
 	BeneathText
 	// SectionBottom for section bottom
 	SectionBottom
-	// DocumentEnd for document end
-	DocumentEnd
+	// FootnoteDocumentEnd for document end
+	FootnoteDocumentEnd
 )
 
 // FootnoteLayout represents footnote layout
@@ -333,106 +333,17 @@ type StyleDefinitions struct {
 	Properties      StyleProperties
 }
 
-// ParagraphStyle represents a paragraph style
-type ParagraphStyle struct {
-	// 基础信息
-	ID          string
-	Name        string
-	BasedOn     string
-	Next        string
-	Link        string
-	
-	// 属性
-	SemiHidden     bool
-	UnhideWhenUsed bool
-	QFormat        bool
-	Locked         bool
-	
-	// 样式属性
-	Properties     ParagraphStyleProperties
-}
+// ParagraphStyle 使用 advanced_styles.go 中的定义
 
-// ParagraphStyleProperties represents paragraph style properties
-type ParagraphStyleProperties struct {
-	// 段落属性
-	Alignment      string
-	Indent         IndentFormat
-	Spacing        SpacingFormat
-	Borders        BorderFormat
-	Shading        ShadingFormat
-	
-	// 文本属性
-	Font           Font
-	Effects        TextEffects
-	
-	// 其他属性
-	KeepLines      bool
-	KeepNext       bool
-	PageBreakBefore bool
-	WidowControl   bool
-}
+// ParagraphStyleProperties 使用 advanced_styles.go 中的定义
 
-// CharacterStyle represents a character style
-type CharacterStyle struct {
-	// 基础信息
-	ID          string
-	Name        string
-	BasedOn     string
-	Link        string
-	
-	// 属性
-	SemiHidden     bool
-	UnhideWhenUsed bool
-	QFormat        bool
-	Locked         bool
-	
-	// 样式属性
-	Properties     CharacterStyleProperties
-}
+// CharacterStyle 使用 advanced_styles.go 中的定义
 
-// CharacterStyleProperties represents character style properties
-type CharacterStyleProperties struct {
-	// 字体属性
-	Font           Font
-	Effects        TextEffects
-	
-	// 其他属性
-	Hidden         bool
-	Vanish         bool
-	SpecVanish     bool
-}
+// CharacterStyleProperties 使用 advanced_styles.go 中的定义
 
-// TableStyle represents a table style
-type TableStyle struct {
-	// 基础信息
-	ID          string
-	Name        string
-	BasedOn     string
-	Next        string
-	
-	// 属性
-	SemiHidden     bool
-	UnhideWhenUsed bool
-	QFormat        bool
-	Locked         bool
-	
-	// 样式属性
-	Properties     TableStyleProperties
-}
+// TableStyle 使用 advanced_styles.go 中的定义
 
-// TableStyleProperties represents table style properties
-type TableStyleProperties struct {
-	// 表格属性
-	Borders        TableBorders
-	Shading        TableShading
-	Layout          TableLayout
-	
-	// 单元格属性
-	CellProperties  CellProperties
-	
-	// 其他属性
-	Hidden         bool
-}
+// TableStyleProperties 使用 advanced_styles.go 中的定义
 
 // NumberingStyle represents a numbering style
 type NumberingStyle struct {
@@ -451,15 +362,7 @@ type NumberingStyle struct {
 	Properties     NumberingStyleProperties
 }
 
-// NumberingStyleProperties represents numbering style properties
-type NumberingStyleProperties struct {
-	// 编号属性
-	Numbering      NumberingFormat
-	Indent         IndentFormat
-	
-	// 其他属性
-	Hidden         bool
-}
+// NumberingStyleProperties 使用 advanced_styles.go 中的定义
 
 // NumberingFormat represents numbering format
 type NumberingFormat struct {
@@ -795,29 +698,8 @@ type Effect struct {
 	Properties  EffectProperties
 }
 
-// EffectType defines effect type
-type EffectType int
-
-const (
-	// ShadowEffect for shadow effects
-	ShadowEffect EffectType = iota
-	// ReflectionEffect for reflection effects
-	ReflectionEffect
-	// GlowEffect for glow effects
-	GlowEffect
-	// SoftEdgeEffect for soft edge effects
-	SoftEdgeEffect
-)
-
-// EffectProperties represents effect properties
-type EffectProperties struct {
-	// 基础属性
-	Visible     bool
-	Locked      bool
-	
-	// 其他属性
-	Hidden      bool
-}
+// EffectType 使用 advanced_text.go 中的定义
+// EffectProperties 使用 advanced_text.go 中的定义
 
 // FontTablePart represents font table part
 type FontTablePart struct {
@@ -1067,4 +949,67 @@ func (dp *DocumentParts) GetPartsSummary() string {
 	}
 	
 	return summary.String()
-} 
+}
+
+// 添加缺失的类型定义
+
+// CharacterStyle represents a character style
+type CharacterStyle struct {
+	// 基础信息
+	ID          string
+	Name        string
+	BasedOn     string
+	Next        string
+	Link        string
+	
+	// 属性
+	SemiHidden     bool
+	UnhideWhenUsed bool
+	QFormat        bool
+	Locked         bool
+	
+	// 样式属性
+	Properties     CharacterStyleProperties
+}
+
+// CharacterStyleProperties 使用 advanced_styles.go 中的定义
+
+// TableStyle represents a table style
+type TableStyle struct {
+	// 基础信息
+	ID          string
+	Name        string
+	BasedOn     string
+	Next        string
+	Link        string
+	
+	// 属性
+	SemiHidden     bool
+	UnhideWhenUsed bool
+	QFormat        bool
+	Locked         bool
+	
+	// 样式属性
+	Properties     TableStyleProperties
+}
+
+// TableStyleProperties 使用 advanced_styles.go 中的定义
+
+// Font 使用 format_support.go 中的定义
+// TextEffects 使用 format_support.go 中的定义
+
+// TableBorders 使用 advanced_formatting.go 中的定义
+// BorderSide 使用 advanced_formatting.go 中的定义
+// TableShading 使用 advanced_formatting.go 中的定义
+// TableLayout 使用 advanced_formatting.go 中的定义
+// CellProperties 使用 advanced_formatting.go 中的定义
+// CellBorders 使用 advanced_formatting.go 中的定义
+// CellShading 使用 advanced_formatting.go 中的定义
+// CellMargin 使用 advanced_tables.go 中的定义
+
+// HeaderFooterType 使用 advanced_formatting.go 中的定义
+// HeaderFooterProperties 使用 advanced_formatting.go 中的定义
+// RowProperties 使用 advanced_formatting.go 中的定义
+// ColumnProperties 使用 advanced_formatting.go 中的定义
+
+// CellProperties 使用 advanced_formatting.go 中的定义 

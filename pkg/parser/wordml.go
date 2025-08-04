@@ -58,12 +58,12 @@ type WordRun struct {
 // RunProps represents run properties
 type RunProps struct {
 	XMLName    xml.Name `xml:"w:rPr"`
-	Bold       *Bold    `xml:"w:b,omitempty"`
-	Italic     *Italic  `xml:"w:i,omitempty"`
-	Underline  *Underline `xml:"w:u,omitempty"`
-	Size       *Size    `xml:"w:sz,omitempty"`
-	Font       *Font    `xml:"w:rFonts,omitempty"`
-	Color      *Color   `xml:"w:color,omitempty"`
+	Bold       *types.Bold    `xml:"w:b,omitempty"`
+	Italic     *types.Italic  `xml:"w:i,omitempty"`
+	Underline  *types.Underline `xml:"w:u,omitempty"`
+	Size       *types.Size    `xml:"w:sz,omitempty"`
+	Font       *types.Font    `xml:"w:rFonts,omitempty"`
+	Color      *types.Color   `xml:"w:color,omitempty"`
 }
 
 // WordText represents text content
@@ -82,37 +82,6 @@ type Tab struct {
 type Break struct {
 	XMLName xml.Name `xml:"w:br"`
 	Type    string   `xml:"w:type,attr,omitempty"`
-}
-
-// Bold represents bold formatting
-type Bold struct {
-	XMLName xml.Name `xml:"w:b"`
-	Val     string   `xml:"w:val,attr,omitempty"`
-}
-
-// Italic represents italic formatting
-type Italic struct {
-	XMLName xml.Name `xml:"w:i"`
-	Val     string   `xml:"w:val,attr,omitempty"`
-}
-
-// Underline represents underline formatting
-type Underline struct {
-	XMLName xml.Name `xml:"w:u"`
-	Val     string   `xml:"w:val,attr,omitempty"`
-}
-
-// Size represents font size
-type Size struct {
-	XMLName xml.Name `xml:"w:sz"`
-	Val     string   `xml:"w:val,attr"`
-}
-
-// Font represents font family
-type Font struct {
-	XMLName xml.Name `xml:"w:rFonts"`
-	Ascii   string   `xml:"w:ascii,attr,omitempty"`
-	HAnsi   string   `xml:"w:hAnsi,attr,omitempty"`
 }
 
 // Color represents text color
@@ -292,6 +261,9 @@ func (p *WordMLParser) convertRun(run WordRun) types.Run {
 			if wordRun.FontName == "" {
 				wordRun.FontName = run.Properties.Font.HAnsi
 			}
+		}
+		if run.Properties.Color != nil {
+			wordRun.Color = run.Properties.Color.Val
 		}
 	}
 

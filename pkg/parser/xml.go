@@ -50,35 +50,10 @@ type Text struct {
 // RunProperties represents run properties
 type RunProperties struct {
 	XMLName xml.Name `xml:"w:rPr"`
-	Bold    *Bold    `xml:"w:b,omitempty"`
-	Italic  *Italic  `xml:"w:i,omitempty"`
-	Size    *Size    `xml:"w:sz,omitempty"`
-	Font    *Font    `xml:"w:rFonts,omitempty"`
-}
-
-// Bold represents bold formatting
-type Bold struct {
-	XMLName xml.Name `xml:"w:b"`
-	Val     string   `xml:"w:val,attr,omitempty"`
-}
-
-// Italic represents italic formatting
-type Italic struct {
-	XMLName xml.Name `xml:"w:i"`
-	Val     string   `xml:"w:val,attr,omitempty"`
-}
-
-// Size represents font size
-type Size struct {
-	XMLName xml.Name `xml:"w:sz"`
-	Val     string   `xml:"w:val,attr"`
-}
-
-// Font represents font family
-type Font struct {
-	XMLName xml.Name `xml:"w:rFonts"`
-	Ascii   string   `xml:"w:ascii,attr,omitempty"`
-	HAnsi   string   `xml:"w:hAnsi,attr,omitempty"`
+	Bold    *types.Bold `xml:"w:b,omitempty"`
+	Italic  *types.Italic `xml:"w:i,omitempty"`
+	Size    *types.Size `xml:"w:sz,omitempty"`
+	Font    *types.Font `xml:"w:rFonts,omitempty"`
 }
 
 // Table represents a table element

@@ -425,7 +425,7 @@ type DigitalSignatureManager struct {
 	Signatures []DigitalSignature
 	
 	// 验证设置
-	Validation *SignatureValidation
+	Validation *SignatureValidationSettings
 }
 
 // SignatureSettings represents signature settings
@@ -492,8 +492,8 @@ type DigitalSignature struct {
 	Location    string
 }
 
-// SignatureValidation represents signature validation
-type SignatureValidation struct {
+// SignatureValidationSettings represents signature validation settings
+type SignatureValidationSettings struct {
 	// 验证设置
 	CheckRevocation bool
 	CheckExpiration bool
@@ -546,22 +546,7 @@ type ValidationCondition struct {
 	Required    bool
 }
 
-// ValidationResult represents a validation result
-type ValidationResult struct {
-	// 基础信息
-	ID          string
-	Timestamp   time.Time
-	
-	// 结果详情
-	Valid       bool
-	Trusted     bool
-	Expired     bool
-	Revoked     bool
-	
-	// 错误信息
-	Errors      []string
-	Warnings    []string
-}
+// ValidationResult 使用 document_validator.go 中的定义
 
 // WatermarkManager manages document watermarks
 type WatermarkManager struct {
@@ -738,7 +723,7 @@ func NewDocumentProtection() *DocumentProtection {
 			},
 			Certificates: make(map[string]*Certificate),
 			Signatures: make([]DigitalSignature, 0),
-			Validation: &SignatureValidation{
+			Validation: &SignatureValidationSettings{
 				CheckRevocation: true,
 				CheckExpiration: true,
 				CheckTrust: true,

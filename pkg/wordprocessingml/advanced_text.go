@@ -4,8 +4,6 @@ package wordprocessingml
 import (
 	"fmt"
 	"strings"
-
-	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 // AdvancedTextSystem represents advanced text functionality
@@ -614,10 +612,10 @@ const (
 	GrammarRule TextValidationRuleType = iota
 	// SpellingRule for spelling validation
 	SpellingRule
-	// StyleRule for style validation
-	StyleRule
-	// FormatRule for format validation
-	FormatRule
+	// TextStyleRule for style validation
+	TextStyleRule
+	// TextFormatRule for format validation
+	TextFormatRule
 	// AccessibilityRule for accessibility validation
 	AccessibilityRule
 )

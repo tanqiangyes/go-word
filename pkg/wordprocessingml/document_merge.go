@@ -216,7 +216,7 @@ func (dm *DocumentMerge) MergeBySection(sectionMapping map[string]string) error 
 		return fmt.Errorf("no source documents to merge")
 	}
 
-	for sourceDoc, targetSection := range sectionMapping {
+	for _, targetSection := range sectionMapping {
 		// 查找源文档
 		var sourceDocument *Document
 		for _, doc := range dm.SourceDocuments {
@@ -244,7 +244,7 @@ func (dm *DocumentMerge) MergeBySection(sectionMapping map[string]string) error 
 
 		// 合并内容到目标段落
 		if err := dm.mergeContentToSection(sourceDocument, targetSection); err != nil {
-			return fmt.Errorf("failed to merge content to section %s: %w", targetSection, err)
+			return fmt.Errorf("failed to merge content to section: %w", err)
 		}
 	}
 

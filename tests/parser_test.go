@@ -5,12 +5,11 @@ import (
 	"testing"
 
 	"github.com/tanqiangyes/go-word/pkg/parser"
-	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 func TestWordMLParserParseDocument(t *testing.T) {
 	// 读取测试文档
-	content, err := os.ReadFile("tests/test_document.xml")
+	content, err := os.ReadFile("test_document.xml")
 	if err != nil {
 		t.Fatalf("Failed to read test document: %v", err)
 	}
@@ -36,7 +35,7 @@ func TestWordMLParserParseDocument(t *testing.T) {
 }
 
 func TestWordMLParserExtractText(t *testing.T) {
-	content, err := os.ReadFile("tests/test_document.xml")
+	content, err := os.ReadFile("test_document.xml")
 	if err != nil {
 		t.Fatalf("Failed to read test document: %v", err)
 	}
@@ -57,7 +56,7 @@ func TestWordMLParserExtractText(t *testing.T) {
 }
 
 func TestWordMLParserExtractParagraphs(t *testing.T) {
-	content, err := os.ReadFile("tests/test_document.xml")
+	content, err := os.ReadFile("test_document.xml")
 	if err != nil {
 		t.Fatalf("Failed to read test document: %v", err)
 	}
@@ -103,6 +102,10 @@ func TestWordMLParserExtractParagraphs(t *testing.T) {
 		t.Errorf("Expected second paragraph text '这是第二段，包含斜体文本。', got '%s'", secondParagraph.Text)
 	}
 	
+	if len(secondParagraph.Runs) != 1 {
+		t.Errorf("Expected 1 run in second paragraph, got %d", len(secondParagraph.Runs))
+	}
+	
 	secondRun := secondParagraph.Runs[0]
 	if !secondRun.Italic {
 		t.Error("Expected second run to be italic")
@@ -114,7 +117,7 @@ func TestWordMLParserExtractParagraphs(t *testing.T) {
 }
 
 func TestWordMLParserExtractTables(t *testing.T) {
-	content, err := os.ReadFile("tests/test_document.xml")
+	content, err := os.ReadFile("test_document.xml")
 	if err != nil {
 		t.Fatalf("Failed to read test document: %v", err)
 	}
@@ -132,16 +135,22 @@ func TestWordMLParserExtractTables(t *testing.T) {
 	}
 	
 	table := tables[0]
-	if len(table.Rows) != 1 {
-		t.Errorf("Expected 1 row in table, got %d", len(table.Rows))
+	if len(table.Rows) != 2 {
+		t.Errorf("Expected 2 rows in table, got %d", len(table.Rows))
 	}
 	
-	row := table.Rows[0]
-	if len(row.Cells) != 2 {
-		t.Errorf("Expected 2 cells in row, got %d", len(row.Cells))
+	if len(table.Rows[0].Cells) != 2 {
+		t.Errorf("Expected 2 cells in first row, got %d", len(table.Rows[0].Cells))
 	}
 	
-	if table.Columns != 2 {
-		t.Errorf("Expected 2 columns in table, got %d", table.Columns)
+	// 验证表格内容
+	firstCell := table.Rows[0].Cells[0]
+	if firstCell.Text != "表头1" {
+		t.Errorf("Expected first cell text '表头1', got '%s'", firstCell.Text)
+	}
+	
+	secondCell := table.Rows[0].Cells[1]
+	if secondCell.Text != "表头2" {
+		t.Errorf("Expected second cell text '表头2', got '%s'", secondCell.Text)
 	}
 } 

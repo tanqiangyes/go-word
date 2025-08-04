@@ -41,25 +41,24 @@ func (w *DocumentWriter) CreateNewDocument() error {
 	w.container = &opc.Container{}
 
 	// Create basic document structure
-	w.document = &wordprocessingml.Document{
-		Container: w.container,
-	}
+	w.document = &wordprocessingml.Document{}
 
 	// Initialize with empty content
-	w.document.MainPart = &wordprocessingml.MainDocumentPart{
+	mainPart := &wordprocessingml.MainDocumentPart{
 		Content: &types.DocumentContent{
 			Paragraphs: []types.Paragraph{},
 			Tables:     []types.Table{},
 			Text:       "",
 		},
 	}
+	w.document.SetMainPart(mainPart)
 
 	return nil
 }
 
 // AddParagraph adds a new paragraph to the document
 func (w *DocumentWriter) AddParagraph(text string, style string) error {
-	if w.document == nil || w.document.MainPart == nil {
+	if w.document == nil || w.document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
@@ -73,18 +72,19 @@ func (w *DocumentWriter) AddParagraph(text string, style string) error {
 		},
 	}
 
-	w.document.MainPart.Content.Paragraphs = append(
-		w.document.MainPart.Content.Paragraphs, paragraph)
+	mainPart := w.document.GetMainPart()
+	mainPart.Content.Paragraphs = append(
+		mainPart.Content.Paragraphs, paragraph)
 
 	// Update document text
-	w.document.MainPart.Content.Text += text + "\n"
+	mainPart.Content.Text += text + "\n"
 
 	return nil
 }
 
 // AddFormattedParagraph adds a paragraph with specific formatting
 func (w *DocumentWriter) AddFormattedParagraph(text string, style string, runs []types.Run) error {
-	if w.document == nil || w.document.MainPart == nil {
+	if w.document == nil || w.document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
@@ -94,18 +94,19 @@ func (w *DocumentWriter) AddFormattedParagraph(text string, style string, runs [
 		Runs:  runs,
 	}
 
-	w.document.MainPart.Content.Paragraphs = append(
-		w.document.MainPart.Content.Paragraphs, paragraph)
+	mainPart := w.document.GetMainPart()
+	mainPart.Content.Paragraphs = append(
+		mainPart.Content.Paragraphs, paragraph)
 
 	// Update document text
-	w.document.MainPart.Content.Text += text + "\n"
+	mainPart.Content.Text += text + "\n"
 
 	return nil
 }
 
 // AddTable adds a new table to the document
 func (w *DocumentWriter) AddTable(rows [][]string) error {
-	if w.document == nil || w.document.MainPart == nil {
+	if w.document == nil || w.document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
@@ -131,25 +132,28 @@ func (w *DocumentWriter) AddTable(rows [][]string) error {
 		table.Columns = len(rows[0])
 	}
 
-	w.document.MainPart.Content.Tables = append(
-		w.document.MainPart.Content.Tables, table)
+	mainPart := w.document.GetMainPart()
+	mainPart.Content.Tables = append(
+		mainPart.Content.Tables, table)
 
 	return nil
 }
 
 // ReplaceText replaces all occurrences of old text with new text
 func (w *DocumentWriter) ReplaceText(oldText, newText string) error {
-	if w.document == nil || w.document.MainPart == nil {
+	if w.document == nil || w.document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
+	mainPart := w.document.GetMainPart()
+
 	// Replace in document text
-	w.document.MainPart.Content.Text = strings.ReplaceAll(
-		w.document.MainPart.Content.Text, oldText, newText)
+	mainPart.Content.Text = strings.ReplaceAll(
+		mainPart.Content.Text, oldText, newText)
 
 	// Replace in paragraphs
-	for i := range w.document.MainPart.Content.Paragraphs {
-		paragraph := &w.document.MainPart.Content.Paragraphs[i]
+	for i := range mainPart.Content.Paragraphs {
+		paragraph := &mainPart.Content.Paragraphs[i]
 		paragraph.Text = strings.ReplaceAll(paragraph.Text, oldText, newText)
 
 		// Replace in runs
@@ -160,8 +164,8 @@ func (w *DocumentWriter) ReplaceText(oldText, newText string) error {
 	}
 
 	// Replace in table cells
-	for i := range w.document.MainPart.Content.Tables {
-		table := &w.document.MainPart.Content.Tables[i]
+	for i := range mainPart.Content.Tables {
+		table := &mainPart.Content.Tables[i]
 		for j := range table.Rows {
 			row := &table.Rows[j]
 			for k := range row.Cells {
@@ -176,29 +180,31 @@ func (w *DocumentWriter) ReplaceText(oldText, newText string) error {
 
 // SetParagraphStyle sets the style of a specific paragraph
 func (w *DocumentWriter) SetParagraphStyle(index int, style string) error {
-	if w.document == nil || w.document.MainPart == nil {
+	if w.document == nil || w.document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
-	if index < 0 || index >= len(w.document.MainPart.Content.Paragraphs) {
+	mainPart := w.document.GetMainPart()
+	if index < 0 || index >= len(mainPart.Content.Paragraphs) {
 		return fmt.Errorf("paragraph index out of range")
 	}
 
-	w.document.MainPart.Content.Paragraphs[index].Style = style
+	mainPart.Content.Paragraphs[index].Style = style
 	return nil
 }
 
 // SetRunFormatting sets formatting for a specific run in a paragraph
 func (w *DocumentWriter) SetRunFormatting(paragraphIndex, runIndex int, formatting types.Run) error {
-	if w.document == nil || w.document.MainPart == nil {
+	if w.document == nil || w.document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
-	if paragraphIndex < 0 || paragraphIndex >= len(w.document.MainPart.Content.Paragraphs) {
+	mainPart := w.document.GetMainPart()
+	if paragraphIndex < 0 || paragraphIndex >= len(mainPart.Content.Paragraphs) {
 		return fmt.Errorf("paragraph index out of range")
 	}
 
-	paragraph := &w.document.MainPart.Content.Paragraphs[paragraphIndex]
+	paragraph := &mainPart.Content.Paragraphs[paragraphIndex]
 	if runIndex < 0 || runIndex >= len(paragraph.Runs) {
 		return fmt.Errorf("run index out of range")
 	}
@@ -223,14 +229,35 @@ func (w *DocumentWriter) Save(filename string) error {
 	container := &opc.Container{}
 	
 	// Add the main document part
-	mainPart := &opc.Part{
-		Name:        "word/document.xml",
-		Content:     xmlContent,
-		ContentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
-	}
+	container.AddPart(
+		"word/document.xml",
+		xmlContent,
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+	)
 
-	// TODO: Add other required parts (styles, relationships, etc.)
-	// For now, we'll create a minimal document structure
+	// Add [Content_Types].xml
+	contentTypesXML := w.generateContentTypesXML()
+	container.AddPart(
+		"[Content_Types].xml",
+		contentTypesXML,
+		"application/vnd.openxmlformats-package.content-types",
+	)
+
+	// Add _rels/.rels
+	rootRelsXML := w.generateRootRelsXML()
+	container.AddPart(
+		"_rels/.rels",
+		rootRelsXML,
+		"application/vnd.openxmlformats-package.relationships+xml",
+	)
+
+	// Add word/_rels/document.xml.rels
+	documentRelsXML := w.generateDocumentRelsXML()
+	container.AddPart(
+		"word/_rels/document.xml.rels",
+		documentRelsXML,
+		"application/vnd.openxmlformats-package.relationships+xml",
+	)
 
 	// Save the container to file
 	return container.SaveToFile(filename)
@@ -238,9 +265,11 @@ func (w *DocumentWriter) Save(filename string) error {
 
 // generateDocumentXML generates the XML content for the main document part
 func (w *DocumentWriter) generateDocumentXML() ([]byte, error) {
-	if w.document == nil || w.document.MainPart == nil {
+	if w.document == nil || w.document.GetMainPart() == nil {
 		return nil, fmt.Errorf("document not initialized")
 	}
+
+	mainPart := w.document.GetMainPart()
 
 	// Create the XML structure
 	doc := &DocumentXML{
@@ -252,7 +281,7 @@ func (w *DocumentWriter) generateDocumentXML() ([]byte, error) {
 	}
 
 	// Add paragraphs
-	for _, paragraph := range w.document.MainPart.Content.Paragraphs {
+	for _, paragraph := range mainPart.Content.Paragraphs {
 		xmlParagraph := ParagraphXML{
 			XMLName: xml.Name{Local: "w:p"},
 		}
@@ -330,7 +359,7 @@ func (w *DocumentWriter) generateDocumentXML() ([]byte, error) {
 	}
 
 	// Add tables
-	for _, table := range w.document.MainPart.Content.Tables {
+	for _, table := range mainPart.Content.Tables {
 		xmlTable := TableXML{
 			XMLName: xml.Name{Local: "w:tbl"},
 		}
@@ -377,6 +406,45 @@ func (w *DocumentWriter) generateDocumentXML() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// generateContentTypesXML generates the XML content for [Content_Types].xml
+func (w *DocumentWriter) generateContentTypesXML() []byte {
+	contentTypesXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="png" ContentType="image/png"/>
+  <Default Extension="jpeg" ContentType="image/jpeg"/>
+  <Default Extension="jpg" ContentType="image/jpeg"/>
+  <Default Extension="gif" ContentType="image/gif"/>
+  <Default Extension="tiff" ContentType="image/tiff"/>
+  <Default Extension="bmp" ContentType="image/bmp"/>
+  <Default Extension="wmf" ContentType="image/wmf"/>
+  <Default Extension="emf" ContentType="image/emf"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`
+	
+	return []byte(contentTypesXML)
+}
+
+// generateRootRelsXML generates the XML content for _rels/.rels
+func (w *DocumentWriter) generateRootRelsXML() []byte {
+	rootRelsXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`
+	
+	return []byte(rootRelsXML)
+}
+
+// generateDocumentRelsXML generates the XML content for word/_rels/document.xml.rels
+func (w *DocumentWriter) generateDocumentRelsXML() []byte {
+	documentRelsXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`
+	
+	return []byte(documentRelsXML)
 }
 
 // XML structures for document generation

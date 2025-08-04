@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 // BatchProcessor represents a batch document processor
@@ -176,7 +174,7 @@ func (bp *BatchProcessor) executeOperation(docID string, doc *Document, operatio
 
 // extractTextFromDocument extracts text from a document
 func (bp *BatchProcessor) extractTextFromDocument(docID string, doc *Document) error {
-	text, err := doc.GetText()
+	_, err := doc.GetText()
 	if err != nil {
 		return fmt.Errorf("failed to extract text from %s: %w", docID, err)
 	}
@@ -189,7 +187,7 @@ func (bp *BatchProcessor) extractTextFromDocument(docID string, doc *Document) e
 
 // extractTablesFromDocument extracts tables from a document
 func (bp *BatchProcessor) extractTablesFromDocument(docID string, doc *Document) error {
-	tables, err := doc.GetTables()
+	_, err := doc.GetTables()
 	if err != nil {
 		return fmt.Errorf("failed to extract tables from %s: %w", docID, err)
 	}
@@ -206,7 +204,7 @@ func (bp *BatchProcessor) mergeDocuments(docID string, doc *Document, operation 
 	merge := NewDocumentMerge(doc)
 	
 	// 添加源文档
-	for _, sourceDocID := range operation.DocumentIDs {
+	for range operation.DocumentIDs {
 		// 这里需要根据ID查找源文档
 		// 暂时跳过实现
 	}
@@ -269,7 +267,7 @@ func (bp *BatchProcessor) convertDocumentFormat(docID string, doc *Document, ope
 
 // convertToText converts document to text format
 func (bp *BatchProcessor) convertToText(docID string, doc *Document) error {
-	text, err := doc.GetText()
+	_, err := doc.GetText()
 	if err != nil {
 		return fmt.Errorf("failed to get text from %s: %w", docID, err)
 	}

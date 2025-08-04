@@ -26,19 +26,7 @@ type ValidationRule struct {
 	AutoFixer   func(*Document) error
 }
 
-// ValidationSeverity defines the severity of a validation issue
-type ValidationSeverity int
-
-const (
-	// InfoSeverity for informational issues
-	InfoSeverity ValidationSeverity = iota
-	// WarningSeverity for warning issues
-	WarningSeverity
-	// ErrorSeverity for error issues
-	ErrorSeverity
-	// CriticalSeverity for critical issues
-	CriticalSeverity
-)
+// ValidationSeverity 使用 advanced_tables.go 中的定义
 
 // ValidationResult represents a validation result
 type ValidationResult struct {

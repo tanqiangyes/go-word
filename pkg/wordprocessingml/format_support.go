@@ -128,7 +128,7 @@ type RichTextTable struct {
 // RichTextRow represents a row in rich text table
 type RichTextRow struct {
 	Index       int
-	Cells       []RichTextCell
+	Cells       []RichTableCell
 	Height      float64
 	Hidden      bool
 	Header      bool
@@ -172,16 +172,12 @@ type RichTextListItem struct {
 	Properties  ListItemProperties
 }
 
-// ListType defines the type of list
-type ListType int
+// ListType 使用 advanced_styles.go 中的定义
 
+// 添加缺失的常量
 const (
-	// BulletList for bullet lists
-	BulletList ListType = iota
-	// NumberedList for numbered lists
-	NumberedList
 	// CustomList for custom lists
-	CustomList
+	CustomList ListType = 2
 )
 
 // ListProperties represents list properties
@@ -375,7 +371,7 @@ func (fs *FormatSupport) CreateRichTextTable(rows, cols int) *RichTextTable {
 	for i := 0; i < rows; i++ {
 		table.Rows[i] = RichTextRow{
 			Index: i + 1,
-			Cells: make([]RichTextCell, cols),
+			Cells: make([]RichTableCell, cols),
 			Properties: RowProperties{
 				Height:      20,
 				CanSplit:    true,
@@ -386,7 +382,7 @@ func (fs *FormatSupport) CreateRichTextTable(rows, cols int) *RichTextTable {
 		// 创建单元格
 		for j := 0; j < cols; j++ {
 			cellRef := fmt.Sprintf("%c%d", 'A'+j, i+1)
-			table.Rows[i].Cells[j] = RichTextCell{
+			table.Rows[i].Cells[j] = RichTableCell{
 				Reference: cellRef,
 				Content: RichTextContent{
 					Text: fmt.Sprintf("单元格 %s", cellRef),
