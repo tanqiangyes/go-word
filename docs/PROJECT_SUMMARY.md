@@ -20,16 +20,27 @@
   - 段落和表格处理
   - 格式信息提取
 
-- **XML 解析器** (`pkg/parser/`)
-  - 通用 XML 解析器
-  - 专门的 WordprocessingML 解析器
-  - 文本、段落、表格提取
-  - 格式属性解析（粗体、斜体、字体等）
+       - **XML 解析器** (`pkg/parser/`)
+         - 通用 XML 解析器
+         - 专门的 WordprocessingML 解析器
+         - 文本、段落、表格提取
+         - 格式属性解析（粗体、斜体、字体等）
 
-- **错误处理** (`pkg/utils/`)
-  - 结构化错误类型
-  - 错误分类和识别
-  - 详细的错误信息
+       - **文档写入器** (`pkg/writer/`)
+         - 文档创建和修改
+         - 段落和表格添加
+         - 格式化和样式设置
+         - 文档保存功能
+
+       - **共享类型** (`pkg/types/`)
+         - 避免循环导入
+         - 统一的类型定义
+         - 跨包类型共享
+
+       - **错误处理** (`pkg/utils/`)
+         - 结构化错误类型
+         - 错误分类和识别
+         - 详细的错误信息
 
 ### 2. 功能特性 ✅
 
@@ -44,6 +55,13 @@
   - 段落结构分析
   - 表格数据处理
   - 格式属性提取（粗体、斜体、字体大小、字体名称）
+
+- **文档修改** ✅
+  - 创建新文档
+  - 添加段落和表格
+  - 文本替换功能
+  - 格式化和样式修改
+  - 文档保存功能
 
 - **错误处理**
   - 详细的错误信息
@@ -95,6 +113,8 @@ go-word/
 │   ├── opc/              # OPC 容器处理
 │   ├── wordprocessingml/ # Word 文档处理
 │   ├── parser/           # XML 解析器
+│   ├── writer/           # 文档写入器
+│   ├── types/            # 共享类型定义
 │   └── utils/            # 工具函数
 ├── examples/             # 使用示例
 ├── tests/               # 测试文件
@@ -120,6 +140,46 @@ if err != nil {
 fmt.Println("文档内容:", text)
 ```
 
+### 文档修改
+```go
+// 创建新文档
+writer := writer.NewDocumentWriter()
+err := writer.CreateNewDocument()
+if err != nil {
+    log.Fatal(err)
+}
+
+// 添加段落
+err = writer.AddParagraph("这是一个新文档", "Normal")
+if err != nil {
+    log.Fatal(err)
+}
+
+// 添加格式化段落
+formattedRuns := []types.Run{
+    {
+        Text:     "粗体文本",
+        Bold:     true,
+        FontSize: 16,
+    },
+    {
+        Text:     "斜体文本",
+        Italic:   true,
+        FontSize: 14,
+    },
+}
+err = writer.AddFormattedParagraph("格式化段落", "Normal", formattedRuns)
+if err != nil {
+    log.Fatal(err)
+}
+
+// 保存文档
+err = writer.Save("new_document.docx")
+if err != nil {
+    log.Fatal(err)
+}
+```
+
 ### 高级功能
 ```go
 paragraphs, err := doc.GetParagraphs()
@@ -135,16 +195,17 @@ for _, paragraph := range paragraphs {
 ## 下一步计划
 
 ### 阶段1：功能完善
-- [ ] 文档修改功能
-- [ ] 样式和格式修改
+- [x] 文档修改功能
+- [x] 样式和格式修改
 - [ ] 文档结构重组
 - [ ] 文档合并功能
+- [ ] 模板处理
 
 ### 阶段2：高级功能
-- [ ] 模板处理
 - [ ] 批量操作
 - [ ] 文档验证
 - [ ] 性能优化
+- [ ] 高级格式化
 
 ### 阶段3：扩展支持
 - [ ] Excel 格式支持
