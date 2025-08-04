@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	
-	"github.com/go-word/pkg/wordprocessingml"
+	"github.com/go-word/pkg/types"
 )
 
 // XMLParser provides XML parsing capabilities
@@ -127,16 +127,16 @@ func (p *XMLParser) ExtractText(doc *DocumentXML) string {
 }
 
 // ExtractParagraphs extracts paragraphs with formatting information
-func (p *XMLParser) ExtractParagraphs(doc *DocumentXML) []wordprocessingml.Paragraph {
-	var paragraphs []wordprocessingml.Paragraph
+func (p *XMLParser) ExtractParagraphs(doc *DocumentXML) []types.Paragraph {
+	var paragraphs []types.Paragraph
 	
 	for _, p := range doc.Body.Paragraphs {
-		paragraph := wordprocessingml.Paragraph{
-			Runs: make([]wordprocessingml.Run, 0, len(p.Runs)),
+		paragraph := types.Paragraph{
+			Runs: make([]types.Run, 0, len(p.Runs)),
 		}
 		
 		for _, r := range p.Runs {
-			run := wordprocessingml.Run{
+			run := types.Run{
 				Text: r.Text.Content,
 			}
 			
@@ -173,23 +173,23 @@ func (p *XMLParser) ExtractParagraphs(doc *DocumentXML) []wordprocessingml.Parag
 }
 
 // ExtractTables extracts tables from the document
-func (p *XMLParser) ExtractTables(doc *DocumentXML) []wordprocessingml.Table {
-	var tables []wordprocessingml.Table
+func (p *XMLParser) ExtractTables(doc *DocumentXML) []types.Table {
+	var tables []types.Table
 	
 	for _, t := range doc.Body.Tables {
-		table := wordprocessingml.Table{
-			Rows: make([]wordprocessingml.TableRow, 0, len(t.Rows)),
+		table := types.Table{
+			Rows: make([]types.TableRow, 0, len(t.Rows)),
 		}
 		
 		for _, row := range t.Rows {
-			tableRow := wordprocessingml.TableRow{
-				Cells: make([]wordprocessingml.TableCell, 0, len(row.Cells)),
+			tableRow := types.TableRow{
+				Cells: make([]types.TableCell, 0, len(row.Cells)),
 			}
 			
 			for _, cell := range row.Cells {
 				// Extract text from cell content
 				cellText := extractTextFromCell(cell)
-				tableCell := wordprocessingml.TableCell{
+				tableCell := types.TableCell{
 					Text: cellText,
 				}
 				tableRow.Cells = append(tableRow.Cells, tableCell)
