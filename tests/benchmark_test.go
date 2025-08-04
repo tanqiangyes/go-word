@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 	
-	"github.com/go-word/pkg/opc"
-	"github.com/go-word/pkg/parser"
-	"github.com/go-word/pkg/wordprocessingml"
+	"github.com/tanqiangyes/go-word/pkg/opc"
+	"github.com/tanqiangyes/go-word/pkg/parser"
+	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
 var testContent []byte

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	
-	"github.com/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 // XMLParser provides XML parsing capabilities

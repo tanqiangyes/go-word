@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-word/pkg/writer"
-	"github.com/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/writer"
+	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 func main() {

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-word/pkg/opc"
-	"github.com/go-word/pkg/wordprocessingml"
-	"github.com/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/opc"
+	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 // DocumentWriter provides functionality to modify and create Word documents

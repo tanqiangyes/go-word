@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-word/pkg/parser"
-	"github.com/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/parser"
+	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 func TestWordMLParserParseDocument(t *testing.T) {

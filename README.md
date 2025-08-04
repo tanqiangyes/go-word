@@ -15,7 +15,7 @@
 ### 安装
 
 ```bash
-go get github.com/go-word
+go get github.com/tanqiangyes/go-word
 ```
 
 ### 基本使用
@@ -26,10 +26,10 @@ go get github.com/go-word
 package main
 
 import (
-    "fmt"
-    "log"
+	"fmt"
+	"log"
 
-    "github.com/go-word/pkg/wordprocessingml"
+	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
 func main() {
@@ -80,10 +80,10 @@ func main() {
 package main
 
 import (
-    "log"
+	"log"
 
-    "github.com/go-word/pkg/writer"
-    "github.com/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/writer"
+	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 func main() {

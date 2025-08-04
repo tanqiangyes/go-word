@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	
-	"github.com/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 // WordMLParser provides WordprocessingML specific parsing

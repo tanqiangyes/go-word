@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 	
-	"github.com/go-word/pkg/wordprocessingml"
+	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
 func main() {

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-word/pkg/opc"
-	"github.com/go-word/pkg/parser"
-	"github.com/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/opc"
+	"github.com/tanqiangyes/go-word/pkg/parser"
+	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 // Document represents a Word document

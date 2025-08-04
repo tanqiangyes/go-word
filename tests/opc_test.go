@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 	
-	"github.com/go-word/pkg/opc"
+	"github.com/tanqiangyes/go-word/pkg/opc"
 )
 
 func TestContainerOpenFromReader(t *testing.T) {
