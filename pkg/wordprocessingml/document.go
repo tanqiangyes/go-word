@@ -6,6 +6,7 @@ import (
 	"strings"
 	
 	"github.com/go-word/pkg/opc"
+	"github.com/go-word/pkg/parser"
 )
 
 // Document represents a Word document
@@ -147,11 +148,22 @@ func (d *Document) loadMainDocumentPart() error {
 
 // parseDocumentContent parses the XML content of the document
 func parseDocumentContent(content []byte) (*DocumentContent, error) {
-	// TODO: Implement XML parsing for document content
-	// For now, return a basic structure
+	wordParser := &parser.WordMLParser{}
+	
+	// Parse the XML content
+	docXML, err := wordParser.ParseWordDocument(content)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse document XML: %w", err)
+	}
+	
+	// Extract content
+	text := wordParser.ExtractText(docXML)
+	paragraphs := wordParser.ExtractParagraphs(docXML)
+	tables := wordParser.ExtractTables(docXML)
+	
 	return &DocumentContent{
-		Paragraphs: []Paragraph{},
-		Tables:     []Table{},
-		Text:       "",
+		Paragraphs: paragraphs,
+		Tables:     tables,
+		Text:       text,
 	}, nil
 } 
