@@ -4,9 +4,10 @@ package wordprocessingml
 import (
 	"fmt"
 	"strings"
-	
+
 	"github.com/go-word/pkg/opc"
 	"github.com/go-word/pkg/parser"
+	"github.com/go-word/pkg/types"
 )
 
 // Document represents a Word document
@@ -19,48 +20,23 @@ type Document struct {
 // MainDocumentPart represents the main document part
 type MainDocumentPart struct {
 	Part     *opc.Part
-	Content  *DocumentContent
-}
-
-// DocumentContent represents the content of the document
-type DocumentContent struct {
-	Paragraphs []Paragraph
-	Tables     []Table
-	Text       string
+	Content  *types.DocumentContent
 }
 
 // Paragraph represents a paragraph in the document
-type Paragraph struct {
-	Text   string
-	Style  string
-	Runs   []Run
-}
+type Paragraph = types.Paragraph
 
 // Run represents a text run with specific formatting
-type Run struct {
-	Text     string
-	Bold     bool
-	Italic   bool
-	Underline bool
-	FontSize int
-	FontName string
-}
+type Run = types.Run
 
 // Table represents a table in the document
-type Table struct {
-	Rows    []TableRow
-	Columns int
-}
+type Table = types.Table
 
 // TableRow represents a row in a table
-type TableRow struct {
-	Cells []TableCell
-}
+type TableRow = types.TableRow
 
 // TableCell represents a cell in a table
-type TableCell struct {
-	Text string
-}
+type TableCell = types.TableCell
 
 // Open opens a Word document from a file
 func Open(filename string) (*Document, error) {
@@ -89,6 +65,11 @@ func (d *Document) Close() error {
 		return d.container.Close()
 	}
 	return nil
+}
+
+// GetContainer returns the underlying OPC container
+func (d *Document) GetContainer() *opc.Container {
+	return d.container
 }
 
 // GetText returns the plain text content of the document
@@ -147,7 +128,7 @@ func (d *Document) loadMainDocumentPart() error {
 }
 
 // parseDocumentContent parses the XML content of the document
-func parseDocumentContent(content []byte) (*DocumentContent, error) {
+func parseDocumentContent(content []byte) (*types.DocumentContent, error) {
 	wordParser := &parser.WordMLParser{}
 	
 	// Parse the XML content
@@ -161,7 +142,7 @@ func parseDocumentContent(content []byte) (*DocumentContent, error) {
 	paragraphs := wordParser.ExtractParagraphs(docXML)
 	tables := wordParser.ExtractTables(docXML)
 	
-	return &DocumentContent{
+	return &types.DocumentContent{
 		Paragraphs: paragraphs,
 		Tables:     tables,
 		Text:       text,

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	
-	"github.com/go-word/pkg/wordprocessingml"
+	"github.com/go-word/pkg/types"
 )
 
 // WordMLParser provides WordprocessingML specific parsing
@@ -184,64 +184,64 @@ func (p *WordMLParser) ExtractText(doc *WordDocument) string {
 }
 
 // ExtractParagraphs extracts paragraphs with formatting
-func (p *WordMLParser) ExtractParagraphs(doc *WordDocument) []wordprocessingml.Paragraph {
-	var paragraphs []wordprocessingml.Paragraph
-	
+func (p *WordMLParser) ExtractParagraphs(doc *WordDocument) []types.Paragraph {
+	var paragraphs []types.Paragraph
+
 	for _, wp := range doc.Body.Paragraphs {
-		paragraph := wordprocessingml.Paragraph{
-			Runs: make([]wordprocessingml.Run, 0, len(wp.Runs)),
+		paragraph := types.Paragraph{
+			Runs: make([]types.Run, 0, len(wp.Runs)),
 		}
-		
+
 		// Extract style information
 		if wp.Properties != nil && wp.Properties.Style != nil {
 			paragraph.Style = wp.Properties.Style.Val
 		}
-		
+
 		// Extract runs
 		for _, run := range wp.Runs {
 			wordRun := p.convertRun(run)
 			paragraph.Runs = append(paragraph.Runs, wordRun)
 			paragraph.Text += wordRun.Text
 		}
-		
+
 		paragraphs = append(paragraphs, paragraph)
 	}
-	
+
 	return paragraphs
 }
 
 // ExtractTables extracts tables from the document
-func (p *WordMLParser) ExtractTables(doc *WordDocument) []wordprocessingml.Table {
-	var tables []wordprocessingml.Table
-	
+func (p *WordMLParser) ExtractTables(doc *WordDocument) []types.Table {
+	var tables []types.Table
+
 	for _, wt := range doc.Body.Tables {
-		table := wordprocessingml.Table{
-			Rows: make([]wordprocessingml.TableRow, 0, len(wt.Rows)),
+		table := types.Table{
+			Rows: make([]types.TableRow, 0, len(wt.Rows)),
 		}
-		
+
 		for _, row := range wt.Rows {
-			tableRow := wordprocessingml.TableRow{
-				Cells: make([]wordprocessingml.TableCell, 0, len(row.Cells)),
+			tableRow := types.TableRow{
+				Cells: make([]types.TableCell, 0, len(row.Cells)),
 			}
-			
+
 			for _, cell := range row.Cells {
 				cellText := p.extractCellText(cell)
-				tableCell := wordprocessingml.TableCell{
+				tableCell := types.TableCell{
 					Text: cellText,
 				}
 				tableRow.Cells = append(tableRow.Cells, tableCell)
 			}
-			
+
 			table.Rows = append(table.Rows, tableRow)
 		}
-		
+
 		if len(table.Rows) > 0 {
 			table.Columns = len(table.Rows[0].Cells)
 		}
-		
+
 		tables = append(tables, table)
 	}
-	
+
 	return tables
 }
 
@@ -264,14 +264,14 @@ func (p *WordMLParser) extractParagraphText(paragraph WordParagraph) string {
 	return text.String()
 }
 
-// convertRun converts a WordRun to wordprocessingml.Run
-func (p *WordMLParser) convertRun(run WordRun) wordprocessingml.Run {
-	wordRun := wordprocessingml.Run{}
-	
+// convertRun converts a WordRun to types.Run
+func (p *WordMLParser) convertRun(run WordRun) types.Run {
+	wordRun := types.Run{}
+
 	if run.Text != nil {
 		wordRun.Text = run.Text.Content
 	}
-	
+
 	if run.Properties != nil {
 		if run.Properties.Bold != nil {
 			wordRun.Bold = run.Properties.Bold.Val != "false"
@@ -294,7 +294,7 @@ func (p *WordMLParser) convertRun(run WordRun) wordprocessingml.Run {
 			}
 		}
 	}
-	
+
 	return wordRun
 }
 

@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"path"
 	"strings"
 )
@@ -16,6 +17,7 @@ type Container struct {
 	reader *zip.ReadCloser
 	writer *zip.Writer
 	buffer *bytes.Buffer
+	parts  map[string]*Part
 }
 
 // Part represents a part within the OPC container
@@ -41,6 +43,7 @@ func Open(filename string) (*Container, error) {
 	
 	return &Container{
 		reader: reader,
+		parts:  make(map[string]*Part),
 	}, nil
 }
 
@@ -60,6 +63,7 @@ func OpenFromReader(r io.Reader) (*Container, error) {
 		reader: &zip.ReadCloser{
 			Reader: *reader,
 		},
+		parts: make(map[string]*Part),
 	}, nil
 }
 
@@ -159,4 +163,47 @@ func parseRelationships(content []byte) ([]Relationship, error) {
 	// TODO: Implement XML parsing for relationships
 	// For now, return empty slice
 	return []Relationship{}, nil
+}
+
+// AddPart adds a part to the container
+func (c *Container) AddPart(name string, content []byte, contentType string) {
+	if c.parts == nil {
+		c.parts = make(map[string]*Part)
+	}
+	
+	c.parts[name] = &Part{
+		Name:        name,
+		Content:     content,
+		ContentType: contentType,
+	}
+}
+
+// SaveToFile saves the container to a file
+func (c *Container) SaveToFile(filename string) error {
+	if c.parts == nil || len(c.parts) == 0 {
+		return fmt.Errorf("no parts to save")
+	}
+
+	file, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer file.Close()
+
+	writer := zip.NewWriter(file)
+	defer writer.Close()
+
+	for name, part := range c.parts {
+		zipFile, err := writer.Create(name)
+		if err != nil {
+			return fmt.Errorf("failed to create zip entry %s: %w", name, err)
+		}
+
+		_, err = zipFile.Write(part.Content)
+		if err != nil {
+			return fmt.Errorf("failed to write part %s: %w", name, err)
+		}
+	}
+
+	return nil
 } 

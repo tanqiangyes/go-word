@@ -3,8 +3,9 @@ package tests
 import (
 	"os"
 	"testing"
-	
+
 	"github.com/go-word/pkg/parser"
+	"github.com/go-word/pkg/types"
 )
 
 func TestWordMLParserParseDocument(t *testing.T) {
