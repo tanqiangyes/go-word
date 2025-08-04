@@ -15,6 +15,7 @@ type Document struct {
 	container *opc.Container
 	mainPart  *MainDocumentPart
 	parts     map[string]*opc.Part
+	documentParts *DocumentParts
 }
 
 // MainDocumentPart represents the main document part
@@ -48,6 +49,7 @@ func Open(filename string) (*Document, error) {
 	doc := &Document{
 		container: container,
 		parts:     make(map[string]*opc.Part),
+		documentParts: NewDocumentParts(),
 	}
 	
 	// Load main document part
@@ -105,6 +107,19 @@ func (d *Document) GetTables() ([]Table, error) {
 	return d.mainPart.Content.Tables, nil
 }
 
+// GetDocumentParts returns the document parts
+func (d *Document) GetDocumentParts() *DocumentParts {
+	return d.documentParts
+}
+
+// GetPartsSummary returns a summary of all document parts
+func (d *Document) GetPartsSummary() string {
+	if d.documentParts == nil {
+		return "文档部分未加载"
+	}
+	return d.documentParts.GetPartsSummary()
+}
+
 // loadMainDocumentPart loads the main document part
 func (d *Document) loadMainDocumentPart() error {
 	// Get the main document part
@@ -124,6 +139,9 @@ func (d *Document) loadMainDocumentPart() error {
 	}
 	
 	d.mainPart.Content = content
+	
+	// 设置主文档部分到文档部分
+	d.documentParts.MainDocumentPart = d.mainPart
 	return nil
 }
 
