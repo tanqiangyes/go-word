@@ -331,8 +331,8 @@ func TestDocumentGetPartsSummaryWithNilDocumentParts(t *testing.T) {
 	}
 	summary := doc.GetPartsSummary()
 	
-	if summary != "文档部分未加载" {
-		t.Errorf("Expected '文档部分未加载', got '%s'", summary)
+	if summary != "Document not loaded" {
+		t.Errorf("Expected 'Document not loaded', got '%s'", summary)
 	}
 }
 
