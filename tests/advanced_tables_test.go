@@ -33,35 +33,22 @@ func TestNewAdvancedTableSystem(t *testing.T) {
 func TestCreateAdvancedTable(t *testing.T) {
 	system := wordprocessingml.NewAdvancedTableSystem()
 	
-	// 创建表格属性
-	properties := wordprocessingml.AdvancedTableProperties{
-		Width:        100,
-		Alignment:    "center",
-		CellSpacing:  0,
-		CellPadding:  5,
-		Borders:      true,
-		Shading:      false,
-		Layout:       "fixed",
-		Caption:      "Test Table",
-		Description:  "A test table for validation",
-	}
-	
 	// 创建表格
-	table, err := system.CreateAdvancedTable(3, 4, properties)
-	if err != nil {
-		t.Fatalf("Failed to create advanced table: %v", err)
+	table := system.CreateAdvancedTable("Test Table", 3, 4)
+	if table == nil {
+		t.Fatal("Expected table to be created")
 	}
 	
 	if table == nil {
 		t.Fatal("Expected table to be created")
 	}
 	
-	if table.Properties.Width != 100 {
-		t.Errorf("Expected table width 100, got %d", table.Properties.Width)
+	if table.Properties.Width != 100.0 {
+		t.Errorf("Expected table width 100.0, got %f", table.Properties.Width)
 	}
 	
-	if table.Properties.Alignment != "center" {
-		t.Errorf("Expected table alignment 'center', got '%s'", table.Properties.Alignment)
+	if table.Properties.Alignment != "left" {
+		t.Errorf("Expected table alignment 'left', got '%s'", table.Properties.Alignment)
 	}
 	
 	if len(table.Rows) != 3 {

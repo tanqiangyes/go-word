@@ -2,8 +2,7 @@ package examples
 
 import (
 	"fmt"
-	"log"
-
+	
 	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
@@ -25,7 +24,7 @@ func demoDocumentParts() {
 	// 添加页眉部分
 	headerPart := wordprocessingml.HeaderPart{
 		ID:   "header1",
-		Type: wordprocessingml.FirstHeader,
+		Type: wordprocessingml.FirstHeaderType,
 		Content: []wordprocessingml.Paragraph{
 			{
 				Text:  "这是页眉内容",
@@ -49,7 +48,7 @@ func demoDocumentParts() {
 	// 添加页脚部分
 	footerPart := wordprocessingml.FooterPart{
 		ID:   "footer1",
-		Type: wordprocessingml.FirstFooter,
+		Type: wordprocessingml.FirstFooterType,
 		Content: []wordprocessingml.Paragraph{
 			{
 				Text:  "第 {PAGE} 页",
@@ -221,36 +220,16 @@ func demoDocumentParts() {
 					Name:        "Normal",
 					BasedOn:     "",
 					Next:        "Normal",
-					Link:        "",
-					SemiHidden:     false,
-					UnhideWhenUsed: true,
-					QFormat:        true,
-					Locked:         false,
-					Properties: wordprocessingml.ParagraphStyleProperties{
-						Alignment: "left",
-						KeepLines: true,
-						KeepNext:  false,
-						PageBreakBefore: false,
-						WidowControl: true,
-					},
+					Hidden:      false,
+					Locked:      false,
 				},
 				{
 					ID:          "Heading1",
 					Name:        "Heading 1",
 					BasedOn:     "Normal",
 					Next:        "Normal",
-					Link:        "",
-					SemiHidden:     false,
-					UnhideWhenUsed: true,
-					QFormat:        true,
-					Locked:         false,
-					Properties: wordprocessingml.ParagraphStyleProperties{
-						Alignment: "left",
-						KeepLines: true,
-						KeepNext:  true,
-						PageBreakBefore: false,
-						WidowControl: true,
-					},
+					Hidden:      false,
+					Locked:      false,
 				},
 			},
 			CharacterStyles: []wordprocessingml.CharacterStyle{
@@ -258,6 +237,7 @@ func demoDocumentParts() {
 					ID:          "DefaultParagraphFont",
 					Name:        "Default Paragraph Font",
 					BasedOn:     "",
+					Next:        "",
 					Link:        "",
 					SemiHidden:     true,
 					UnhideWhenUsed: true,

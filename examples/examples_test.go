@@ -103,7 +103,7 @@ func TestPerformanceDemo(t *testing.T) {
 	t.Log("=== 性能监控示例测试 ===")
 	
 	// Test performance monitoring
-	monitor := utils.NewPerformanceMonitor()
+	monitor := utils.NewPerformanceMonitor(true)
 	if monitor == nil {
 		t.Error("Failed to create performance monitor")
 	}

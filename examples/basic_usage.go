@@ -147,10 +147,19 @@ func DemoBasicUsage() {
 	fmt.Println("📄 示例4: 文档结构信息")
 	container := doc.GetContainer()
 	if container != nil {
-		parts := container.GetParts()
+		parts, err := container.ListParts()
+		if err != nil {
+			log.Printf("❌ 无法获取文档部分: %v", err)
+			return
+		}
 		fmt.Printf("📁 文档包含 %d 个部分\n", len(parts))
-		for uri, part := range parts {
-			fmt.Printf("   %s (%d 字节)\n", uri, len(part.Data))
+		for _, partName := range parts {
+			part, err := container.GetPart(partName)
+			if err != nil {
+				fmt.Printf("   %s (无法读取)\n", partName)
+			} else {
+				fmt.Printf("   %s (%d 字节)\n", partName, len(part.Content))
+			}
 		}
 	}
 	fmt.Println()

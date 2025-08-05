@@ -3,6 +3,7 @@ package tests
 import (
 	"testing"
 	
+	"github.com/tanqiangyes/go-word/pkg/types"
 	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
@@ -23,8 +24,8 @@ func TestAddHeaderPart(t *testing.T) {
 	
 	headerPart := wordprocessingml.HeaderPart{
 		ID:      "header1",
-		Type:    "default",
-		Content: "Test Header Content",
+		Type:    wordprocessingml.HeaderType,
+		Content: []types.Paragraph{},
 	}
 	
 	parts.AddHeaderPart(headerPart)
@@ -43,8 +44,8 @@ func TestAddFooterPart(t *testing.T) {
 	
 	footerPart := wordprocessingml.FooterPart{
 		ID:      "footer1",
-		Type:    "default",
-		Content: "Test Footer Content",
+		Type:    wordprocessingml.FooterType,
+		Content: []types.Paragraph{},
 	}
 	
 	parts.AddFooterPart(footerPart)
@@ -63,9 +64,7 @@ func TestAddCommentPart(t *testing.T) {
 	
 	commentPart := wordprocessingml.CommentPart{
 		ID:      "comment1",
-		Author:  "Test Author",
-		Content: "Test Comment Content",
-		Date:    "2024-01-01",
+		Content: []wordprocessingml.Comment{},
 	}
 	
 	parts.AddCommentPart(commentPart)
@@ -84,8 +83,7 @@ func TestAddFootnotePart(t *testing.T) {
 	
 	footnotePart := wordprocessingml.FootnotePart{
 		ID:      "footnote1",
-		Content: "Test Footnote Content",
-		Type:    "normal",
+		Content: []wordprocessingml.Footnote{},
 	}
 	
 	parts.AddFootnotePart(footnotePart)
@@ -104,8 +102,7 @@ func TestAddEndnotePart(t *testing.T) {
 	
 	endnotePart := wordprocessingml.EndnotePart{
 		ID:      "endnote1",
-		Content: "Test Endnote Content",
-		Type:    "normal",
+		Content: []wordprocessingml.Endnote{},
 	}
 	
 	parts.AddEndnotePart(endnotePart)
@@ -124,8 +121,8 @@ func TestGetHeaderPart(t *testing.T) {
 	
 	headerPart := wordprocessingml.HeaderPart{
 		ID:      "header1",
-		Type:    "default",
-		Content: "Test Header Content",
+		Type:    wordprocessingml.HeaderType,
+		Content: []types.Paragraph{},
 	}
 	
 	parts.AddHeaderPart(headerPart)
@@ -145,8 +142,8 @@ func TestGetFooterPart(t *testing.T) {
 	
 	footerPart := wordprocessingml.FooterPart{
 		ID:      "footer1",
-		Type:    "default",
-		Content: "Test Footer Content",
+		Type:    wordprocessingml.FooterType,
+		Content: []types.Paragraph{},
 	}
 	
 	parts.AddFooterPart(footerPart)
@@ -166,9 +163,7 @@ func TestGetCommentPart(t *testing.T) {
 	
 	commentPart := wordprocessingml.CommentPart{
 		ID:      "comment1",
-		Author:  "Test Author",
-		Content: "Test Comment Content",
-		Date:    "2024-01-01",
+		Content: []wordprocessingml.Comment{},
 	}
 	
 	parts.AddCommentPart(commentPart)
@@ -188,8 +183,7 @@ func TestGetFootnotePart(t *testing.T) {
 	
 	footnotePart := wordprocessingml.FootnotePart{
 		ID:      "footnote1",
-		Content: "Test Footnote Content",
-		Type:    "normal",
+		Content: []wordprocessingml.Footnote{},
 	}
 	
 	parts.AddFootnotePart(footnotePart)
@@ -209,8 +203,7 @@ func TestGetEndnotePart(t *testing.T) {
 	
 	endnotePart := wordprocessingml.EndnotePart{
 		ID:      "endnote1",
-		Content: "Test Endnote Content",
-		Type:    "normal",
+		Content: []wordprocessingml.Endnote{},
 	}
 	
 	parts.AddEndnotePart(endnotePart)
@@ -229,11 +222,11 @@ func TestGetPartsSummary(t *testing.T) {
 	parts := wordprocessingml.NewDocumentParts()
 	
 	// 添加各种部分
-	parts.AddHeaderPart(wordprocessingml.HeaderPart{ID: "header1", Type: "default", Content: "Header"})
-	parts.AddFooterPart(wordprocessingml.FooterPart{ID: "footer1", Type: "default", Content: "Footer"})
-	parts.AddCommentPart(wordprocessingml.CommentPart{ID: "comment1", Author: "Author", Content: "Comment"})
-	parts.AddFootnotePart(wordprocessingml.FootnotePart{ID: "footnote1", Content: "Footnote"})
-	parts.AddEndnotePart(wordprocessingml.EndnotePart{ID: "endnote1", Content: "Endnote"})
+	parts.AddHeaderPart(wordprocessingml.HeaderPart{ID: "header1", Type: wordprocessingml.HeaderType, Content: []types.Paragraph{}})
+	parts.AddFooterPart(wordprocessingml.FooterPart{ID: "footer1", Type: wordprocessingml.FooterType, Content: []types.Paragraph{}})
+	parts.AddCommentPart(wordprocessingml.CommentPart{ID: "comment1", Content: []wordprocessingml.Comment{}})
+	parts.AddFootnotePart(wordprocessingml.FootnotePart{ID: "footnote1", Content: []wordprocessingml.Footnote{}})
+	parts.AddEndnotePart(wordprocessingml.EndnotePart{ID: "endnote1", Content: []wordprocessingml.Endnote{}})
 	
 	summary := parts.GetPartsSummary()
 	

@@ -2,7 +2,6 @@ package examples
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
