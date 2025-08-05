@@ -6,129 +6,148 @@ import (
 )
 
 func TestNewError(t *testing.T) {
+	err := NewError("test error")
+	
+	if err == nil {
+		t.Fatal("Expected error to be created")
+	}
+	
+	if err.Error() != "test error" {
+		t.Errorf("Expected error message 'test error', got '%s'", err.Error())
+	}
+}
+
+func TestWrapError(t *testing.T) {
 	cause := errors.New("underlying error")
-	err := NewError("test", "test error", cause)
+	err := WrapError(cause, "wrapped error")
 	
 	if err == nil {
 		t.Fatal("Expected error to be created")
 	}
-	
-	if err.Type != "test" {
-		t.Errorf("Expected type 'test', got '%s'", err.Type)
-	}
-	
-	if err.Message != "test error" {
-		t.Errorf("Expected message 'test error', got '%s'", err.Message)
-	}
-	
-	if err.Cause != cause {
-		t.Error("Expected cause to match")
-	}
-}
-
-func TestNewParseError(t *testing.T) {
-	cause := errors.New("parse failed")
-	err := NewParseError("failed to parse document", cause)
-	
-	if err == nil {
-		t.Fatal("Expected error to be created")
-	}
-	
-	if err.Type != ErrTypeParse {
-		t.Errorf("Expected type '%s', got '%s'", ErrTypeParse, err.Type)
-	}
-	
-	if err.Message != "failed to parse document" {
-		t.Errorf("Expected message 'failed to parse document', got '%s'", err.Message)
-	}
-}
-
-func TestNewIOError(t *testing.T) {
-	cause := errors.New("file not found")
-	err := NewIOError("failed to read file", cause)
-	
-	if err == nil {
-		t.Fatal("Expected error to be created")
-	}
-	
-	if err.Type != ErrTypeIO {
-		t.Errorf("Expected type '%s', got '%s'", ErrTypeIO, err.Type)
-	}
-	
-	if err.Message != "failed to read file" {
-		t.Errorf("Expected message 'failed to read file', got '%s'", err.Message)
-	}
-}
-
-func TestNewValidationError(t *testing.T) {
-	cause := errors.New("invalid format")
-	err := NewValidationError("document validation failed", cause)
-	
-	if err == nil {
-		t.Fatal("Expected error to be created")
-	}
-	
-	if err.Type != ErrTypeValidation {
-		t.Errorf("Expected type '%s', got '%s'", ErrTypeValidation, err.Type)
-	}
-	
-	if err.Message != "document validation failed" {
-		t.Errorf("Expected message 'document validation failed', got '%s'", err.Message)
-	}
-}
-
-func TestNewNotFoundError(t *testing.T) {
-	cause := errors.New("file not found")
-	err := NewNotFoundError("document not found", cause)
-	
-	if err == nil {
-		t.Fatal("Expected error to be created")
-	}
-	
-	if err.Type != ErrTypeNotFound {
-		t.Errorf("Expected type '%s', got '%s'", ErrTypeNotFound, err.Type)
-	}
-	
-	if err.Message != "document not found" {
-		t.Errorf("Expected message 'document not found', got '%s'", err.Message)
-	}
-}
-
-func TestNewCorruptError(t *testing.T) {
-	cause := errors.New("corrupt data")
-	err := NewCorruptError("document is corrupt", cause)
-	
-	if err == nil {
-		t.Fatal("Expected error to be created")
-	}
-	
-	if err.Type != ErrTypeCorrupt {
-		t.Errorf("Expected type '%s', got '%s'", ErrTypeCorrupt, err.Type)
-	}
-	
-	if err.Message != "document is corrupt" {
-		t.Errorf("Expected message 'document is corrupt', got '%s'", err.Message)
-	}
-}
-
-func TestErrorString(t *testing.T) {
-	cause := errors.New("underlying error")
-	err := NewError("test", "test error", cause)
 	
 	errorStr := err.Error()
 	if errorStr == "" {
 		t.Error("Expected error string to not be empty")
 	}
+}
+
+func TestNewDocumentError(t *testing.T) {
+	cause := errors.New("underlying error")
+	err := NewDocumentError("document error", cause)
 	
-	// 验证错误字符串包含类型和消息
-	if err.Type != "test" {
-		t.Error("Expected error type to be 'test'")
+	if err == nil {
+		t.Fatal("Expected error to be created")
+	}
+	
+	if !IsDocumentError(err) {
+		t.Error("Expected IsDocumentError to return true")
+	}
+	
+	// 测试错误消息
+	errorStr := err.Error()
+	if errorStr == "" {
+		t.Error("Expected error string to not be empty")
+	}
+}
+
+func TestNewParseError(t *testing.T) {
+	cause := errors.New("parse failed")
+	err := NewParseError("failed to parse document", cause, 10, 25)
+	
+	if err == nil {
+		t.Fatal("Expected error to be created")
+	}
+	
+	if !IsParseError(err) {
+		t.Error("Expected IsParseError to return true")
+	}
+	
+	// 测试错误消息
+	errorStr := err.Error()
+	if errorStr == "" {
+		t.Error("Expected error string to not be empty")
+	}
+}
+
+func TestNewIOError(t *testing.T) {
+	cause := errors.New("file not found")
+	err := NewIOError("failed to read file", cause, "/path/to/file", "read")
+	
+	if err == nil {
+		t.Fatal("Expected error to be created")
+	}
+	
+	if !IsIOError(err) {
+		t.Error("Expected IsIOError to return true")
+	}
+	
+	// 测试错误消息
+	errorStr := err.Error()
+	if errorStr == "" {
+		t.Error("Expected error string to not be empty")
+	}
+}
+
+func TestNewValidationError(t *testing.T) {
+	cause := errors.New("invalid format")
+	err := NewValidationError("document validation failed", cause, "content")
+	
+	if err == nil {
+		t.Fatal("Expected error to be created")
+	}
+	
+	if !IsValidationError(err) {
+		t.Error("Expected IsValidationError to return true")
+	}
+	
+	// 测试错误消息
+	errorStr := err.Error()
+	if errorStr == "" {
+		t.Error("Expected error string to not be empty")
+	}
+}
+
+func TestNewFormatError(t *testing.T) {
+	cause := errors.New("format failed")
+	err := NewFormatError("format error", cause, "paragraph")
+	
+	if err == nil {
+		t.Fatal("Expected error to be created")
+	}
+	
+	if !IsFormatError(err) {
+		t.Error("Expected IsFormatError to return true")
+	}
+	
+	// 测试错误消息
+	errorStr := err.Error()
+	if errorStr == "" {
+		t.Error("Expected error string to not be empty")
+	}
+}
+
+func TestDocumentErrorAddDetail(t *testing.T) {
+	err := NewDocumentError("test error", nil)
+	
+	// 添加详情
+	err.AddDetail("filename", "test.docx")
+	err.AddDetail("size", 1024)
+	
+	// 获取详情
+	filename := err.GetDetail("filename")
+	if filename != "test.docx" {
+		t.Errorf("Expected filename 'test.docx', got '%v'", filename)
+	}
+	
+	size := err.GetDetail("size")
+	if size != 1024 {
+		t.Errorf("Expected size 1024, got '%v'", size)
 	}
 }
 
 func TestErrorUnwrap(t *testing.T) {
 	cause := errors.New("underlying error")
-	err := NewError("test", "test error", cause)
+	err := NewDocumentError("test error", cause)
 	
 	unwrapped := err.Unwrap()
 	if unwrapped != cause {
@@ -138,7 +157,7 @@ func TestErrorUnwrap(t *testing.T) {
 
 func TestIsParseError(t *testing.T) {
 	cause := errors.New("parse failed")
-	err := NewParseError("parse error", cause)
+	err := NewParseError("parse error", cause, 1, 1)
 	
 	if !IsParseError(err) {
 		t.Error("Expected IsParseError to return true")
@@ -151,7 +170,7 @@ func TestIsParseError(t *testing.T) {
 
 func TestIsIOError(t *testing.T) {
 	cause := errors.New("file not found")
-	err := NewIOError("io error", cause)
+	err := NewIOError("io error", cause, "/path", "read")
 	
 	if !IsIOError(err) {
 		t.Error("Expected IsIOError to return true")
@@ -164,36 +183,104 @@ func TestIsIOError(t *testing.T) {
 
 func TestIsValidationError(t *testing.T) {
 	cause := errors.New("invalid format")
-	err := NewValidationError("validation error", cause)
+	err := NewValidationError("validation error", cause, "field")
 	
 	if !IsValidationError(err) {
 		t.Error("Expected IsValidationError to return true")
 	}
 }
 
-func TestIsNotFoundError(t *testing.T) {
-	cause := errors.New("not found")
-	err := NewNotFoundError("not found error", cause)
+func TestIsFormatError(t *testing.T) {
+	cause := errors.New("format failed")
+	err := NewFormatError("format error", cause, "element")
 	
-	if !IsNotFoundError(err) {
-		t.Error("Expected IsNotFoundError to return true")
+	if !IsFormatError(err) {
+		t.Error("Expected IsFormatError to return true")
 	}
 }
 
-func TestIsCorruptError(t *testing.T) {
-	cause := errors.New("corrupt")
-	err := NewCorruptError("corrupt error", cause)
+func TestGetErrorType(t *testing.T) {
+	// 测试文档错误
+	docErr := NewDocumentError("test", nil)
+	if GetErrorType(docErr) != "DocumentError" {
+		t.Errorf("Expected error type 'DocumentError', got '%s'", GetErrorType(docErr))
+	}
 	
-	if !IsCorruptError(err) {
-		t.Error("Expected IsCorruptError to return true")
+	// 测试解析错误
+	parseErr := NewParseError("test", nil, 1, 1)
+	if GetErrorType(parseErr) != "ParseError" {
+		t.Errorf("Expected error type 'ParseError', got '%s'", GetErrorType(parseErr))
+	}
+	
+	// 测试未知错误
+	unknownErr := errors.New("unknown error")
+	if GetErrorType(unknownErr) != "UnknownError" {
+		t.Errorf("Expected error type 'UnknownError', got '%s'", GetErrorType(unknownErr))
 	}
 }
 
-func TestErrorWithContext(t *testing.T) {
-	err := NewError("test", "test error", nil)
-	
-	// 验证Context字段存在
-	if err.Context == nil {
-		t.Error("Expected Context to be initialized")
+func TestGetUserFriendlyMessage(t *testing.T) {
+	// 测试文档错误
+	docErr := NewDocumentError("document not found", nil)
+	message := GetUserFriendlyMessage(docErr)
+	if message == "" {
+		t.Error("Expected user-friendly message to not be empty")
 	}
-} 
+	
+	// 测试解析错误
+	parseErr := NewParseError("invalid XML", nil, 10, 25)
+	message = GetUserFriendlyMessage(parseErr)
+	if message == "" {
+		t.Error("Expected user-friendly message to not be empty")
+	}
+	
+	// 测试I/O错误
+	ioErr := NewIOError("permission denied", nil, "/path", "read")
+	message = GetUserFriendlyMessage(ioErr)
+	if message == "" {
+		t.Error("Expected user-friendly message to not be empty")
+	}
+}
+
+func TestAddErrorContext(t *testing.T) {
+	err := NewDocumentError("test error", nil)
+	
+	context := map[string]interface{}{
+		"filename": "test.docx",
+		"size":     1024,
+	}
+	
+	contextErr := AddErrorContext(err, context)
+	if contextErr == nil {
+		t.Error("Expected error with context to be created")
+	}
+	
+	// 验证上下文被添加
+	if docErr, ok := contextErr.(*DocumentError); ok {
+		filename := docErr.GetDetail("filename")
+		if filename != "test.docx" {
+			t.Errorf("Expected filename 'test.docx', got '%v'", filename)
+		}
+	}
+}
+
+func TestGetErrorContext(t *testing.T) {
+	err := NewDocumentError("test error", nil)
+	
+	// 添加一些详情
+	err.AddDetail("filename", "test.docx")
+	err.AddDetail("size", 1024)
+	
+	context := GetErrorContext(err)
+	if context == nil {
+		t.Error("Expected context to not be nil")
+	}
+	
+	if context["filename"] != "test.docx" {
+		t.Errorf("Expected filename 'test.docx', got '%v'", context["filename"])
+	}
+	
+	if context["size"] != 1024 {
+		t.Errorf("Expected size 1024, got '%v'", context["size"])
+	}
+}

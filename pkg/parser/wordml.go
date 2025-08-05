@@ -281,3 +281,26 @@ func (p *WordMLParser) extractCellText(cell WordTableCell) string {
 	
 	return text.String()
 } 
+
+// ParseWordML parses WordprocessingML XML data and returns document content
+// This is the main entry point for parsing Word documents
+func ParseWordML(data []byte) (*types.DocumentContent, error) {
+	parser := &WordMLParser{}
+	
+	// Parse the Word document
+	doc, err := parser.ParseWordDocument(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse Word document: %w", err)
+	}
+	
+	// Extract content
+	text := parser.ExtractText(doc)
+	paragraphs := parser.ExtractParagraphs(doc)
+	tables := parser.ExtractTables(doc)
+	
+	return &types.DocumentContent{
+		Text:       text,
+		Paragraphs: paragraphs,
+		Tables:     tables,
+	}, nil
+} 
