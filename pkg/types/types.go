@@ -46,32 +46,32 @@ type DocumentContent struct {
 
 // 通用Word格式属性类型
 type Bold struct {
-	XMLName xml.Name `xml:"w:b"`
-	Val     string   `xml:"w:val,attr,omitempty"`
+	XMLName xml.Name `xml:"b"`
+	Val     string   `xml:"val,attr,omitempty"`
 }
 
 type Italic struct {
-	XMLName xml.Name `xml:"w:i"`
-	Val     string   `xml:"w:val,attr,omitempty"`
+	XMLName xml.Name `xml:"i"`
+	Val     string   `xml:"val,attr,omitempty"`
 }
 
 type Size struct {
-	XMLName xml.Name `xml:"w:sz"`
-	Val     string   `xml:"w:val,attr"`
+	XMLName xml.Name `xml:"sz"`
+	Val     string   `xml:"val,attr"`
 }
 
 type Font struct {
-	XMLName xml.Name `xml:"w:rFonts"`
-	Ascii   string   `xml:"w:ascii,attr,omitempty"`
-	HAnsi   string   `xml:"w:hAnsi,attr,omitempty"`
+	XMLName xml.Name `xml:"rFonts"`
+	Ascii   string   `xml:"ascii,attr,omitempty"`
+	HAnsi   string   `xml:"hAnsi,attr,omitempty"`
 }
 
 type Underline struct {
-	XMLName xml.Name `xml:"w:u"`
-	Val     string   `xml:"w:val,attr,omitempty"`
+	XMLName xml.Name `xml:"u"`
+	Val     string   `xml:"val,attr,omitempty"`
 }
 
 type Color struct {
-	XMLName xml.Name `xml:"w:color"`
-	Val     string   `xml:"w:val,attr,omitempty"`
+	XMLName xml.Name `xml:"color"`
+	Val     string   `xml:"val,attr,omitempty"`
 } 

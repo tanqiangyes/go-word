@@ -1,11 +1,37 @@
 package tests
 
 import (
+	"encoding/xml"
 	"os"
 	"testing"
 
 	"github.com/tanqiangyes/go-word/pkg/parser"
 )
+
+// 简单的XML结构用于测试
+type SimpleDocument struct {
+	XMLName xml.Name `xml:"document"`
+	Body    struct {
+		XMLName xml.Name `xml:"body"`
+		Content string   `xml:",chardata"`
+	} `xml:"body"`
+}
+
+func TestXMLParsing(t *testing.T) {
+	// 读取测试文档
+	content, err := os.ReadFile("test_document.xml")
+	if err != nil {
+		t.Fatalf("Failed to read test document: %v", err)
+	}
+	
+	// 尝试解析为简单结构
+	var doc SimpleDocument
+	if err := xml.Unmarshal(content, &doc); err != nil {
+		t.Fatalf("Failed to parse XML: %v", err)
+	}
+	
+	t.Logf("Successfully parsed XML document")
+}
 
 func TestWordMLParserParseDocument(t *testing.T) {
 	// 读取测试文档

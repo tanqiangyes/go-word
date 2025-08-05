@@ -638,6 +638,20 @@ func (af *AdvancedFormatter) SetCellShading(table *ComplexTable, cellRef string,
 
 // parseCellReference parses a cell reference (e.g., "A1", "B2")
 func parseCellReference(ref string) (col int, row int, err error) {
+	if ref == "" {
+		return 0, 0, fmt.Errorf("invalid cell reference: empty string")
+	}
+	
+	// 检查格式：必须以字母开头，后面跟数字
+	if len(ref) < 2 {
+		return 0, 0, fmt.Errorf("invalid cell reference: %s", ref)
+	}
+	
+	// 检查第一个字符是否为字母
+	if ref[0] < 'A' || ref[0] > 'Z' {
+		return 0, 0, fmt.Errorf("invalid cell reference: %s", ref)
+	}
+	
 	// 分离列和行
 	colStr := ""
 	rowStr := ""
@@ -647,6 +661,8 @@ func parseCellReference(ref string) (col int, row int, err error) {
 			colStr += string(char)
 		} else if char >= '0' && char <= '9' {
 			rowStr += string(char)
+		} else {
+			return 0, 0, fmt.Errorf("invalid cell reference: %s", ref)
 		}
 	}
 
@@ -662,6 +678,10 @@ func parseCellReference(ref string) (col int, row int, err error) {
 
 	// 转换行为数字
 	fmt.Sscanf(rowStr, "%d", &row)
+	
+	if row <= 0 {
+		return 0, 0, fmt.Errorf("invalid cell reference: %s", ref)
+	}
 
 	return col, row, nil
 } 

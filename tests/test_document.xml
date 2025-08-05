@@ -1,42 +1,58 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:body>
-    <w:p>
-      <w:r>
-        <w:rPr>
-          <w:b w:val="true"/>
-          <w:sz w:val="24"/>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-        </w:rPr>
-        <w:t>这是一个测试文档</w:t>
-      </w:r>
-    </w:p>
-    <w:p>
-      <w:r>
-        <w:rPr>
-          <w:i w:val="true"/>
-          <w:sz w:val="12"/>
-        </w:rPr>
-        <w:t>这是第二段，包含斜体文本。</w:t>
-      </w:r>
-    </w:p>
-    <w:tbl>
-      <w:tr>
-        <w:tc>
-          <w:p>
-            <w:r>
-              <w:t>表格单元格1</w:t>
-            </w:r>
-          </w:p>
-        </w:tc>
-        <w:tc>
-          <w:p>
-            <w:r>
-              <w:t>表格单元格2</w:t>
-            </w:r>
-          </w:p>
-        </w:tc>
-      </w:tr>
-    </w:tbl>
-  </w:body>
-</w:document> 
+<document xmlns="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <body>
+    <p>
+      <r>
+        <rPr>
+          <b val="true"/>
+          <sz val="24"/>
+          <rFonts ascii="Arial" hAnsi="Arial"/>
+        </rPr>
+        <t>这是一个测试文档</t>
+      </r>
+    </p>
+    <p>
+      <r>
+        <rPr>
+          <i val="true"/>
+          <sz val="12"/>
+        </rPr>
+        <t>这是第二段，包含斜体文本。</t>
+      </r>
+    </p>
+    <tbl>
+      <tr>
+        <tc>
+          <p>
+            <r>
+              <t>表头1</t>
+            </r>
+          </p>
+        </tc>
+        <tc>
+          <p>
+            <r>
+              <t>表头2</t>
+            </r>
+          </p>
+        </tc>
+      </tr>
+      <tr>
+        <tc>
+          <p>
+            <r>
+              <t>数据1</t>
+            </r>
+          </p>
+        </tc>
+        <tc>
+          <p>
+            <r>
+              <t>数据2</t>
+            </r>
+          </p>
+        </tc>
+      </tr>
+    </tbl>
+  </body>
+</document> 

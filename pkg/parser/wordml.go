@@ -15,116 +15,116 @@ type WordMLParser struct{}
 
 // WordDocument represents the complete Word document structure
 type WordDocument struct {
-	XMLName xml.Name `xml:"w:document"`
-	Body    WordBody `xml:"w:body"`
+	XMLName xml.Name `xml:"document"`
+	Body    WordBody `xml:"body"`
 }
 
 // WordBody represents the document body
 type WordBody struct {
-	XMLName    xml.Name        `xml:"w:body"`
-	Paragraphs []WordParagraph `xml:"w:p"`
-	Tables     []WordTable     `xml:"w:tbl"`
+	XMLName    xml.Name        `xml:"body"`
+	Paragraphs []WordParagraph `xml:"p"`
+	Tables     []WordTable     `xml:"tbl"`
 }
 
 // WordParagraph represents a paragraph in Word
 type WordParagraph struct {
-	XMLName    xml.Name        `xml:"w:p"`
-	Properties *ParagraphProps `xml:"w:pPr,omitempty"`
-	Runs       []WordRun      `xml:"w:r"`
+	XMLName    xml.Name        `xml:"p"`
+	Properties *ParagraphProps `xml:"pPr,omitempty"`
+	Runs       []WordRun      `xml:"r"`
 	Text       string         `xml:",chardata"`
 }
 
 // ParagraphProps represents paragraph properties
 type ParagraphProps struct {
-	XMLName xml.Name `xml:"w:pPr"`
-	Style   *Style   `xml:"w:pStyle,omitempty"`
+	XMLName xml.Name `xml:"pPr"`
+	Style   *Style   `xml:"pStyle,omitempty"`
 }
 
 // Style represents a style reference
 type Style struct {
-	XMLName xml.Name `xml:"w:pStyle"`
-	Val     string   `xml:"w:val,attr"`
+	XMLName xml.Name `xml:"pStyle"`
+	Val     string   `xml:"val,attr"`
 }
 
 // WordRun represents a text run
 type WordRun struct {
-	XMLName    xml.Name     `xml:"w:r"`
-	Properties *RunProps    `xml:"w:rPr,omitempty"`
-	Text       *WordText    `xml:"w:t,omitempty"`
-	Tab        *Tab         `xml:"w:tab,omitempty"`
-	Break      *Break       `xml:"w:br,omitempty"`
+	XMLName    xml.Name     `xml:"r"`
+	Properties *RunProps    `xml:"rPr,omitempty"`
+	Text       *WordText    `xml:"t,omitempty"`
+	Tab        *Tab         `xml:"tab,omitempty"`
+	Break      *Break       `xml:"br,omitempty"`
 }
 
 // RunProps represents run properties
 type RunProps struct {
-	XMLName    xml.Name `xml:"w:rPr"`
-	Bold       *types.Bold    `xml:"w:b,omitempty"`
-	Italic     *types.Italic  `xml:"w:i,omitempty"`
-	Underline  *types.Underline `xml:"w:u,omitempty"`
-	Size       *types.Size    `xml:"w:sz,omitempty"`
-	Font       *types.Font    `xml:"w:rFonts,omitempty"`
-	Color      *types.Color   `xml:"w:color,omitempty"`
+	XMLName    xml.Name `xml:"rPr"`
+	Bold       *types.Bold    `xml:"b,omitempty"`
+	Italic     *types.Italic  `xml:"i,omitempty"`
+	Underline  *types.Underline `xml:"u,omitempty"`
+	Size       *types.Size    `xml:"sz,omitempty"`
+	Font       *types.Font    `xml:"rFonts,omitempty"`
+	Color      *types.Color   `xml:"color,omitempty"`
 }
 
 // WordText represents text content
 type WordText struct {
-	XMLName xml.Name `xml:"w:t"`
+	XMLName xml.Name `xml:"t"`
 	Content string   `xml:",chardata"`
-	Space   string   `xml:"xml:space,attr,omitempty"`
+	Space   string   `xml:"space,attr,omitempty"`
 }
 
 // Tab represents a tab character
 type Tab struct {
-	XMLName xml.Name `xml:"w:tab"`
+	XMLName xml.Name `xml:"tab"`
 }
 
 // Break represents a line break
 type Break struct {
-	XMLName xml.Name `xml:"w:br"`
-	Type    string   `xml:"w:type,attr,omitempty"`
+	XMLName xml.Name `xml:"br"`
+	Type    string   `xml:"type,attr,omitempty"`
 }
 
 // Color represents text color
 type Color struct {
-	XMLName xml.Name `xml:"w:color"`
-	Val     string   `xml:"w:val,attr,omitempty"`
+	XMLName xml.Name `xml:"color"`
+	Val     string   `xml:"val,attr,omitempty"`
 }
 
 // WordTable represents a table
 type WordTable struct {
-	XMLName    xml.Name        `xml:"w:tbl"`
-	Properties *TableProps     `xml:"w:tblPr,omitempty"`
-	Rows       []WordTableRow  `xml:"w:tr"`
+	XMLName    xml.Name        `xml:"tbl"`
+	Properties *TableProps     `xml:"tblPr,omitempty"`
+	Rows       []WordTableRow  `xml:"tr"`
 }
 
 // TableProps represents table properties
 type TableProps struct {
-	XMLName xml.Name `xml:"w:tblPr"`
-	Style   *Style   `xml:"w:tblStyle,omitempty"`
+	XMLName xml.Name `xml:"tblPr"`
+	Style   *Style   `xml:"tblStyle,omitempty"`
 }
 
 // WordTableRow represents a table row
 type WordTableRow struct {
-	XMLName    xml.Name         `xml:"w:tr"`
-	Properties *RowProps        `xml:"w:trPr,omitempty"`
-	Cells      []WordTableCell `xml:"w:tc"`
+	XMLName    xml.Name         `xml:"tr"`
+	Properties *RowProps        `xml:"trPr,omitempty"`
+	Cells      []WordTableCell `xml:"tc"`
 }
 
 // RowProps represents row properties
 type RowProps struct {
-	XMLName xml.Name `xml:"w:trPr"`
+	XMLName xml.Name `xml:"trPr"`
 }
 
 // WordTableCell represents a table cell
 type WordTableCell struct {
-	XMLName    xml.Name        `xml:"w:tc"`
-	Properties *CellProps      `xml:"w:tcPr,omitempty"`
-	Content    []interface{}   `xml:",any"`
+	XMLName    xml.Name        `xml:"tc"`
+	Properties *CellProps      `xml:"tcPr,omitempty"`
+	Paragraphs []WordParagraph `xml:"p"`
 }
 
 // CellProps represents cell properties
 type CellProps struct {
-	XMLName xml.Name `xml:"w:tcPr"`
+	XMLName xml.Name `xml:"tcPr"`
 }
 
 // ParseWordDocument parses a Word document XML
@@ -274,9 +274,10 @@ func (p *WordMLParser) convertRun(run WordRun) types.Run {
 func (p *WordMLParser) extractCellText(cell WordTableCell) string {
 	var text strings.Builder
 	
-	// This is a simplified implementation
-	// In a full implementation, we would need to handle various XML elements
-	// that can appear in table cells (paragraphs, runs, etc.)
+	// 遍历单元格内容，查找段落和文本
+	for _, content := range cell.Paragraphs {
+		text.WriteString(p.extractParagraphText(content))
+	}
 	
 	return text.String()
 } 
