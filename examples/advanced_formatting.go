@@ -9,7 +9,7 @@ import (
 )
 
 func DemoAdvancedFormatting() {
-	fmt.Println("=== Go Word 高级格式化示例 ===\n")
+	fmt.Println("=== Go Word 高级格式化示例 ===")
 
 	// 示例1：复杂表格支持
 	demoComplexTable()

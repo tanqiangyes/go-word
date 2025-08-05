@@ -7,7 +7,7 @@ import (
 )
 
 func DemoAdvancedText() {
-	fmt.Println("=== Go Word 高级文本功能演示 ===\n")
+	fmt.Println("=== Go Word 高级文本功能演示 ===")
 
 	// 演示高级文本功能
 	demoAdvancedText()

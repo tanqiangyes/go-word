@@ -7,7 +7,7 @@ import (
 )
 
 func DemoAdvancedTables() {
-	fmt.Println("=== Go Word 高级表格功能演示 ===\n")
+	fmt.Println("=== Go Word 高级表格功能演示 ===")
 
 	// 演示高级表格功能
 	demoAdvancedTables()

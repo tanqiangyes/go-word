@@ -7,7 +7,7 @@ import (
 )
 
 func DemoDocumentParts() {
-	fmt.Println("=== Go Word 文档部分支持演示 ===\n")
+	fmt.Println("=== Go Word 文档部分支持演示 ===")
 
 	// 演示文档部分功能
 	demoDocumentParts()

@@ -9,7 +9,7 @@ import (
 )
 
 func DemoAdvancedFeatures() {
-	fmt.Println("=== Go Word 高级功能示例 ===\n")
+	fmt.Println("=== Go Word 高级功能示例 ===")
 
 	// 示例1：文档结构重组
 	demoDocumentStructure()

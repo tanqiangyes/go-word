@@ -8,7 +8,7 @@ import (
 )
 
 func DemoAdvancedStyles() {
-	fmt.Println("=== Go Word 高级样式系统演示 ===\n")
+	fmt.Println("=== Go Word 高级样式系统演示 ===")
 
 	// 演示高级样式系统功能
 	demoAdvancedStyleSystem()
