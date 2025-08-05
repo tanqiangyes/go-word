@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 
 // 性能演示示例
 // 展示如何使用性能监控和优化工具
-func main() {
+func DemoPerformance() {
 	fmt.Println("=== Go OpenXML SDK 性能演示 ===")
 	fmt.Println("本示例演示如何使用性能监控和优化工具")
 	fmt.Println()

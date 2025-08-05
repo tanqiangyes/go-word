@@ -1,25 +1,21 @@
-package main
+package examples
 
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
 // 基本使用示例
 // 演示如何打开Word文档并提取其内容
-func main() {
+func DemoBasicUsage() {
 	fmt.Println("=== Go OpenXML SDK 基本使用示例 ===")
 	fmt.Println("本示例演示如何打开Word文档并提取文本、段落和表格信息")
 	fmt.Println()
 
-	// 检查命令行参数
+	// 使用示例文档
 	filename := "example.docx"
-	if len(os.Args) > 1 {
-		filename = os.Args[1]
-	}
 
 	fmt.Printf("正在打开文档: %s\n", filename)
 
@@ -34,8 +30,7 @@ func main() {
 		fmt.Println("   - 请确保文件没有被其他程序占用")
 		fmt.Println()
 		fmt.Println("📝 使用方法:")
-		fmt.Printf("   go run examples/basic_usage.go [文档路径]\n")
-		fmt.Printf("   例如: go run examples/basic_usage.go my_document.docx\n")
+		fmt.Printf("   调用 DemoBasicUsage() 函数\n")
 		return
 	}
 	defer doc.Close() // 确保文档资源被释放

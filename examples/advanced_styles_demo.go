@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
-func main() {
+func DemoAdvancedStyles() {
 	fmt.Println("=== Go Word 高级样式系统演示 ===\n")
 
 	// 演示高级样式系统功能

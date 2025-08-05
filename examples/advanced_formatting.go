@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/tanqiangyes/go-word/pkg/writer"
 )
 
-func main() {
+func DemoAdvancedFormatting() {
 	fmt.Println("=== Go Word 高级格式化示例 ===\n")
 
 	// 示例1：复杂表格支持

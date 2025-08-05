@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
-func main() {
+func DemoAdvancedTables() {
 	fmt.Println("=== Go Word 高级表格功能演示 ===\n")
 
 	// 演示高级表格功能

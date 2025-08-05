@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
-func main() {
+func DemoMain() {
 	// 测试基本类型创建
 	paragraph := types.Paragraph{
 		Text:  "这是一个测试段落",

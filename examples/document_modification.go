@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
-func main() {
+func DemoDocumentModification() {
 	fmt.Println("=== Go OpenXML SDK 文档修改示例 ===")
 
 	// 示例1：创建新文档

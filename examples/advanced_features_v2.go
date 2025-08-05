@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/tanqiangyes/go-word/pkg/writer"
 )
 
-func main() {
+func DemoAdvancedFeaturesV2() {
 	fmt.Println("=== Go Word 高级功能示例 V2 ===\n")
 
 	// 示例1：批量文档处理

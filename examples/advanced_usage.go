@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
-func main() {
+func DemoAdvancedUsage() {
 	fmt.Println("=== Go OpenXML SDK 高级使用示例 ===")
 	
 	// 示例1：基本文档操作

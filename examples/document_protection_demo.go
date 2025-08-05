@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
-func main() {
+func DemoDocumentProtection() {
 	fmt.Println("=== Go Word 文档保护功能演示 ===\n")
 
 	// 演示文档保护功能
