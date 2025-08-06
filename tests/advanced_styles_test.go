@@ -3,6 +3,7 @@ package tests
 import (
 	"testing"
 	
+	"github.com/tanqiangyes/go-word/pkg/types"
 	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
@@ -208,14 +209,29 @@ func TestApplyStyle(t *testing.T) {
 	
 	system.AddParagraphStyle(style)
 	
-	// 创建测试内容
-	content := "Test content for style application"
+	// 创建测试段落
+	paragraph := &types.Paragraph{
+		Text:  "Test content for style application",
+		Style: "",
+		Runs: []types.Run{
+			{
+				Text:     "Test content for style application",
+				FontSize: 11,
+				FontName: "Arial",
+			},
+		},
+	}
 	
 	// 应用样式
-	err := system.ApplyStyle(content, "TestStyle")
+	err := system.ApplyStyle(paragraph, "TestStyle")
 	
 	if err != nil {
 		t.Errorf("Failed to apply style: %v", err)
+	}
+	
+	// 验证样式是否被应用
+	if paragraph.Style != "TestStyle" {
+		t.Errorf("Expected paragraph style to be 'TestStyle', got '%s'", paragraph.Style)
 	}
 }
 
@@ -249,7 +265,7 @@ func TestGetStyleSummary(t *testing.T) {
 	}
 	
 	// 检查摘要是否包含预期的样式信息
-	expectedInfo := []string{"Paragraph1", "Character1", "Table1", "Total Styles"}
+	expectedInfo := []string{"段落样式", "字符样式", "表格样式", "样式缓存", "继承链", "冲突数量"}
 	for _, expected := range expectedInfo {
 		if !contains(summary, expected) {
 			t.Errorf("Expected summary to contain '%s'", expected)

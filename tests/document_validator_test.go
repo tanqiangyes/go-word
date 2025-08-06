@@ -22,7 +22,7 @@ func TestNewDocumentValidator(t *testing.T) {
 		t.Error("Expected ValidationResults to be initialized")
 	}
 	
-	if validator.AutoFix == false {
+	if validator.AutoFix != false {
 		t.Error("Expected AutoFix to be false by default")
 	}
 }
@@ -30,6 +30,9 @@ func TestNewDocumentValidator(t *testing.T) {
 func TestAddRule(t *testing.T) {
 	doc := &wordprocessingml.Document{}
 	validator := wordprocessingml.NewDocumentValidator(doc)
+	
+	// 记录初始规则数量
+	initialRuleCount := len(validator.ValidationRules)
 	
 	// 添加验证规则
 	rule := wordprocessingml.ValidationRule{
@@ -39,18 +42,26 @@ func TestAddRule(t *testing.T) {
 		Severity:    wordprocessingml.WarningSeverity,
 	}
 	
-	validator.ValidationRules = append(validator.ValidationRules, rule)
+	validator.AddRule(rule)
 	
-	if len(validator.ValidationRules) != 1 {
-		t.Errorf("Expected 1 rule, got %d", len(validator.ValidationRules))
+	if len(validator.ValidationRules) != initialRuleCount+1 {
+		t.Errorf("Expected %d rules, got %d", initialRuleCount+1, len(validator.ValidationRules))
 	}
 	
-	if validator.ValidationRules[0].ID != "test_rule" {
-		t.Errorf("Expected rule ID 'test_rule', got '%s'", validator.ValidationRules[0].ID)
+	// 查找添加的规则
+	found := false
+	for _, r := range validator.ValidationRules {
+		if r.ID == "test_rule" {
+			found = true
+			if r.Severity != wordprocessingml.WarningSeverity {
+				t.Errorf("Expected rule severity WarningSeverity, got %v", r.Severity)
+			}
+			break
+		}
 	}
 	
-	if validator.ValidationRules[0].Severity != wordprocessingml.WarningSeverity {
-		t.Errorf("Expected rule severity WarningSeverity, got %v", validator.ValidationRules[0].Severity)
+	if !found {
+		t.Error("Expected to find added validation rule")
 	}
 }
 

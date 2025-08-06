@@ -800,6 +800,7 @@ func (dp *DocumentProtection) DisableProtection(password string) error {
 	
 	dp.Settings.Enabled = false
 	dp.Settings.ProtectionType = NoProtection
+	dp.Settings.Enforcement = NoEnforcement
 	dp.Settings.Password = ""
 	dp.Settings.Hash = ""
 	

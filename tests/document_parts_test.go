@@ -235,7 +235,7 @@ func TestGetPartsSummary(t *testing.T) {
 	}
 	
 	// 检查摘要是否包含预期的部分信息
-	expectedParts := []string{"MainDocumentPart", "HeaderParts: 1", "FooterParts: 1", "CommentParts: 1", "FootnoteParts: 1", "EndnoteParts: 1"}
+	expectedParts := []string{"文档部分摘要", "页眉部分: 1", "页脚部分: 1", "注释部分: 1", "脚注部分: 1", "尾注部分: 1"}
 	for _, expected := range expectedParts {
 		if !contains(summary, expected) {
 			t.Errorf("Expected summary to contain '%s'", expected)

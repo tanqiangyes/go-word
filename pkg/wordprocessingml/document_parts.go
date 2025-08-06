@@ -839,6 +839,15 @@ type Relationship struct {
 // NewDocumentParts creates new document parts
 func NewDocumentParts() *DocumentParts {
 	return &DocumentParts{
+		MainDocumentPart: &MainDocumentPart{
+			ID: "main",
+			Content: &types.DocumentContent{
+				Paragraphs: make([]types.Paragraph, 0),
+				Tables:     make([]types.Table, 0),
+			},
+			DocumentProperties: make(map[string]interface{}),
+			Relationships:      make([]Relationship, 0),
+		},
 		HeaderParts:    make([]HeaderPart, 0),
 		FooterParts:    make([]FooterPart, 0),
 		CommentParts:   make([]CommentPart, 0),

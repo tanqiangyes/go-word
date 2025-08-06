@@ -585,17 +585,14 @@ func (ass *AdvancedStyleSystem) checkStyleConflict(id string, styleType StyleTyp
 		return nil
 	}
 	
-	if existingStyle.Type != styleType {
-		return &StyleConflict{
-			ID:          fmt.Sprintf("conflict_%s", id),
-			StyleName:   id,
-			ConflictType: NamingConflict,
-			OriginalStyle: existingStyle,
-			Resolved:    false,
-		}
+	// 检查同名冲突
+	return &StyleConflict{
+		ID:          fmt.Sprintf("conflict_%s", id),
+		StyleName:   id,
+		ConflictType: NamingConflict,
+		OriginalStyle: existingStyle,
+		Resolved:    false,
 	}
-	
-	return nil
 }
 
 // resolveStyleConflict resolves a style conflict
