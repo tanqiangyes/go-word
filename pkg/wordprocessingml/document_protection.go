@@ -755,6 +755,7 @@ func (dp *DocumentProtection) EnableProtection(protectionType ProtectionType, pa
 	
 	dp.Settings.Enabled = true
 	dp.Settings.ProtectionType = protectionType
+	dp.Settings.Enforcement = SoftEnforcement // 设置强制级别为软强制
 	
 	if password != "" {
 		dp.Settings.Password = password
@@ -827,16 +828,15 @@ func (dp *DocumentProtection) DisableProtection(password string) error {
 
 // CheckPermission checks if a user has permission for an action
 func (dp *DocumentProtection) CheckPermission(userID, action string) bool {
-	if !dp.Settings.Enabled {
-		return true
-	}
+	// 如果保护没有启用，仍然检查用户权限
+	// 如果没有找到用户权限，返回 false
 	
 	// 检查用户权限
 	if userPerm := dp.Permissions.UserPermissions[userID]; userPerm != nil {
 		switch action {
 		case "read":
 			return userPerm.CanRead
-		case "edit":
+		case "edit", "write":
 			return userPerm.CanEdit
 		case "delete":
 			return userPerm.CanDelete
@@ -846,6 +846,11 @@ func (dp *DocumentProtection) CheckPermission(userID, action string) bool {
 			return userPerm.CanPrint
 		case "share":
 			return userPerm.CanShare
+		case "comment":
+			return userPerm.CanFormat // 评论权限映射到格式权限
+		default:
+			// 对于不存在的权限类型，返回 false
+			return false
 		}
 	}
 	
@@ -871,26 +876,7 @@ func (dp *DocumentProtection) CheckPermission(userID, action string) bool {
 		}
 	}
 	
-	// 检查角色权限
-	for _, rolePerm := range dp.Permissions.RolePermissions {
-		// 这里需要实现用户角色映射逻辑
-		// 简化实现，假设所有用户都有默认角色
-		switch action {
-		case "read":
-			return rolePerm.CanRead
-		case "edit":
-			return rolePerm.CanEdit
-		case "delete":
-			return rolePerm.CanDelete
-		case "format":
-			return rolePerm.CanFormat
-		case "print":
-			return rolePerm.CanPrint
-		case "share":
-			return rolePerm.CanShare
-		}
-	}
-	
+	// 如果没有找到用户权限或组权限，返回 false
 	return false
 }
 
@@ -905,9 +891,9 @@ func (dp *DocumentProtection) AddUserPermission(userID, userName, email string, 
 		UserName:  userName,
 		Email:     email,
 		CanRead:   permissions["read"],
-		CanEdit:   permissions["edit"],
+		CanEdit:   permissions["edit"] || permissions["write"], // 支持 write 作为 edit 的别名
 		CanDelete: permissions["delete"],
-		CanFormat: permissions["format"],
+		CanFormat: permissions["format"] || permissions["comment"], // 支持 comment 作为 format 的别名
 		CanPrint:  permissions["print"],
 		CanShare:  permissions["share"],
 		ValidFrom: time.Now(),

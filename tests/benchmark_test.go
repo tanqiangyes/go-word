@@ -15,7 +15,7 @@ var testContent []byte
 func init() {
 	// 读取测试文档用于基准测试
 	var err error
-	testContent, err = os.ReadFile("tests/test_document.xml")
+	testContent, err = os.ReadFile("test_document.xml")
 	if err != nil {
 		panic("Failed to read test document for benchmarks")
 	}

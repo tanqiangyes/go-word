@@ -1,4 +1,4 @@
-package examples
+package main
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 func DemoDocumentProtection() {
-	fmt.Println("=== Go Word 文档保护功能演示 ===\n")
+	fmt.Println("=== Go Word 文档保护功能演示 ===")
 
 	// 演示文档保护功能
 	demoDocumentProtection()
