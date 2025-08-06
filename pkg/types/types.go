@@ -5,9 +5,11 @@ import "encoding/xml"
 
 // Paragraph represents a paragraph in the document
 type Paragraph struct {
-	Text   string
-	Style  string
-	Runs   []Run
+	Text       string
+	Style      string
+	Runs       []Run
+	HasComment bool
+	CommentID  string
 }
 
 // Run represents a text run with specific formatting

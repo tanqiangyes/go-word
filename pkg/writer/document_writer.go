@@ -14,13 +14,16 @@ import (
 
 // DocumentWriter provides functionality to modify and create Word documents
 type DocumentWriter struct {
-	container *opc.Container
-	document  *wordprocessingml.Document
+	container      *opc.Container
+	document       *wordprocessingml.Document
+	commentManager *wordprocessingml.CommentManager // 使用新的批注管理器
 }
 
 // NewDocumentWriter creates a new document writer
 func NewDocumentWriter() *DocumentWriter {
-	return &DocumentWriter{}
+	return &DocumentWriter{
+		commentManager: wordprocessingml.NewCommentManager(),
+	}
 }
 
 // OpenForModification opens an existing document for modification
@@ -213,6 +216,44 @@ func (w *DocumentWriter) SetRunFormatting(paragraphIndex, runIndex int, formatti
 	return nil
 }
 
+// AddComment adds a comment to the document
+// Based on Open-XML-SDK AddComment method
+func (w *DocumentWriter) AddComment(author, text, paragraphText string) error {
+	if w.document == nil {
+		return fmt.Errorf("document not initialized")
+	}
+
+	// 使用新的批注管理器添加批注
+	comment, err := w.commentManager.AddComment(author, text, "para_1", "run_1", 0, len(paragraphText))
+	if err != nil {
+		return fmt.Errorf("failed to add comment: %w", err)
+	}
+	
+	// 在文档中添加批注引用
+	return w.addCommentReferenceToDocument(comment.ID, paragraphText)
+}
+
+// addCommentReferenceToDocument 在文档中添加批注引用
+func (w *DocumentWriter) addCommentReferenceToDocument(commentID, paragraphText string) error {
+	if w.document == nil || w.document.GetMainPart() == nil {
+		return fmt.Errorf("document not initialized")
+	}
+
+	mainPart := w.document.GetMainPart()
+	
+	// 查找匹配的段落并添加批注引用
+	for i, paragraph := range mainPart.Content.Paragraphs {
+		if strings.Contains(paragraph.Text, paragraphText) {
+			// 在段落中添加批注范围标记和引用
+			mainPart.Content.Paragraphs[i].HasComment = true
+			mainPart.Content.Paragraphs[i].CommentID = commentID
+			return nil
+		}
+	}
+	
+	return fmt.Errorf("未找到匹配的段落文本: %s", paragraphText)
+}
+
 // Save saves the document to a file
 func (w *DocumentWriter) Save(filename string) error {
 	if w.document == nil {
@@ -234,6 +275,16 @@ func (w *DocumentWriter) Save(filename string) error {
 		xmlContent,
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
 	)
+
+	// Add comments part if there are comments
+	if len(w.commentManager.Comments) > 0 {
+		commentsXML := w.generateCommentsXML()
+		container.AddPart(
+			"word/comments.xml",
+			commentsXML,
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml",
+		)
+	}
 
 	// Add [Content_Types].xml
 	contentTypesXML := w.generateContentTypesXML()
@@ -259,8 +310,23 @@ func (w *DocumentWriter) Save(filename string) error {
 		"application/vnd.openxmlformats-package.relationships+xml",
 	)
 
+	// Add settings.xml if there are comments (for WPS compatibility)
+	if len(w.commentManager.Comments) > 0 {
+		settingsXML := w.generateSettingsXML()
+		container.AddPart(
+			"word/settings.xml",
+			settingsXML,
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml",
+		)
+	}
+
 	// Save the container to file
 	return container.SaveToFile(filename)
+}
+
+// generateCommentsXML generates the comments XML content
+func (w *DocumentWriter) generateCommentsXML() []byte {
+	return []byte(w.commentManager.GenerateCommentsXML())
 }
 
 // generateDocumentXML generates the XML content for the main document part
@@ -294,6 +360,13 @@ func (w *DocumentWriter) generateDocumentXML() ([]byte, error) {
 					XMLName: xml.Name{Local: "w:pStyle"},
 					Val:     paragraph.Style,
 				},
+			}
+		}
+
+		// Add comment range start if paragraph has comment
+		if paragraph.HasComment {
+			xmlParagraph.CommentRangeStart = &CommentRangeStartXML{
+				ID: paragraph.CommentID,
 			}
 		}
 
@@ -353,6 +426,16 @@ func (w *DocumentWriter) generateDocumentXML() ([]byte, error) {
 			}
 
 			xmlParagraph.Runs = append(xmlParagraph.Runs, xmlRun)
+		}
+
+		// Add comment range end and reference if paragraph has comment
+		if paragraph.HasComment {
+			xmlParagraph.CommentRangeEnd = &CommentRangeEndXML{
+				ID: paragraph.CommentID,
+			}
+			xmlParagraph.CommentReference = &CommentReferenceXML{
+				ID: paragraph.CommentID,
+			}
 		}
 
 		doc.Body.Paragraphs = append(doc.Body.Paragraphs, xmlParagraph)
@@ -422,9 +505,17 @@ func (w *DocumentWriter) generateContentTypesXML() []byte {
   <Default Extension="bmp" ContentType="image/bmp"/>
   <Default Extension="wmf" ContentType="image/wmf"/>
   <Default Extension="emf" ContentType="image/emf"/>
-  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-</Types>`
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>`
 	
+	// Add comments content type if there are comments
+	if len(w.commentManager.Comments) > 0 {
+		contentTypesXML += `
+  <Override PartName="/word/comments.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"/>
+  <Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>`
+	}
+	
+	contentTypesXML += `
+</Types>`
 	return []byte(contentTypesXML)
 }
 
@@ -441,10 +532,32 @@ func (w *DocumentWriter) generateRootRelsXML() []byte {
 // generateDocumentRelsXML generates the XML content for word/_rels/document.xml.rels
 func (w *DocumentWriter) generateDocumentRelsXML() []byte {
 	documentRelsXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`
+	
+	// Add comments relationship if there are comments
+	if len(w.commentManager.Comments) > 0 {
+		documentRelsXML += `
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="comments.xml"/>`
+	}
+	
+	documentRelsXML += `
 </Relationships>`
 	
 	return []byte(documentRelsXML)
+}
+
+// generateSettingsXML generates the XML content for word/settings.xml
+func (w *DocumentWriter) generateSettingsXML() []byte {
+	settingsXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:showComments w:val="true"/>
+  <w:trackRevisions w:val="false"/>
+  <w:printComments w:val="true"/>
+  <w:printHiddenText w:val="false"/>
+  <w:printBackground w:val="false"/>
+  <w:zoom w:percent="100"/>
+</w:settings>`
+	return []byte(settingsXML)
 }
 
 // XML structures for document generation
@@ -461,9 +574,12 @@ type DocumentBody struct {
 }
 
 type ParagraphXML struct {
-	XMLName    xml.Name                `xml:"w:p"`
-	Properties *ParagraphPropertiesXML `xml:"w:pPr,omitempty"`
-	Runs       []RunXML               `xml:"w:r"`
+	XMLName             xml.Name                `xml:"w:p"`
+	Properties          *ParagraphPropertiesXML `xml:"w:pPr,omitempty"`
+	CommentRangeStart   *CommentRangeStartXML  `xml:"w:commentRangeStart,omitempty"`
+	Runs                []RunXML               `xml:"w:r"`
+	CommentRangeEnd     *CommentRangeEndXML    `xml:"w:commentRangeEnd,omitempty"`
+	CommentReference    *CommentReferenceXML   `xml:"w:commentReference,omitempty"`
 }
 
 type ParagraphPropertiesXML struct {
@@ -520,6 +636,21 @@ type FontXML struct {
 	XMLName xml.Name `xml:"w:rFonts"`
 	Ascii   string   `xml:"w:ascii,attr"`
 	HAnsi   string   `xml:"w:hAnsi,attr"`
+}
+
+// CommentRangeStartXML represents the start of a comment range
+type CommentRangeStartXML struct {
+	ID string `xml:"w:id,attr"`
+}
+
+// CommentRangeEndXML represents the end of a comment range
+type CommentRangeEndXML struct {
+	ID string `xml:"w:id,attr"`
+}
+
+// CommentReferenceXML represents a comment reference
+type CommentReferenceXML struct {
+	ID string `xml:"w:id,attr"`
 }
 
 type TableXML struct {
