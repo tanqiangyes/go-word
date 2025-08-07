@@ -98,6 +98,141 @@ go run first_example.go
 ### 1. 打开和关闭文档
 
 ```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+)
+
+func main() {
+    // 打开文档
+    doc, err := wordprocessingml.Open("document.docx")
+    if err != nil {
+        log.Fatal("无法打开文档:", err)
+    }
+    defer doc.Close() // 确保资源被释放
+
+    fmt.Println("文档打开成功!")
+}
+```
+
+### 2. 读取文档内容
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+)
+
+func main() {
+    doc, err := wordprocessingml.Open("document.docx")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer doc.Close()
+
+    // 获取纯文本
+    text, err := doc.GetText()
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("文档文本:", text)
+
+    // 获取段落
+    paragraphs, err := doc.GetParagraphs()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    for i, paragraph := range paragraphs {
+        fmt.Printf("段落 %d: %s\n", i+1, paragraph.Text)
+        for j, run := range paragraph.Runs {
+            fmt.Printf("  运行 %d: '%s' (粗体: %v, 斜体: %v)\n",
+                j+1, run.Text, run.Bold, run.Italic)
+        }
+    }
+
+    // 获取表格
+    tables, err := doc.GetTables()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    for i, table := range tables {
+        fmt.Printf("表格 %d: %d行 x %d列\n", i+1, len(table.Rows), table.Columns)
+        for j, row := range table.Rows {
+            for k, cell := range row.Cells {
+                fmt.Printf("  单元格[%d,%d]: %s\n", j, k, cell.Text)
+            }
+        }
+    }
+}
+```
+
+### 3. 创建新文档
+
+```go
+package main
+
+import (
+    "log"
+    "github.com/tanqiangyes/go-word/pkg/writer"
+    "github.com/tanqiangyes/go-word/pkg/types"
+)
+
+func main() {
+    // 创建文档写入器
+    docWriter := writer.NewDocumentWriter()
+
+    // 创建新文档
+    err := docWriter.CreateNewDocument()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // 添加段落
+    err = docWriter.AddParagraph("这是一个段落", "Normal")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // 添加格式化段落
+    formattedRuns := []types.Run{
+        {Text: "粗体文本", Bold: true, FontSize: 16},
+        {Text: "斜体文本", Italic: true, FontSize: 14},
+    }
+
+    err = docWriter.AddFormattedParagraph("格式化段落", "Normal", formattedRuns)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // 添加表格
+    tableData := [][]string{
+        {"姓名", "年龄", "职业"},
+        {"张三", "25", "工程师"},
+        {"李四", "30", "设计师"},
+    }
+
+    err = docWriter.AddTable(tableData)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // 保存文档
+    err = docWriter.Save("output.docx")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println("文档创建成功!")
+}
+```
 // 打开文档
 doc, err := wordprocessingml.Open("document.docx")
 if err != nil {
@@ -429,6 +564,292 @@ func getDocumentStats(doc *wordprocessingml.Document) {
     // 计算行数
     lines := strings.Split(text, "\n")
     fmt.Printf("  - 行数: %d\n", len(lines))
+}
+```
+
+## 高级功能示例
+
+### 1. 文档质量改进
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+)
+
+func main() {
+    // 打开文档
+    doc, err := wordprocessingml.Open("document.docx")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer doc.Close()
+
+    // 创建质量改进管理器
+    manager := wordprocessingml.NewDocumentQualityManager(doc)
+
+    // 改进文档质量
+    err = manager.ImproveDocumentQuality()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // 获取质量报告
+    report := manager.GetQualityReport()
+    fmt.Println("质量报告:")
+    fmt.Println(report)
+}
+```
+
+### 2. 高级样式系统
+
+```go
+package main
+
+import (
+    "log"
+    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/types"
+)
+
+func main() {
+    // 创建样式系统
+    system := wordprocessingml.NewAdvancedStyleSystem()
+
+    // 定义标题样式
+    headingStyle := &wordprocessingml.ParagraphStyleDefinition{
+        ID:   "Heading1",
+        Name: "Heading 1",
+        BasedOn: "Normal",
+        Properties: &wordprocessingml.ParagraphStyleProperties{
+            Alignment: "left",
+        },
+    }
+
+    // 添加样式
+    err := system.AddParagraphStyle(headingStyle)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // 应用样式到段落
+    paragraph := &types.Paragraph{Text: "这是一个标题"}
+    err = system.ApplyStyle(paragraph, "Heading1")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println("样式应用成功!")
+}
+```
+
+### 3. 文档保护
+
+```go
+package main
+
+import (
+    "log"
+    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+)
+
+func main() {
+    // 创建文档保护
+    protection := wordprocessingml.NewDocumentProtection()
+
+    // 启用只读保护
+    err := protection.EnableProtection(wordprocessingml.ReadOnlyProtection, "password123")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println("文档保护已启用!")
+
+    // 禁用保护
+    err = protection.DisableProtection()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println("文档保护已禁用!")
+}
+```
+
+### 4. 文档验证
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+)
+
+func main() {
+    // 打开文档
+    doc, err := wordprocessingml.Open("document.docx")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer doc.Close()
+
+    // 创建验证器
+    validator := wordprocessingml.NewDocumentValidator()
+
+    // 添加验证规则
+    rule := wordprocessingml.ValidationRule{
+        ID: "check_spelling",
+        Name: "拼写检查",
+        Type: wordprocessingml.SpellingRule,
+        Enabled: true,
+    }
+
+    err = validator.AddRule(rule)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // 验证文档
+    result, err := validator.ValidateDocument(doc)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    if result.IsValid {
+        fmt.Println("文档验证通过!")
+    } else {
+        fmt.Printf("发现 %d 个问题\n", len(result.Issues))
+    }
+}
+```
+
+### 5. 批处理
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+)
+
+func main() {
+    // 创建批处理器
+    processor := wordprocessingml.NewBatchProcessor(4)
+
+    // 添加处理任务
+    filenames := []string{"doc1.docx", "doc2.docx", "doc3.docx"}
+    
+    for _, filename := range filenames {
+        processor.AddTask(filename, func(doc *wordprocessingml.Document) error {
+            // 处理文档
+            text, err := doc.GetText()
+            if err != nil {
+                return err
+            }
+            
+            fmt.Printf("处理文档 %s: %d 字符\n", filename, len(text))
+            return nil
+        })
+    }
+
+    // 开始处理
+    err := processor.Process()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println("批处理完成!")
+}
+```
+
+### 6. 错误处理最佳实践
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "errors"
+    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+)
+
+func main() {
+    // 使用结构化错误处理
+    doc, err := wordprocessingml.Open("document.docx")
+    if err != nil {
+        var docErr *wordprocessingml.DocumentError
+        if errors.As(err, &docErr) {
+            switch docErr.Code {
+            case "FILE_NOT_FOUND":
+                fmt.Println("文件未找到:", docErr.Message)
+            case "INVALID_FORMAT":
+                fmt.Println("文件格式无效:", docErr.Message)
+            default:
+                fmt.Println("未知错误:", docErr.Message)
+            }
+        }
+        log.Fatal(err)
+    }
+    defer doc.Close()
+
+    // 处理文档...
+}
+```
+
+### 7. 性能优化示例
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "runtime"
+    "sync"
+    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+)
+
+func main() {
+    // 并发处理多个文档
+    filenames := []string{"doc1.docx", "doc2.docx", "doc3.docx", "doc4.docx"}
+    
+    var wg sync.WaitGroup
+    semaphore := make(chan struct{}, runtime.NumCPU())
+    
+    for _, filename := range filenames {
+        wg.Add(1)
+        go func(fname string) {
+            defer wg.Done()
+            semaphore <- struct{}{} // 获取信号量
+            defer func() { <-semaphore }() // 释放信号量
+            
+            doc, err := wordprocessingml.Open(fname)
+            if err != nil {
+                log.Printf("处理文件 %s 时出错: %v", fname, err)
+                return
+            }
+            defer doc.Close()
+            
+            // 处理文档
+            text, err := doc.GetText()
+            if err != nil {
+                log.Printf("获取文本失败: %v", err)
+                return
+            }
+            
+            fmt.Printf("文档 %s: %d 字符\n", fname, len(text))
+        }(filename)
+    }
+    
+    wg.Wait()
+    fmt.Println("所有文档处理完成!")
 }
 ```
 
