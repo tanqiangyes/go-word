@@ -14,6 +14,11 @@ func GenerateID() string {
 	return hex.EncodeToString(bytes)
 }
 
+// GetCurrentTimestamp 获取当前时间戳
+func GetCurrentTimestamp() int64 {
+	return time.Now().Unix()
+}
+
 // SortByTimestamp 按时间戳排序（最新的在前）
 func SortByTimestamp[T any](items []T, getTimestamp func(T) time.Time) {
 	sort.Slice(items, func(i, j int) bool {
