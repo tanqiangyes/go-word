@@ -378,11 +378,15 @@ func (lm *LogManager) SetConfig(config *LogConfig) {
 
 // Close closes all loggers
 func (lm *LogManager) Close() {
-	for _, logger := range lm.loggers {
-		if file, ok := logger.output.(*os.File); ok {
-			file.Close()
-		}
-	}
+    for _, logger := range lm.loggers {
+        if file, ok := logger.output.(*os.File); ok {
+            // 不要关闭标准输出或标准错误，否则会影响后续测试/程序输出
+            if file == os.Stdout || file == os.Stderr {
+                continue
+            }
+            _ = file.Close()
+        }
+    }
 }
 
 // PerformanceLogger provides performance logging functionality

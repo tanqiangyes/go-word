@@ -121,12 +121,12 @@ func (bp *BatchProcessor) ProcessBatch() error {
 		}
 	}
 
-	// 等待所有工作完成
-	wg.Wait()
+    // 等待所有工作完成
+    wg.Wait()
 
-	// 关闭通道
-	close(bp.ProgressChan)
-	close(bp.ErrorChan)
+    // 通知监控协程退出，避免在关闭通道期间仍尝试发送
+    // 这里不立即关闭通道以避免竞态条件导致的 panic: send on closed channel
+    bp.CancelFunc()
 
 	return nil
 }
@@ -329,6 +329,8 @@ func (bp *BatchProcessor) monitorProgress() {
 			case bp.ProgressChan <- report:
 			default:
 				// 通道已满，跳过
+			case <-bp.Context.Done():
+				return
 			}
 
 			if processedDocs >= totalDocs {

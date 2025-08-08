@@ -468,28 +468,50 @@ func (dqm *DocumentQualityManager) CheckConsistency(content *types.DocumentConte
 			}
 		}
 	}
-	
-	// 如果发现不一致的格式，可以选择标准化
-	if len(fontNames) > 3 {
-		// 使用最常见的字体
-		mostCommonFont := ""
-		maxCount := 0
-		for font, count := range fontNames {
-			if count > maxCount {
-				maxCount = count
-				mostCommonFont = font
-			}
-		}
-		
-		// 应用最常见的字体
-		for i := range content.Paragraphs {
-			for j := range content.Paragraphs[i].Runs {
-				if content.Paragraphs[i].Runs[j].FontName == "" {
-					content.Paragraphs[i].Runs[j].FontName = mostCommonFont
-				}
-			}
-		}
-	}
+
+    // 选择最常见的字体和字号
+    mostCommonFont := ""
+    if len(fontNames) > 0 {
+        maxCount := 0
+        for font, count := range fontNames {
+            if count > maxCount {
+                maxCount = count
+                mostCommonFont = font
+            }
+        }
+    }
+
+    mostCommonSize := 0
+    if len(fontSizes) > 0 {
+        maxCount := 0
+        for size, count := range fontSizes {
+            if count > maxCount {
+                maxCount = count
+                mostCommonSize = size
+            }
+        }
+    }
+
+    // 将缺失的字体/字号标准化为最常见值（或默认值）
+    for i := range content.Paragraphs {
+        for j := range content.Paragraphs[i].Runs {
+            run := &content.Paragraphs[i].Runs[j]
+            if run.FontName == "" {
+                if mostCommonFont != "" {
+                    run.FontName = mostCommonFont
+                } else {
+                    run.FontName = "Arial"
+                }
+            }
+            if run.FontSize <= 0 {
+                if mostCommonSize > 0 {
+                    run.FontSize = mostCommonSize
+                } else {
+                    run.FontSize = 12
+                }
+            }
+        }
+    }
 }
 
 // optimizeStructure optimizes document structure
@@ -665,28 +687,31 @@ func (dqm *DocumentQualityManager) CheckThemeConsistency(content *types.Document
 			}
 		}
 	}
-	
-	// 如果颜色使用过于分散，可以选择标准化
-	if len(colors) > 5 {
-		// 使用最常见的颜色
-		mostCommonColor := ""
-		maxCount := 0
-		for color, count := range colors {
-			if count > maxCount {
-				maxCount = count
-				mostCommonColor = color
-			}
-		}
-		
-		// 应用最常见的颜色
-		for i := range content.Paragraphs {
-			for j := range content.Paragraphs[i].Runs {
-				if content.Paragraphs[i].Runs[j].Color == "" {
-					content.Paragraphs[i].Runs[j].Color = mostCommonColor
-				}
-			}
-		}
-	}
+
+    // 选择最常见的颜色
+    mostCommonColor := ""
+    if len(colors) > 0 {
+        maxCount := 0
+        for color, count := range colors {
+            if count > maxCount {
+                maxCount = count
+                mostCommonColor = color
+            }
+        }
+    }
+
+    // 为缺失颜色的文本应用最常见颜色（或默认颜色）
+    for i := range content.Paragraphs {
+        for j := range content.Paragraphs[i].Runs {
+            if content.Paragraphs[i].Runs[j].Color == "" {
+                if mostCommonColor != "" {
+                    content.Paragraphs[i].Runs[j].Color = mostCommonColor
+                } else {
+                    content.Paragraphs[i].Runs[j].Color = "#000000"
+                }
+            }
+        }
+    }
 }
 
 // improveAccessibility improves document accessibility
@@ -739,6 +764,12 @@ func (dqm *DocumentQualityManager) AddStructureTags(content *types.DocumentConte
 	for i := range content.Paragraphs {
 		paragraph := &content.Paragraphs[i]
 		
+        // 兼容中文及通用场景：默认将首段识别为标题（若未设置样式）
+        if i == 0 && paragraph.Style == "" {
+            paragraph.Style = "Heading"
+            continue
+        }
+
 		// 检查是否是标题
 		if len(paragraph.Text) > 0 && len(paragraph.Text) < 100 {
 			// 简单的标题检测：短文本且以大写字母开头
