@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/tanqiangyes/go-word/pkg/types"
-	"github.com/tanqiangyes/go-word/pkg/wordprocessingml"
 )
 
 // MemoryPool provides object pooling for frequently allocated objects
@@ -343,9 +342,9 @@ func NewPerformanceOptimizerAdvanced() *PerformanceOptimizerAdvanced {
 	return &PerformanceOptimizerAdvanced{
 		resourceManager: NewResourceManager(100*1024*1024, 80.0), // 100MB, 80% CPU
 		cache:           NewCache(),
-        // 禁用速率限制以最大化并发性能
-        concurrencyMgr:  NewConcurrencyManager(10, 0),
-		documentPool:    NewMemoryPool(func() interface{} { return &wordprocessingml.Document{} }),
+		// 禁用速率限制以最大化并发性能
+		concurrencyMgr:  NewConcurrencyManager(10, 0),
+		documentPool:    NewMemoryPool(func() interface{} { return make(map[string]interface{}) }),
 		paragraphPool:   NewMemoryPool(func() interface{} { return &types.Paragraph{} }),
 		tablePool:       NewMemoryPool(func() interface{} { return &types.Table{} }),
 	}
