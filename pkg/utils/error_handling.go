@@ -65,6 +65,11 @@ const (
 	ErrSystemResource      ErrorCode = "SYSTEM_RESOURCE"
 	ErrSystemTimeout       ErrorCode = "SYSTEM_TIMEOUT"
 	ErrSystemUnavailable   ErrorCode = "SYSTEM_UNAVAILABLE"
+	
+	// Resource errors
+	ErrResourceExhausted   ErrorCode = "RESOURCE_EXHAUSTED"
+	ErrInvalidInput        ErrorCode = "INVALID_INPUT"
+	ErrInvalidState        ErrorCode = "INVALID_STATE"
 )
 
 // ErrorSeverity represents the severity level of an error
