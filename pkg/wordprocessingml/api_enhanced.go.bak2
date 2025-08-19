@@ -1,0 +1,461 @@
+package wordprocessingml
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/tanqiangyes/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/utils"
+)
+
+// EnhancedDocumentBuilder 增强的文档构建器
+type EnhancedDocumentBuilder struct {
+	*DocumentBuilder
+	logger *utils.Logger
+}
+
+// NewEnhancedDocumentBuilder 创建增强的文档构建器
+func NewEnhancedDocumentBuilder() *EnhancedDocumentBuilder {
+	return &EnhancedDocumentBuilder{
+		DocumentBuilder: NewDocumentBuilder(),
+		logger:          utils.NewLogger(utils.LogLevelInfo, os.Stdout),
+	}
+}
+
+// SetDocumentTitle 设置文档标题
+func (b *EnhancedDocumentBuilder) SetDocumentTitle(doc *Document, title string) error {
+	b.logger.Info("设置文档标题", map[string]interface{}{
+		"title": title,
+	})
+
+	// 设置文档核心属性中的标题
+	if doc.coreProperties == nil {
+		doc.coreProperties = &types.CoreProperties{}
+	}
+
+	doc.coreProperties.Title = title
+	now := time.Now()
+	doc.coreProperties.Created = &now
+	doc.coreProperties.Modified = &now
+
+	// 同时更新文档元数据
+	if doc.metadata == nil {
+		doc.metadata = make(map[string]interface{})
+	}
+	doc.metadata["title"] = title
+	doc.metadata["created"] = doc.coreProperties.Created
+	doc.metadata["modified"] = doc.coreProperties.Modified
+
+	b.logger.Info("文档标题已设置", map[string]interface{}{
+		"title": title,
+	})
+
+	return nil
+}
+
+// SetDocumentAuthor 设置文档作者
+func (b *EnhancedDocumentBuilder) SetDocumentAuthor(doc *Document, author string) error {
+	b.logger.Info("设置文档作者", map[string]interface{}{
+		"author": author,
+	})
+
+	// 设置文档核心属性中的作者
+	if doc.coreProperties == nil {
+		doc.coreProperties = &types.CoreProperties{}
+	}
+
+	doc.coreProperties.Creator = author
+	doc.coreProperties.LastModifiedBy = author
+	now := time.Now()
+	doc.coreProperties.Modified = &now
+
+	// 同时更新文档元数据
+	if doc.metadata == nil {
+		doc.metadata = make(map[string]interface{})
+	}
+	doc.metadata["author"] = author
+	doc.metadata["creator"] = author
+	doc.metadata["last_modified_by"] = author
+
+	b.logger.Info("文档作者已设置", map[string]interface{}{
+		"author": author,
+	})
+
+	return nil
+}
+
+// SetDocumentSubject 设置文档主题
+func (b *EnhancedDocumentBuilder) SetDocumentSubject(doc *Document, subject string) error {
+	if doc.coreProperties == nil {
+		doc.coreProperties = &types.CoreProperties{}
+	}
+
+	doc.coreProperties.Subject = subject
+	now := time.Now()
+	doc.coreProperties.Modified = &now
+
+	if doc.metadata == nil {
+		doc.metadata = make(map[string]interface{})
+	}
+	doc.metadata["subject"] = subject
+
+	b.logger.Info("文档主题已设置", map[string]interface{}{
+		"subject": subject,
+	})
+
+	return nil
+}
+
+// SetDocumentKeywords 设置文档关键词
+func (b *EnhancedDocumentBuilder) SetDocumentKeywords(doc *Document, keywords []string) error {
+	if doc.coreProperties == nil {
+		doc.coreProperties = &types.CoreProperties{}
+	}
+
+	doc.coreProperties.Keywords = keywords
+	now := time.Now()
+	doc.coreProperties.Modified = &now
+
+	if doc.metadata == nil {
+		doc.metadata = make(map[string]interface{})
+	}
+	doc.metadata["keywords"] = keywords
+
+	b.logger.Info("文档关键词已设置", map[string]interface{}{
+		"keywords": keywords,
+	})
+
+	return nil
+}
+
+// ApplyDocumentProtection 应用文档保护
+func (b *EnhancedDocumentBuilder) ApplyDocumentProtection(doc *Document, protection types.DocumentProtectionConfig) error {
+	b.logger.Info("应用文档保护", map[string]interface{}{
+		"protection_type": protection.Type,
+		"enabled":         protection.Enabled,
+	})
+
+	// 简化的文档保护实现
+	if protection.Enabled && protection.Type != types.ProtectionTypeNone {
+		// 设置文档保护标志
+		if doc.metadata == nil {
+			doc.metadata = make(map[string]interface{})
+		}
+		doc.metadata["protection"] = map[string]interface{}{
+			"type":       protection.Type,
+			"password":   protection.Password != "",
+			"enabled":    protection.Enabled,
+			"permissions": protection.Permissions,
+		}
+		
+		b.logger.Info("文档保护已应用", map[string]interface{}{
+			"protection_type": protection.Type,
+			"enabled":         protection.Enabled,
+		})
+	}
+
+	return nil
+}
+
+// ApplyDocumentValidation 应用文档验证
+func (b *EnhancedDocumentBuilder) ApplyDocumentValidation(doc *Document, validation types.DocumentValidationConfig) error {
+	b.logger.Info("应用文档验证", map[string]interface{}{
+		"validateStructure": validation.ValidateStructure,
+		"validateContent":   validation.ValidateContent,
+		"validateStyles":    validation.ValidateStyles,
+	})
+
+	// 简化的文档验证实现
+	if validation.Enabled {
+		// 设置文档验证标志
+		if doc.metadata == nil {
+			doc.metadata = make(map[string]interface{})
+		}
+		doc.metadata["validation"] = map[string]interface{}{
+			"validateStructure": validation.ValidateStructure,
+			"validateContent":   validation.ValidateContent,
+			"validateStyles":    validation.ValidateStyles,
+			"enabled":           validation.Enabled,
+			"autoFix":           validation.AutoFix,
+			"strictMode":        validation.StrictMode,
+		}
+		
+		b.logger.Info("文档验证已应用", map[string]interface{}{
+			"validateStructure": validation.ValidateStructure,
+			"validateContent":   validation.ValidateContent,
+			"validateStyles":    validation.ValidateStyles,
+		})
+	}
+
+	return nil
+}
+
+// AddParagraphToDocument 添加段落到文档
+func (b *EnhancedDocumentBuilder) AddParagraphToDocument(doc *Document, paragraph types.Paragraph) error {
+	b.logger.Info("添加段落到文档", map[string]interface{}{
+		"text_length": len(paragraph.Text),
+	})
+
+	// 检查文档是否已初始化
+	if doc.mainPart == nil {
+		return fmt.Errorf("文档主部分未初始化")
+	}
+
+	// 添加段落到文档内容
+	if doc.mainPart.Content == nil {
+		doc.mainPart.Content = &types.DocumentContent{
+			Paragraphs: make([]types.Paragraph, 0),
+		}
+	}
+
+	doc.mainPart.Content.Paragraphs = append(doc.mainPart.Content.Paragraphs, paragraph)
+
+	b.logger.Info("段落已添加到文档", map[string]interface{}{
+		"text_length":      len(paragraph.Text),
+		"total_paragraphs": len(doc.mainPart.Content.Paragraphs),
+	})
+
+	return nil
+}
+
+// AddTableToDocument 添加表格到文档
+func (b *EnhancedDocumentBuilder) AddTableToDocument(doc *Document, table types.Table) error {
+	b.logger.Info("添加表格到文档", map[string]interface{}{
+		"rows":    len(table.Rows),
+		"columns": table.Columns,
+	})
+
+	// 检查文档是否已初始化
+	if doc.mainPart == nil {
+		return fmt.Errorf("文档主部分未初始化")
+	}
+
+	// 添加表格到文档内容
+	if doc.mainPart.Content == nil {
+		doc.mainPart.Content = &types.DocumentContent{
+			Tables: make([]types.Table, 0),
+		}
+	}
+
+	doc.mainPart.Content.Tables = append(doc.mainPart.Content.Tables, table)
+
+	b.logger.Info("表格已添加到文档", map[string]interface{}{
+		"rows":         len(table.Rows),
+		"columns":      table.Columns,
+		"total_tables": len(doc.mainPart.Content.Tables),
+	})
+
+	return nil
+}
+
+// AddImageToDocument 添加图片到文档
+func (b *EnhancedDocumentBuilder) AddImageToDocument(doc *Document, image types.Image) error {
+	b.logger.Info("添加图片到文档", map[string]interface{}{
+		"path":   image.Path,
+		"width":  image.Width,
+		"height": image.Height,
+	})
+
+	// 检查文档是否已初始化
+	if doc.mainPart == nil {
+		return fmt.Errorf("文档主部分未初始化")
+	}
+
+	// 将图片信息存储到文档元数据中
+	if doc.metadata == nil {
+		doc.metadata = make(map[string]interface{})
+	}
+	
+	if doc.metadata["images"] == nil {
+		doc.metadata["images"] = make([]types.Image, 0)
+	}
+	
+	images := doc.metadata["images"].([]types.Image)
+	images = append(images, image)
+	doc.metadata["images"] = images
+
+	b.logger.Info("图片已添加到文档", map[string]interface{}{
+		"path":        image.Path,
+		"width":       image.Width,
+		"height":      image.Height,
+		"total_images": len(images),
+	})
+
+	return nil
+}
+
+// SaveDocument 保存文档
+func (b *EnhancedDocumentBuilder) SaveDocument(doc *Document, filepath string) error {
+	b.logger.Info("保存文档", map[string]interface{}{
+		"filepath": filepath,
+	})
+
+	// 使用容器保存文档
+	if doc.container != nil {
+		if err := doc.container.SaveToFile(filepath); err != nil {
+			return fmt.Errorf("保存文档失败: %w", err)
+		}
+	} else {
+		return fmt.Errorf("文档容器未初始化")
+	}
+
+	b.logger.Info("文档已保存", map[string]interface{}{
+		"filepath": filepath,
+		"format":   "docx",
+	})
+
+	return nil
+}
+
+// SaveDocumentAs 保存文档为指定格式
+func (b *EnhancedDocumentBuilder) SaveDocumentAs(doc *Document, filepath string, format types.DocumentFormat) error {
+	b.logger.Info("保存文档为指定格式", map[string]interface{}{
+		"filepath": filepath,
+		"format":   format,
+	})
+
+	// 目前只支持DOCX格式
+	if format.Type != "docx" {
+		return fmt.Errorf("不支持的保存格式: %s", format.Type)
+	}
+
+	// 使用容器保存文档
+	if doc.container != nil {
+		if err := doc.container.SaveToFile(filepath); err != nil {
+			return fmt.Errorf("保存文档失败: %w", err)
+		}
+	} else {
+		return fmt.Errorf("文档容器未初始化")
+	}
+
+	b.logger.Info("文档已保存为指定格式", map[string]interface{}{
+		"filepath": filepath,
+		"format":   format,
+	})
+
+	return nil
+}
+
+// ExportDocument 导出文档
+func (b *EnhancedDocumentBuilder) ExportDocument(doc *Document, filepath string, format string) error {
+	b.logger.Info("导出文档", map[string]interface{}{
+		"filepath": filepath,
+		"format":   format,
+	})
+
+	switch format {
+	case "pdf":
+		return b.exportToPDF(doc, filepath)
+	case "rtf":
+		return b.exportToRTF(doc, filepath)
+	case "html":
+		return b.exportToHTML(doc, filepath)
+	case "txt":
+		return b.exportToTXT(doc, filepath)
+	default:
+		return fmt.Errorf("不支持的导出格式: %s", format)
+	}
+}
+
+// exportToPDF 导出为PDF
+func (b *EnhancedDocumentBuilder) exportToPDF(doc *Document, filepath string) error {
+	// 创建PDF导出器
+	pdfExporter := NewPDFExporter(doc, nil)
+
+	// 导出PDF
+	_, err := pdfExporter.ExportToPDF(context.Background(), filepath)
+	if err != nil {
+		return fmt.Errorf("PDF导出失败: %w", err)
+	}
+
+	b.logger.Info("文档已导出为PDF", map[string]interface{}{
+		"filepath": filepath,
+	})
+
+	return nil
+}
+
+// exportToRTF 导出为RTF
+func (b *EnhancedDocumentBuilder) exportToRTF(doc *Document, filepath string) error {
+	// RTF导出功能待实现
+	b.logger.Info("RTF导出功能待实现", map[string]interface{}{
+		"filepath": filepath,
+	})
+
+	return fmt.Errorf("RTF导出功能尚未实现")
+}
+
+// exportToHTML 导出为HTML
+func (b *EnhancedDocumentBuilder) exportToHTML(doc *Document, filepath string) error {
+	// 这里可以实现HTML导出逻辑
+	b.logger.Info("HTML导出功能待实现", map[string]interface{}{
+		"filepath": filepath,
+	})
+
+	return fmt.Errorf("HTML导出功能尚未实现")
+}
+
+// exportToTXT 导出为TXT
+func (b *EnhancedDocumentBuilder) exportToTXT(doc *Document, filepath string) error {
+	// 获取文档文本内容
+	text, err := doc.GetText()
+	if err != nil {
+		return fmt.Errorf("获取文档文本失败: %w", err)
+	}
+
+	// 保存为文本文件
+	if err := os.WriteFile(filepath, []byte(text), 0644); err != nil {
+		return fmt.Errorf("保存文本文件失败: %w", err)
+	}
+
+	b.logger.Info("文档已导出为TXT", map[string]interface{}{
+		"filepath": filepath,
+		"text_length": len(text),
+	})
+
+	return nil
+}
+
+// GetDocumentStatistics 获取文档统计信息
+func (b *EnhancedDocumentBuilder) GetDocumentStatistics(doc *Document) (*types.DocumentStatistics, error) {
+	stats := &types.DocumentStatistics{}
+
+	// 设置创建时间
+	now := time.Now()
+	stats.CreationDate = &now
+
+	return stats, nil
+}
+
+// countWords 统计单词数量
+func (b *EnhancedDocumentBuilder) countWords(paragraphs []types.Paragraph) int {
+	total := 0
+	for _, paragraph := range paragraphs {
+		words := strings.Fields(paragraph.Text)
+		total += len(words)
+	}
+	return total
+}
+
+// countCharacters 统计字符数量
+func (b *EnhancedDocumentBuilder) countCharacters(paragraphs []types.Paragraph) int {
+	total := 0
+	for _, paragraph := range paragraphs {
+		total += len(paragraph.Text)
+	}
+	return total
+}
+
+// countCells 统计单元格数量
+func (b *EnhancedDocumentBuilder) countCells(tables []types.Table) int {
+	total := 0
+	for _, table := range tables {
+		for _, row := range table.Rows {
+			total += len(row.Cells)
+		}
+	}
+	return total
+}

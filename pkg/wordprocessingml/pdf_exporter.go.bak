@@ -226,7 +226,7 @@ func (pe *PDFExporter) extractDocumentContent(ctx context.Context) (*PDFDocument
 	// 提取图片信息（如果支持）
 	if pe.config.IncludeImages {
 		// 这里可以添加图片提取逻辑
-		content.Images = []PDFImageInfo{}
+		content.Images = []types.PDFImageInfo{}
 	}
 	
 	return content, nil

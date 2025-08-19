@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tanqiangyes/go-word/pkg/types"
+
 	"github.com/tanqiangyes/go-word/pkg/utils"
 )
 

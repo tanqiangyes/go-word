@@ -1,8 +1,10 @@
 package wordprocessingml
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/tanqiangyes/go-word/pkg/types"
@@ -291,29 +293,18 @@ func (b *EnhancedDocumentBuilder) SaveDocument(doc *Document, filepath string) e
 		"filepath": filepath,
 	})
 
-	// 创建文档写入器
-	writer := NewDocumentWriter()
-
-	// 配置保存选项
-	saveOptions := &types.SaveOptions{
-		FilePath:    filepath,
-		Format:      types.DocumentFormatDocx,
-		Compression: true,
-		Backup:      b.config.Backup.Enabled,
-		BackupPath:  b.config.Backup.Path,
-		Metadata:    true,
-		Properties:  true,
-	}
-
-	// 保存文档
-	if err := writer.SaveDocument(doc, saveOptions); err != nil {
-		return fmt.Errorf("保存文档失败: %w", err)
+	// 使用容器保存文档
+	if doc.container != nil {
+		if err := doc.container.SaveToFile(filepath); err != nil {
+			return fmt.Errorf("保存文档失败: %w", err)
+		}
+	} else {
+		return fmt.Errorf("文档容器未初始化")
 	}
 
 	b.logger.Info("文档已保存", map[string]interface{}{
-		"filepath":      filepath,
-		"format":        saveOptions.Format,
-		"backup_enabled": b.config.Backup.Enabled,
+		"filepath": filepath,
+		"format":   "docx",
 	})
 
 	return nil
@@ -326,29 +317,23 @@ func (b *EnhancedDocumentBuilder) SaveDocumentAs(doc *Document, filepath string,
 		"format":   format,
 	})
 
-	// 创建文档写入器
-	writer := NewDocumentWriter()
-
-	// 配置保存选项
-	saveOptions := &types.SaveOptions{
-		FilePath:    filepath,
-		Format:      format,
-		Compression: true,
-		Backup:      b.config.Backup.Enabled,
-		BackupPath:  b.config.Backup.Path,
-		Metadata:    true,
-		Properties:  true,
+	// 目前只支持DOCX格式
+	if format.Type != "docx" {
+		return fmt.Errorf("不支持的保存格式: %s", format.Type)
 	}
 
-	// 保存文档
-	if err := writer.SaveDocument(doc, saveOptions); err != nil {
-		return fmt.Errorf("保存文档失败: %w", err)
+	// 使用容器保存文档
+	if doc.container != nil {
+		if err := doc.container.SaveToFile(filepath); err != nil {
+			return fmt.Errorf("保存文档失败: %w", err)
+		}
+	} else {
+		return fmt.Errorf("文档容器未初始化")
 	}
 
 	b.logger.Info("文档已保存为指定格式", map[string]interface{}{
-		"filepath":      filepath,
-		"format":        format,
-		"backup_enabled": b.config.Backup.Enabled,
+		"filepath": filepath,
+		"format":   format,
 	})
 
 	return nil
@@ -378,24 +363,11 @@ func (b *EnhancedDocumentBuilder) ExportDocument(doc *Document, filepath string,
 // exportToPDF 导出为PDF
 func (b *EnhancedDocumentBuilder) exportToPDF(doc *Document, filepath string) error {
 	// 创建PDF导出器
-	pdfExporter := NewPDFExporter(doc)
-
-	// 配置导出选项
-	exportConfig := &types.PDFExportConfig{
-		Quality:     types.PDFQualityHigh,
-		Compression: true,
-		Margins: &types.PDFMargins{
-			Top:    20,
-			Bottom: 20,
-			Left:   25,
-			Right:  25,
-		},
-		IncludeBookmarks: true,
-		IncludeMetadata:  true,
-	}
+	pdfExporter := NewPDFExporter(doc, nil)
 
 	// 导出PDF
-	if err := pdfExporter.ExportToPDF(context.Background(), filepath); err != nil {
+	_, err := pdfExporter.ExportToPDF(context.Background(), filepath)
+	if err != nil {
 		return fmt.Errorf("PDF导出失败: %w", err)
 	}
 
@@ -408,19 +380,12 @@ func (b *EnhancedDocumentBuilder) exportToPDF(doc *Document, filepath string) er
 
 // exportToRTF 导出为RTF
 func (b *EnhancedDocumentBuilder) exportToRTF(doc *Document, filepath string) error {
-	// 创建格式支持器
-	formatSupport := NewFormatSupport(doc)
-
-	// 转换为RTF格式
-	if err := formatSupport.ConvertFormat(RtfFormat); err != nil {
-		return fmt.Errorf("RTF转换失败: %w", err)
-	}
-
-	b.logger.Info("文档已导出为RTF", map[string]interface{}{
+	// RTF导出功能待实现
+	b.logger.Info("RTF导出功能待实现", map[string]interface{}{
 		"filepath": filepath,
 	})
 
-	return nil
+	return fmt.Errorf("RTF导出功能尚未实现")
 }
 
 // exportToHTML 导出为HTML
@@ -456,32 +421,11 @@ func (b *EnhancedDocumentBuilder) exportToTXT(doc *Document, filepath string) er
 
 // GetDocumentStatistics 获取文档统计信息
 func (b *EnhancedDocumentBuilder) GetDocumentStatistics(doc *Document) (*types.DocumentStatistics, error) {
-	stats := &types.DocumentStatistics{
-		CreatedAt: time.Now(),
-	}
+	stats := &types.DocumentStatistics{}
 
-	// 统计段落数量
-	if paragraphs, err := doc.GetParagraphs(); err == nil {
-		stats.ParagraphCount = len(paragraphs)
-		stats.WordCount = b.countWords(paragraphs)
-		stats.CharacterCount = b.countCharacters(paragraphs)
-	}
-
-	// 统计表格数量
-	if tables, err := doc.GetTables(); err == nil {
-		stats.TableCount = len(tables)
-		stats.CellCount = b.countCells(tables)
-	}
-
-	// 统计图片数量
-	if images, err := doc.GetImages(); err == nil {
-		stats.ImageCount = len(images)
-	}
-
-	// 统计样式数量
-	if styles, err := doc.GetStyles(); err == nil {
-		stats.StyleCount = len(styles)
-	}
+	// 设置创建时间
+	now := time.Now()
+	stats.CreationDate = &now
 
 	return stats, nil
 }

@@ -1,0 +1,880 @@
+package wordprocessingml
+
+import (
+	"context"
+	"fmt"
+	"testing"
+	"time"
+)
+
+// TestNewCustomRibbon 测试创建自定义功能区
+func TestNewCustomRibbon(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	if ribbon == nil {
+		t.Fatal("自定义功能区创建失败")
+	}
+	
+	// 验证默认配置
+	if ribbon.config.MaxTabs != 10 {
+		t.Errorf("默认最大标签页数不匹配，期望: 10, 实际: %d", ribbon.config.MaxTabs)
+	}
+	
+	if ribbon.config.MaxGroups != 20 {
+		t.Errorf("默认最大组数不匹配，期望: 20, 实际: %d", ribbon.config.MaxGroups)
+	}
+	
+	if !ribbon.config.EnableCustomization {
+		t.Error("默认应该启用自定义功能")
+	}
+}
+
+// TestNewCustomRibbonWithConfig 测试使用配置创建自定义功能区
+func TestNewCustomRibbonWithConfig(t *testing.T) {
+	config := &CustomRibbonConfig{
+		MaxTabs:             5,
+		MaxGroups:           10,
+		EnableCustomization: false,
+		Theme:               "dark",
+	}
+	
+	ribbon := NewCustomRibbon(config)
+	if ribbon == nil {
+		t.Fatal("自定义功能区创建失败")
+	}
+	
+	if ribbon.config.MaxTabs != 5 {
+		t.Errorf("配置最大标签页数不匹配，期望: 5, 实际: %d", ribbon.config.MaxTabs)
+	}
+	
+	if ribbon.config.MaxGroups != 10 {
+		t.Errorf("配置最大组数不匹配，期望: 10, 实际: %d", ribbon.config.MaxGroups)
+	}
+	
+	if ribbon.config.EnableCustomization {
+		t.Error("配置应该禁用自定义功能")
+	}
+	
+	if ribbon.config.Theme != "dark" {
+		t.Errorf("配置主题不匹配，期望: dark, 实际: %s", ribbon.config.Theme)
+	}
+}
+
+// TestAddTab 测试添加标签页
+func TestAddTab(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	tab := &CustomRibbonTab{
+		ID:          "test_tab",
+		Label:       "测试标签页",
+		Description: "这是一个测试标签页",
+		Visible:     true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加标签页失败: %v", err)
+	}
+	
+	if tab.CreatedAt == 0 {
+		t.Error("创建时间应该设置")
+	}
+	
+	if tab.UpdatedAt == 0 {
+		t.Error("更新时间应该设置")
+	}
+	
+	// 验证标签页已添加
+	retrievedTab, err := ribbon.GetTab(tab.ID)
+	if err != nil {
+		t.Fatalf("获取标签页失败: %v", err)
+	}
+	
+	if retrievedTab.Label != "测试标签页" {
+		t.Errorf("标签页标签不匹配，期望: 测试标签页, 实际: %s", retrievedTab.Label)
+	}
+}
+
+// TestAddTabWithInvalidID 测试添加无效ID的标签页
+func TestAddTabWithInvalidID(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	tab := &CustomRibbonTab{
+		ID:     "",
+		Label:  "无效标签页",
+		Visible: true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err == nil {
+		t.Error("应该拒绝添加无效ID的标签页")
+	}
+}
+
+// TestAddTabWithDuplicateID 测试添加重复ID的标签页
+func TestAddTabWithDuplicateID(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	tab1 := &CustomRibbonTab{
+		ID:     "duplicate_tab",
+		Label:  "标签页1",
+		Visible: true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab1)
+	if err != nil {
+		t.Fatalf("添加第一个标签页失败: %v", err)
+	}
+	
+	tab2 := &CustomRibbonTab{
+		ID:     "duplicate_tab", // 相同ID
+		Label:  "标签页2",
+		Visible: true,
+	}
+	
+	err = ribbon.AddTab(ctx, tab2)
+	if err == nil {
+		t.Error("应该拒绝添加重复ID的标签页")
+	}
+}
+
+// TestAddGroup 测试添加组
+func TestAddGroup(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 先添加标签页
+	tab := &CustomRibbonTab{
+		ID:     "test_tab",
+		Label:  "测试标签页",
+		Visible: true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加标签页失败: %v", err)
+	}
+	
+	// 添加组
+	group := &CustomRibbonGroup{
+		ID:          "test_group",
+		TabID:       "test_tab",
+		Label:       "测试组",
+		Description: "这是一个测试组",
+		Visible:     true,
+	}
+	
+	err = ribbon.AddGroup(ctx, group)
+	if err != nil {
+		t.Fatalf("添加组失败: %v", err)
+	}
+	
+	if group.CreatedAt == 0 {
+		t.Error("创建时间应该设置")
+	}
+	
+	// 验证组已添加
+	retrievedGroup, err := ribbon.GetGroup(group.ID)
+	if err != nil {
+		t.Fatalf("获取组失败: %v", err)
+	}
+	
+	if retrievedGroup.Label != "测试组" {
+		t.Errorf("组标签不匹配，期望: 测试组, 实际: %s", retrievedGroup.Label)
+	}
+}
+
+// TestAddGroupToNonExistentTab 测试向不存在的标签页添加组
+func TestAddGroupToNonExistentTab(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	group := &CustomRibbonGroup{
+		ID:     "test_group",
+		TabID:  "non_existent_tab",
+		Label:  "测试组",
+		Visible: true,
+	}
+	
+	err := ribbon.AddGroup(ctx, group)
+	if err == nil {
+		t.Error("应该拒绝向不存在的标签页添加组")
+	}
+}
+
+// TestAddControl 测试添加控件
+func TestAddControl(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 先添加标签页和组
+	tab := &CustomRibbonTab{
+		ID:     "test_tab",
+		Label:  "测试标签页",
+		Visible: true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加标签页失败: %v", err)
+	}
+	
+	group := &CustomRibbonGroup{
+		ID:     "test_group",
+		TabID:  "test_tab",
+		Label:  "测试组",
+		Visible: true,
+	}
+	
+	err = ribbon.AddGroup(ctx, group)
+	if err != nil {
+		t.Fatalf("添加组失败: %v", err)
+	}
+	
+	// 添加控件
+	control := &CustomRibbonControl{
+		ID:          "test_control",
+		GroupID:     "test_group",
+		Type:        CustomRibbonControlTypeButton,
+		Label:       "测试按钮",
+		Description: "这是一个测试按钮",
+		Visible:     true,
+		Enabled:     true,
+	}
+	
+	err = ribbon.AddControl(ctx, control)
+	if err != nil {
+		t.Fatalf("添加控件失败: %v", err)
+	}
+	
+	if control.CreatedAt == 0 {
+		t.Error("创建时间应该设置")
+	}
+	
+	// 验证控件已添加
+	retrievedControl, err := ribbon.GetControl(control.ID)
+	if err != nil {
+		t.Fatalf("获取控件失败: %v", err)
+	}
+	
+	if retrievedControl.Label != "测试按钮" {
+		t.Errorf("控件标签不匹配，期望: 测试按钮, 实际: %s", retrievedControl.Label)
+	}
+	
+	if retrievedControl.Type != CustomRibbonControlTypeButton {
+		t.Errorf("控件类型不匹配，期望: %s, 实际: %s", CustomRibbonControlTypeButton, retrievedControl.Type)
+	}
+}
+
+// TestAddControlToNonExistentGroup 测试向不存在的组添加控件
+func TestAddControlToNonExistentGroup(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	control := &CustomRibbonControl{
+		ID:      "test_control",
+		GroupID: "non_existent_group",
+		Type:    CustomRibbonControlTypeButton,
+		Label:   "测试按钮",
+		Visible: true,
+	}
+	
+	err := ribbon.AddControl(ctx, control)
+	if err == nil {
+		t.Error("应该拒绝向不存在的组添加控件")
+	}
+}
+
+// TestAddControlWithInvalidType 测试添加无效类型的控件
+func TestAddControlWithInvalidType(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	control := &CustomRibbonControl{
+		ID:      "test_control",
+		GroupID: "test_group",
+		Type:    "invalid_type",
+		Label:   "测试控件",
+		Visible: true,
+	}
+	
+	err := ribbon.AddControl(ctx, control)
+	if err == nil {
+		t.Error("应该拒绝添加无效类型的控件")
+	}
+}
+
+// TestGetTab 测试获取标签页
+func TestGetTab(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 先添加标签页
+	tab := &CustomRibbonTab{
+		ID:     "test_tab",
+		Label:  "测试标签页",
+		Visible: true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加标签页失败: %v", err)
+	}
+	
+	// 获取标签页
+	retrievedTab, err := ribbon.GetTab("test_tab")
+	if err != nil {
+		t.Fatalf("获取标签页失败: %v", err)
+	}
+	
+	if retrievedTab.ID != "test_tab" {
+		t.Errorf("标签页ID不匹配，期望: test_tab, 实际: %s", retrievedTab.ID)
+	}
+	
+	if retrievedTab.Label != "测试标签页" {
+		t.Errorf("标签页标签不匹配，期望: 测试标签页, 实际: %s", retrievedTab.Label)
+	}
+}
+
+// TestGetNonExistentTab 测试获取不存在的标签页
+func TestGetNonExistentTab(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	
+	_, err := ribbon.GetTab("non_existent_tab")
+	if err == nil {
+		t.Error("应该拒绝获取不存在的标签页")
+	}
+}
+
+// TestListTabs 测试列出标签页
+func TestListTabs(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 获取初始列表
+	initialList := ribbon.ListTabs()
+	if len(initialList) != 0 {
+		t.Errorf("初始标签页列表应该为空，实际: %d", len(initialList))
+	}
+	
+	// 添加一些标签页
+	tabs := []*CustomRibbonTab{
+		{ID: "tab1", Label: "标签页1", Visible: true},
+		{ID: "tab2", Label: "标签页2", Visible: true},
+		{ID: "tab3", Label: "标签页3", Visible: false},
+	}
+	
+	for _, tab := range tabs {
+		err := ribbon.AddTab(ctx, tab)
+		if err != nil {
+			t.Fatalf("添加标签页失败: %v", err)
+		}
+	}
+	
+	// 获取更新后的列表
+	updatedList := ribbon.ListTabs()
+	if len(updatedList) != 3 {
+		t.Errorf("标签页列表长度不匹配，期望: 3, 实际: %d", len(updatedList))
+	}
+	
+	// 验证标签页信息
+	tabLabels := make(map[string]bool)
+	for _, tab := range updatedList {
+		tabLabels[tab.Label] = true
+	}
+	
+	expectedLabels := []string{"标签页1", "标签页2", "标签页3"}
+	for _, expectedLabel := range expectedLabels {
+		if !tabLabels[expectedLabel] {
+			t.Errorf("标签页列表应该包含: %s", expectedLabel)
+		}
+	}
+}
+
+// TestUpdateTab 测试更新标签页
+func TestUpdateTab(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 先添加标签页
+	tab := &CustomRibbonTab{
+		ID:          "test_tab",
+		Label:       "原始标签",
+		Description: "原始描述",
+		Visible:     true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加标签页失败: %v", err)
+	}
+	
+	// 更新标签页
+	updateInfo := &CustomRibbonTab{
+		Label:       "更新后的标签",
+		Description: "更新后的描述",
+		Visible:     false,
+	}
+	
+	err = ribbon.UpdateTab("test_tab", updateInfo)
+	if err != nil {
+		t.Fatalf("更新标签页失败: %v", err)
+	}
+	
+	// 验证更新
+	updatedTab, err := ribbon.GetTab("test_tab")
+	if err != nil {
+		t.Fatalf("获取更新后的标签页失败: %v", err)
+	}
+	
+	if updatedTab.Label != "更新后的标签" {
+		t.Errorf("标签应该已更新，期望: 更新后的标签, 实际: %s", updatedTab.Label)
+	}
+	
+	if updatedTab.Description != "更新后的描述" {
+		t.Errorf("描述应该已更新，期望: 更新后的描述, 实际: %s", updatedTab.Description)
+	}
+	
+	if updatedTab.Visible {
+		t.Error("可见性应该已更新为false")
+	}
+}
+
+// TestUpdateNonExistentTab 测试更新不存在的标签页
+func TestUpdateNonExistentTab(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	
+	updateInfo := &CustomRibbonTab{
+		Label: "新标签",
+	}
+	
+	err := ribbon.UpdateTab("non_existent_tab", updateInfo)
+	if err == nil {
+		t.Error("应该拒绝更新不存在的标签页")
+	}
+}
+
+// TestRemoveTab 测试移除标签页
+func TestRemoveTab(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 先添加标签页
+	tab := &CustomRibbonTab{
+		ID:     "test_tab",
+		Label:  "测试标签页",
+		Visible: true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加标签页失败: %v", err)
+	}
+	
+	// 移除标签页
+	err = ribbon.RemoveTab("test_tab")
+	if err != nil {
+		t.Fatalf("移除标签页失败: %v", err)
+	}
+	
+	// 验证标签页已被移除
+	_, err = ribbon.GetTab("test_tab")
+	if err == nil {
+		t.Error("标签页应该已被移除")
+	}
+	
+	// 验证列表为空
+	tabList := ribbon.ListTabs()
+	if len(tabList) != 0 {
+		t.Errorf("标签页列表应该为空，实际: %d", len(tabList))
+	}
+}
+
+// TestRemoveNonExistentTab 测试移除不存在的标签页
+func TestRemoveNonExistentTab(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	
+	err := ribbon.RemoveTab("non_existent_tab")
+	if err == nil {
+		t.Error("应该拒绝移除不存在的标签页")
+	}
+}
+
+// TestCustomRibbonConcurrency 测试并发安全性
+func TestCustomRibbonConcurrency(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 并发添加标签页
+	const numGoroutines = 10
+	errors := make(chan error, numGoroutines)
+	
+	for i := 0; i < numGoroutines; i++ {
+		go func(id int) {
+			tab := &CustomRibbonTab{
+				ID:     fmt.Sprintf("concurrent_tab_%d", id),
+				Label:  fmt.Sprintf("并发标签页%d", id),
+				Visible: true,
+			}
+			err := ribbon.AddTab(ctx, tab)
+			errors <- err
+		}(i)
+	}
+	
+	// 收集错误
+	for i := 0; i < numGoroutines; i++ {
+		err := <-errors
+		if err != nil {
+			t.Errorf("并发添加标签页%d失败: %v", i+1, err)
+		}
+	}
+	
+	// 验证所有标签页都已添加
+	tabList := ribbon.ListTabs()
+	if len(tabList) != numGoroutines {
+		t.Errorf("并发添加的标签页数量不匹配，期望: %d, 实际: %d", numGoroutines, len(tabList))
+	}
+}
+
+// TestCustomRibbonMemoryLimits 测试内存限制
+func TestCustomRibbonMemoryLimits(t *testing.T) {
+	// 创建限制配置
+	config := &CustomRibbonConfig{
+		MaxTabs:   2,
+		MaxGroups: 3,
+	}
+	
+	ribbon := NewCustomRibbon(config)
+	ctx := context.Background()
+	
+	// 测试标签页数量限制
+	for i := 0; i < 3; i++ {
+		tab := &CustomRibbonTab{
+			ID:     fmt.Sprintf("limit_tab_%d", i),
+			Label:  fmt.Sprintf("限制标签页%d", i),
+			Visible: true,
+		}
+		err := ribbon.AddTab(ctx, tab)
+		if i < 2 {
+			if err != nil {
+				t.Errorf("添加第%d个标签页应该成功: %v", i+1, err)
+			}
+		} else {
+			if err == nil {
+				t.Error("添加第3个标签页应该失败（超过限制）")
+			}
+		}
+	}
+	
+	// 测试组数量限制
+	tab := &CustomRibbonTab{
+		ID:     "test_tab",
+		Label:  "测试标签页",
+		Visible: true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加测试标签页失败: %v", err)
+	}
+	
+	for i := 0; i < 4; i++ {
+		group := &CustomRibbonGroup{
+			ID:     fmt.Sprintf("limit_group_%d", i),
+			TabID:  "test_tab",
+			Label:  fmt.Sprintf("限制组%d", i),
+			Visible: true,
+		}
+		err := ribbon.AddGroup(ctx, group)
+		if i < 3 {
+			if err != nil {
+				t.Errorf("添加第%d个组应该成功: %v", i+1, err)
+			}
+		} else {
+			if err == nil {
+				t.Error("添加第4个组应该失败（超过限制）")
+			}
+		}
+	}
+}
+
+// TestCustomRibbonTemplates 测试自定义功能区模板
+func TestCustomRibbonTemplates(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	
+	// 测试获取默认模板
+	basicTemplate, err := ribbon.GetTemplate("basic")
+	if err != nil {
+		t.Fatalf("获取基本模板失败: %v", err)
+	}
+	
+	if basicTemplate.Name != "basic" {
+		t.Errorf("基本模板名称不匹配，期望: basic, 实际: %s", basicTemplate.Name)
+	}
+	
+	advancedTemplate, err := ribbon.GetTemplate("advanced")
+	if err != nil {
+		t.Fatalf("获取高级模板失败: %v", err)
+	}
+	
+	if advancedTemplate.Name != "advanced" {
+		t.Errorf("高级模板名称不匹配，期望: advanced, 实际: %s", advancedTemplate.Name)
+	}
+	
+	// 测试获取不存在的模板
+	_, err = ribbon.GetTemplate("non_existent_template")
+	if err == nil {
+		t.Error("应该拒绝获取不存在的模板")
+	}
+}
+
+// TestCustomRibbonDefaultValues 测试默认值设置
+func TestCustomRibbonDefaultValues(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 创建没有完整信息的标签页
+	tab := &CustomRibbonTab{
+		ID: "test_tab",
+		// 不设置Label和Visible
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加标签页失败: %v", err)
+	}
+	
+	// 验证默认值已设置
+	if tab.Label == "" {
+		t.Error("默认标签应该被设置")
+	}
+	
+	if !tab.Visible {
+		t.Error("默认可见性应该为true")
+	}
+	
+	if tab.CreatedAt == 0 {
+		t.Error("创建时间应该被设置")
+	}
+	
+	if tab.UpdatedAt == 0 {
+		t.Error("更新时间应该被设置")
+	}
+	
+	// 验证元数据已初始化
+	if tab.Metadata == nil {
+		t.Fatal("元数据应该被初始化")
+	}
+	
+	if len(tab.Metadata) != 0 {
+		t.Errorf("初始元数据应该为空，实际长度: %d", len(tab.Metadata))
+	}
+}
+
+// TestCustomRibbonWithMetadata 测试带元数据的自定义功能区
+func TestCustomRibbonWithMetadata(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 创建带元数据的标签页
+	tab := &CustomRibbonTab{
+		ID:          "metadata_tab",
+		Label:       "元数据标签页",
+		Description: "这是一个用于测试元数据的标签页",
+		Visible:     true,
+		Metadata: map[string]interface{}{
+			"custom_field": "custom_value",
+			"number_field": 42,
+			"bool_field":   true,
+			"array_field":  []string{"item1", "item2"},
+		},
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加带元数据的标签页失败: %v", err)
+	}
+	
+	// 验证元数据已保存
+	retrievedTab, err := ribbon.GetTab("metadata_tab")
+	if err != nil {
+		t.Fatalf("获取带元数据的标签页失败: %v", err)
+	}
+	
+	if retrievedTab.Metadata["custom_field"] != "custom_value" {
+		t.Errorf("自定义字段不匹配，期望: custom_value, 实际: %v", retrievedTab.Metadata["custom_field"])
+	}
+	
+	if retrievedTab.Metadata["number_field"] != 42 {
+		t.Errorf("数字字段不匹配，期望: 42, 实际: %v", retrievedTab.Metadata["number_field"])
+	}
+	
+	if retrievedTab.Metadata["bool_field"] != true {
+		t.Errorf("布尔字段不匹配，期望: true, 实际: %v", retrievedTab.Metadata["bool_field"])
+	}
+	
+	arrayField, ok := retrievedTab.Metadata["array_field"].([]string)
+	if !ok {
+		t.Fatal("数组字段应该存在")
+	}
+	
+	if len(arrayField) != 2 {
+		t.Errorf("数组字段长度不匹配，期望: 2, 实际: %d", len(arrayField))
+	}
+}
+
+// TestCustomRibbonPerformance 测试自定义功能区性能
+func TestCustomRibbonPerformance(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 测试添加标签页性能
+	start := time.Now()
+	
+	tab := &CustomRibbonTab{
+		ID:     "performance_tab",
+		Label:  "性能测试标签页",
+		Visible: true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	duration := time.Since(start)
+	
+	if err != nil {
+		t.Fatalf("性能测试添加标签页失败: %v", err)
+	}
+	
+	// 验证标签页已添加
+	if tab.ID == "" {
+		t.Error("性能测试标签页ID应该自动生成")
+	}
+	
+	// 验证添加时间合理（应该小于10毫秒）
+	if duration > 10*time.Millisecond {
+		t.Errorf("添加标签页时间过长: %v", duration)
+	}
+	
+	t.Logf("添加标签页耗时: %v", duration)
+}
+
+// TestCustomRibbonErrorHandling 测试错误处理
+func TestCustomRibbonErrorHandling(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 测试nil标签页
+	err := ribbon.AddTab(ctx, nil)
+	if err == nil {
+		t.Error("nil标签页应该导致添加失败")
+	}
+	
+	// 测试nil组
+	err = ribbon.AddGroup(ctx, nil)
+	if err == nil {
+		t.Error("nil组应该导致添加失败")
+	}
+	
+	// 测试nil控件
+	err = ribbon.AddControl(ctx, nil)
+	if err == nil {
+		t.Error("nil控件应该导致添加失败")
+	}
+	
+	// 测试空ID
+	tab := &CustomRibbonTab{
+		ID:     "",
+		Label:  "空ID标签页",
+		Visible: true,
+	}
+	
+	err = ribbon.AddTab(ctx, tab)
+	if err == nil {
+		t.Error("空ID应该导致添加失败")
+	}
+}
+
+// TestCustomRibbonStats 测试自定义功能区统计信息
+func TestCustomRibbonStats(t *testing.T) {
+	ribbon := NewCustomRibbon(nil)
+	ctx := context.Background()
+	
+	// 获取初始统计
+	initialStats := ribbon.GetStats()
+	if initialStats.TotalTabs != 0 {
+		t.Errorf("初始标签页总数应该为0，实际: %d", initialStats.TotalTabs)
+	}
+	
+	if initialStats.TotalGroups != 0 {
+		t.Errorf("初始组总数应该为0，实际: %d", initialStats.TotalGroups)
+	}
+	
+	if initialStats.TotalControls != 0 {
+		t.Errorf("初始控件总数应该为0，实际: %d", initialStats.TotalControls)
+	}
+	
+	// 添加一些元素
+	tab := &CustomRibbonTab{
+		ID:     "test_tab",
+		Label:  "测试标签页",
+		Visible: true,
+	}
+	
+	err := ribbon.AddTab(ctx, tab)
+	if err != nil {
+		t.Fatalf("添加标签页失败: %v", err)
+	}
+	
+	group := &CustomRibbonGroup{
+		ID:     "test_group",
+		TabID:  "test_tab",
+		Label:  "测试组",
+		Visible: true,
+	}
+	
+	err = ribbon.AddGroup(ctx, group)
+	if err != nil {
+		t.Fatalf("添加组失败: %v", err)
+	}
+	
+	control := &CustomRibbonControl{
+		ID:      "test_control",
+		GroupID: "test_group",
+		Type:    CustomRibbonControlTypeButton,
+		Label:   "测试按钮",
+		Visible: true,
+	}
+	
+	err = ribbon.AddControl(ctx, control)
+	if err != nil {
+		t.Fatalf("添加控件失败: %v", err)
+	}
+	
+	// 获取更新后的统计
+	updatedStats := ribbon.GetStats()
+	if updatedStats.TotalTabs != 1 {
+		t.Errorf("标签页总数应该为1，实际: %d", updatedStats.TotalTabs)
+	}
+	
+	if updatedStats.TotalGroups != 1 {
+		t.Errorf("组总数应该为1，实际: %d", updatedStats.TotalGroups)
+	}
+	
+	if updatedStats.TotalControls != 1 {
+		t.Errorf("控件总数应该为1，实际: %d", updatedStats.TotalControls)
+	}
+	
+	// 验证可见性统计
+	if updatedStats.VisibleTabs != 1 {
+		t.Errorf("可见标签页数量应该为1，实际: %d", updatedStats.VisibleTabs)
+	}
+	
+	if updatedStats.VisibleGroups != 1 {
+		t.Errorf("可见组数量应该为1，实际: %d", updatedStats.VisibleGroups)
+	}
+	
+	if updatedStats.VisibleControls != 1 {
+		t.Errorf("可见控件数量应该为1，实际: %d", updatedStats.VisibleControls)
+	}
+}

@@ -260,11 +260,7 @@ func (cg *ChartGenerator) CreateChart(ctx context.Context, chart *ChartGenerator
 	// 存储图表
 	cg.charts[chart.ID] = chart
 
-	cg.logger.Info("图表已创建", map[string]interface{}{
-		"chart_id": chart.ID,
-		"title":    chart.Title,
-		"type":     chart.Type,
-	})
+	cg.logger.Info("图表已创建: %s, 标题: %s, 类型: %s", chart.ID, chart.Title, chart.Type)
 
 	return nil
 }
@@ -287,11 +283,7 @@ func (cg *ChartGenerator) AddDataSource(ctx context.Context, dataSource *ChartGe
 	// 存储数据源
 	cg.dataSources[dataSource.ID] = dataSource
 
-	cg.logger.Info("数据源已添加", map[string]interface{}{
-		"data_source_id": dataSource.ID,
-		"name":           dataSource.Name,
-		"type":           dataSource.Type,
-	})
+	cg.logger.Info("数据源已添加: %s, 名称: %s, 类型: %s", dataSource.ID, dataSource.Name, dataSource.Type)
 
 	return nil
 }
@@ -315,11 +307,7 @@ func (cg *ChartGenerator) AddDataPoint(ctx context.Context, chartID string, data
 	chart.Data = append(chart.Data, dataPoint)
 	chart.UpdatedAt = utils.GetCurrentTimestamp()
 
-	cg.logger.Info("数据点已添加", map[string]interface{}{
-		"chart_id": chartID,
-		"label":    dataPoint.Label,
-		"value":    dataPoint.Value,
-	})
+	cg.logger.Info("数据点已添加: 图表ID %s, 标签: %s, 值: %v", chartID, dataPoint.Label, dataPoint.Value)
 
 	return nil
 }
@@ -338,10 +326,7 @@ func (cg *ChartGenerator) UpdateChartStyle(ctx context.Context, chartID string, 
 	chart.Style = style
 	chart.UpdatedAt = utils.GetCurrentTimestamp()
 
-	cg.logger.Info("图表样式已更新", map[string]interface{}{
-		"chart_id": chartID,
-		"theme":    style.Theme,
-	})
+	cg.logger.Info("图表样式已更新: 图表ID %s, 主题: %s", chartID, style.Theme)
 
 	return nil
 }
@@ -360,11 +345,7 @@ func (cg *ChartGenerator) UpdateChartOptions(ctx context.Context, chartID string
 	chart.Options = options
 	chart.UpdatedAt = utils.GetCurrentTimestamp()
 
-	cg.logger.Info("图表选项已更新", map[string]interface{}{
-		"chart_id": chartID,
-		"width":    options.Width,
-		"height":   options.Height,
-	})
+	cg.logger.Info("图表选项已更新: 图表ID %s, 宽度: %d, 高度: %d", chartID, options.Width, options.Height)
 
 	return nil
 }
@@ -421,10 +402,7 @@ func (cg *ChartGenerator) DeleteChart(ctx context.Context, chartID string) error
 	// 删除图表
 	delete(cg.charts, chartID)
 
-	cg.logger.Info("图表已删除", map[string]interface{}{
-		"chart_id": chartID,
-		"title":    chart.Title,
-	})
+	cg.logger.Info("图表已删除: 图表ID %s, 标题: %s", chartID, chart.Title)
 
 	return nil
 }
@@ -445,11 +423,7 @@ func (cg *ChartGenerator) ExportChart(ctx context.Context, chartID string, forma
 	// 为了简化，我们返回模拟数据
 	exportData := []byte(fmt.Sprintf("Chart: %s, Type: %s, Format: %s", chart.Title, chart.Type, format))
 
-	cg.logger.Info("图表已导出", map[string]interface{}{
-		"chart_id": chartID,
-		"format":   format,
-		"size":     len(exportData),
-	})
+	cg.logger.Info("图表已导出: 图表ID %s, 格式: %s, 大小: %d", chartID, format, len(exportData))
 
 	return exportData, nil
 }

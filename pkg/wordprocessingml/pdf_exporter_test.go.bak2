@@ -1,0 +1,618 @@
+package wordprocessingml
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+)
+
+// MockDocument 模拟文档
+type MockDocument struct {
+	content string
+	path    string
+}
+
+func (md *MockDocument) GetText() (string, error) {
+	return md.content, nil
+}
+
+func (md *MockDocument) Close() error {
+	return nil
+}
+
+// TestNewPDFExporter 测试创建PDF导出器
+func TestNewPDFExporter(t *testing.T) {
+	doc := &MockDocument{content: "测试文档内容"}
+	
+	exporter := NewPDFExporter(doc, nil)
+	if exporter == nil {
+		t.Fatal("PDF导出器创建失败")
+	}
+	
+	if exporter.document != doc {
+		t.Error("文档引用不匹配")
+	}
+}
+
+// TestNewPDFExporterWithConfig 测试使用配置创建PDF导出器
+func TestNewPDFExporterWithConfig(t *testing.T) {
+	doc := &MockDocument{content: "测试文档内容"}
+	config := &PDFExportConfig{
+		Quality:     "high",
+		Compression: true,
+		Metadata: map[string]string{
+			"Title":   "测试文档",
+			"Author":  "测试作者",
+			"Subject": "测试主题",
+		},
+	}
+	
+	exporter := NewPDFExporter(doc, config)
+	if exporter == nil {
+		t.Fatal("PDF导出器创建失败")
+	}
+	
+	if exporter.config.Quality != "high" {
+		t.Errorf("配置质量不匹配，期望: high, 实际: %s", exporter.config.Quality)
+	}
+	
+	if !exporter.config.Compression {
+		t.Error("配置压缩应该启用")
+	}
+	
+	if exporter.config.Metadata["Title"] != "测试文档" {
+		t.Errorf("配置元数据标题不匹配，期望: 测试文档, 实际: %s", exporter.config.Metadata["Title"])
+	}
+}
+
+// TestExportToPDF 测试PDF导出
+func TestExportToPDF(t *testing.T) {
+	doc := &MockDocument{content: "测试文档内容"}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "test_output.pdf")
+	
+	// 测试导出
+	err = exporter.ExportToPDF(context.Background(), outputPath)
+	if err != nil {
+		t.Fatalf("PDF导出失败: %v", err)
+	}
+	
+	// 验证文件已创建
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		t.Error("PDF文件应该被创建")
+	}
+}
+
+// TestExportToPDFWithInvalidPath 测试导出到无效路径
+func TestExportToPDFWithInvalidPath(t *testing.T) {
+	doc := &MockDocument{content: "测试文档内容"}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 测试导出到无效路径
+	err := exporter.ExportToPDF(context.Background(), "/invalid/path/test.pdf")
+	if err == nil {
+		t.Error("应该拒绝导出到无效路径")
+	}
+}
+
+// TestExportToPDFWithNilDocument 测试导出nil文档
+func TestExportToPDFWithNilDocument(t *testing.T) {
+	exporter := NewPDFExporter(nil, nil)
+	
+	err := exporter.ExportToPDF(context.Background(), "test.pdf")
+	if err == nil {
+		t.Error("应该拒绝导出nil文档")
+	}
+}
+
+// TestExportToPDFWithEmptyContent 测试导出空内容文档
+func TestExportToPDFWithEmptyContent(t *testing.T) {
+	doc := &MockDocument{content: ""}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "empty_content.pdf")
+	
+	// 测试导出空内容
+	err = exporter.ExportToPDF(context.Background(), outputPath)
+	if err != nil {
+		t.Fatalf("空内容PDF导出失败: %v", err)
+	}
+	
+	// 验证文件已创建
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		t.Error("空内容PDF文件应该被创建")
+	}
+}
+
+// TestExportToPDFWithSpecialCharacters 测试导出包含特殊字符的文档
+func TestExportToPDFWithSpecialCharacters(t *testing.T) {
+	doc := &MockDocument{content: "特殊字符测试：!@#$%^&*()_+-=[]{}|;':\",./<>?"}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "special_chars.pdf")
+	
+	// 测试导出包含特殊字符的文档
+	err = exporter.ExportToPDF(context.Background(), outputPath)
+	if err != nil {
+		t.Fatalf("特殊字符PDF导出失败: %v", err)
+	}
+	
+	// 验证文件已创建
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		t.Error("特殊字符PDF文件应该被创建")
+	}
+}
+
+// TestExportToPDFWithUnicode 测试导出包含Unicode字符的文档
+func TestExportToPDFWithUnicode(t *testing.T) {
+	doc := &MockDocument{content: "Unicode测试：中文测试，日本語テスト，한국어 테스트，🌍🌎🌏"}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "unicode_test.pdf")
+	
+	// 测试导出包含Unicode字符的文档
+	err = exporter.ExportToPDF(context.Background(), outputPath)
+	if err != nil {
+		t.Fatalf("Unicode PDF导出失败: %v", err)
+	}
+	
+	// 验证文件已创建
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		t.Error("Unicode PDF文件应该被创建")
+	}
+}
+
+// TestExportToPDFWithLongContent 测试导出长内容文档
+func TestExportToPDFWithLongContent(t *testing.T) {
+	// 生成长内容
+	longContent := ""
+	for i := 0; i < 1000; i++ {
+		longContent += fmt.Sprintf("这是第%d行内容，包含一些测试文本。", i+1)
+		if i%10 == 0 {
+			longContent += "\n"
+		}
+	}
+	
+	doc := &MockDocument{content: longContent}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "long_content.pdf")
+	
+	// 测试导出长内容
+	err = exporter.ExportToPDF(context.Background(), outputPath)
+	if err != nil {
+		t.Fatalf("长内容PDF导出失败: %v", err)
+	}
+	
+	// 验证文件已创建
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		t.Error("长内容PDF文件应该被创建")
+	}
+}
+
+// TestExportToPDFWithDifferentConfigs 测试不同配置的PDF导出
+func TestExportToPDFWithDifferentConfigs(t *testing.T) {
+	doc := &MockDocument{content: "配置测试文档"}
+	
+	testConfigs := []*PDFExportConfig{
+		{
+			Quality:     "low",
+			Compression: false,
+			Metadata: map[string]string{
+				"Title": "低质量PDF",
+			},
+		},
+		{
+			Quality:     "medium",
+			Compression: true,
+			Metadata: map[string]string{
+				"Title": "中等质量PDF",
+			},
+		},
+		{
+			Quality:     "high",
+			Compression: true,
+			Metadata: map[string]string{
+				"Title": "高质量PDF",
+			},
+		},
+	}
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	for i, config := range testConfigs {
+		exporter := NewPDFExporter(doc, config)
+		outputPath := filepath.Join(tempDir, fmt.Sprintf("config_test_%d.pdf", i))
+		
+		// 测试导出
+		err := exporter.ExportToPDF(context.Background(), outputPath)
+		if err != nil {
+			t.Fatalf("配置%d PDF导出失败: %v", i+1, err)
+		}
+		
+		// 验证文件已创建
+		if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+			t.Errorf("配置%d PDF文件应该被创建", i+1)
+		}
+	}
+}
+
+// TestExportToPDFConcurrency 测试并发PDF导出
+func TestExportToPDFConcurrency(t *testing.T) {
+	doc := &MockDocument{content: "并发测试文档"}
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	const numGoroutines = 5
+	errors := make(chan error, numGoroutines)
+	
+	for i := 0; i < numGoroutines; i++ {
+		go func(id int) {
+			exporter := NewPDFExporter(doc, nil)
+			outputPath := filepath.Join(tempDir, fmt.Sprintf("concurrent_%d.pdf", id))
+			
+			err := exporter.ExportToPDF(context.Background(), outputPath)
+			errors <- err
+		}(i)
+	}
+	
+	// 收集错误
+	for i := 0; i < numGoroutines; i++ {
+		err := <-errors
+		if err != nil {
+			t.Errorf("并发PDF导出%d失败: %v", i+1, err)
+		}
+	}
+	
+	// 验证所有文件都已创建
+	for i := 0; i < numGoroutines; i++ {
+		outputPath := filepath.Join(tempDir, fmt.Sprintf("concurrent_%d.pdf", i))
+		if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+			t.Errorf("并发PDF文件%d应该被创建", i+1)
+		}
+	}
+}
+
+// TestExportToPDFWithContext 测试带上下文的PDF导出
+func TestExportToPDFWithContext(t *testing.T) {
+	doc := &MockDocument{content: "上下文测试文档"}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "context_test.pdf")
+	
+	// 测试带上下文的导出
+	ctx := context.Background()
+	err = exporter.ExportToPDF(ctx, outputPath)
+	if err != nil {
+		t.Fatalf("带上下文的PDF导出失败: %v", err)
+	}
+	
+	// 验证文件已创建
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		t.Error("带上下文的PDF文件应该被创建")
+	}
+}
+
+// TestExportToPDFWithCancelledContext 测试取消上下文的PDF导出
+func TestExportToPDFWithCancelledContext(t *testing.T) {
+	doc := &MockDocument{content: "取消上下文测试文档"}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "cancelled_context.pdf")
+	
+	// 创建已取消的上下文
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // 立即取消
+	
+	// 测试已取消上下文的导出
+	err = exporter.ExportToPDF(ctx, outputPath)
+	if err == nil {
+		t.Error("已取消上下文的PDF导出应该失败")
+	}
+}
+
+// TestExportToPDFWithTimeoutContext 测试超时上下文的PDF导出
+func TestExportToPDFWithTimeoutContext(t *testing.T) {
+	doc := &MockDocument{content: "超时上下文测试文档"}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "timeout_context.pdf")
+	
+	// 创建超时上下文
+	ctx, cancel := context.WithTimeout(context.Background(), 1) // 1纳秒超时
+	defer cancel()
+	
+	// 测试超时上下文的导出
+	err = exporter.ExportToPDF(ctx, outputPath)
+	if err == nil {
+		t.Error("超时上下文的PDF导出应该失败")
+	}
+}
+
+// TestExportToPDFFileSize 测试PDF文件大小
+func TestExportToPDFFileSize(t *testing.T) {
+	doc := &MockDocument{content: "文件大小测试文档"}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "file_size_test.pdf")
+	
+	// 测试导出
+	err = exporter.ExportToPDF(context.Background(), outputPath)
+	if err != nil {
+		t.Fatalf("文件大小测试PDF导出失败: %v", err)
+	}
+	
+	// 验证文件已创建
+	fileInfo, err := os.Stat(outputPath)
+	if err != nil {
+		t.Fatalf("获取文件信息失败: %v", err)
+	}
+	
+	// 验证文件大小大于0
+	if fileInfo.Size() <= 0 {
+		t.Error("PDF文件大小应该大于0")
+	}
+	
+	// 验证文件大小合理（至少几百字节）
+	if fileInfo.Size() < 100 {
+		t.Errorf("PDF文件大小应该合理，实际: %d bytes", fileInfo.Size())
+	}
+}
+
+// TestExportToPDFWithMetadata 测试带元数据的PDF导出
+func TestExportToPDFWithMetadata(t *testing.T) {
+	doc := &MockDocument{content: "元数据测试文档"}
+	config := &PDFExportConfig{
+		Metadata: map[string]string{
+			"Title":    "测试文档标题",
+			"Author":   "测试作者",
+			"Subject":  "测试主题",
+			"Keywords": "测试,PDF,导出",
+			"Creator":  "Go Word Library",
+			"Producer": "Go Word PDF Exporter",
+		},
+	}
+	
+	exporter := NewPDFExporter(doc, config)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "metadata_test.pdf")
+	
+	// 测试导出
+	err = exporter.ExportToPDF(context.Background(), outputPath)
+	if err != nil {
+		t.Fatalf("元数据测试PDF导出失败: %v", err)
+	}
+	
+	// 验证文件已创建
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		t.Error("元数据测试PDF文件应该被创建")
+	}
+}
+
+// TestExportToPDFWithCompression 测试压缩PDF导出
+func TestExportToPDFWithCompression(t *testing.T) {
+	doc := &MockDocument{content: "压缩测试文档"}
+	
+	// 测试启用压缩
+	compressedConfig := &PDFExportConfig{
+		Compression: true,
+	}
+	
+	exporter := NewPDFExporter(doc, compressedConfig)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	compressedPath := filepath.Join(tempDir, "compressed.pdf")
+	
+	// 测试压缩导出
+	err = exporter.ExportToPDF(context.Background(), compressedPath)
+	if err != nil {
+		t.Fatalf("压缩PDF导出失败: %v", err)
+	}
+	
+	// 测试禁用压缩
+	uncompressedConfig := &PDFExportConfig{
+		Compression: false,
+	}
+	
+	exporter2 := NewPDFExporter(doc, uncompressedConfig)
+	uncompressedPath := filepath.Join(tempDir, "uncompressed.pdf")
+	
+	// 测试非压缩导出
+	err = exporter2.ExportToPDF(context.Background(), uncompressedPath)
+	if err != nil {
+		t.Fatalf("非压缩PDF导出失败: %v", err)
+	}
+	
+	// 验证两个文件都已创建
+	if _, err := os.Stat(compressedPath); os.IsNotExist(err) {
+		t.Error("压缩PDF文件应该被创建")
+	}
+	
+	if _, err := os.Stat(uncompressedPath); os.IsNotExist(err) {
+		t.Error("非压缩PDF文件应该被创建")
+	}
+}
+
+// TestExportToPDFWithQuality 测试不同质量的PDF导出
+func TestExportToPDFWithQuality(t *testing.T) {
+	doc := &MockDocument{content: "质量测试文档"}
+	
+	qualities := []string{"low", "medium", "high"}
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	for _, quality := range qualities {
+		config := &PDFExportConfig{
+			Quality: quality,
+		}
+		
+		exporter := NewPDFExporter(doc, config)
+		outputPath := filepath.Join(tempDir, fmt.Sprintf("quality_%s.pdf", quality))
+		
+		// 测试导出
+		err := exporter.ExportToPDF(context.Background(), outputPath)
+		if err != nil {
+			t.Fatalf("质量%s PDF导出失败: %v", quality, err)
+		}
+		
+		// 验证文件已创建
+		if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+			t.Errorf("质量%s PDF文件应该被创建", quality)
+		}
+	}
+}
+
+// TestExportToPDFErrorHandling 测试PDF导出错误处理
+func TestExportToPDFErrorHandling(t *testing.T) {
+	// 测试nil文档
+	exporter := NewPDFExporter(nil, nil)
+	err := exporter.ExportToPDF(context.Background(), "test.pdf")
+	if err == nil {
+		t.Error("nil文档应该导致导出失败")
+	}
+	
+	// 测试空路径
+	doc := &MockDocument{content: "错误处理测试文档"}
+	exporter2 := NewPDFExporter(doc, nil)
+	err = exporter2.ExportToPDF(context.Background(), "")
+	if err == nil {
+		t.Error("空路径应该导致导出失败")
+	}
+	
+	// 测试相对路径
+	err = exporter2.ExportToPDF(context.Background(), "relative/path/test.pdf")
+	if err == nil {
+		t.Error("相对路径应该导致导出失败")
+	}
+}
+
+// TestExportToPDFPerformance 测试PDF导出性能
+func TestExportToPDFPerformance(t *testing.T) {
+	doc := &MockDocument{content: "性能测试文档"}
+	exporter := NewPDFExporter(doc, nil)
+	
+	// 创建临时目录
+	tempDir, err := os.MkdirTemp("", "pdf_export_test")
+	if err != nil {
+		t.Fatalf("创建临时目录失败: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+	
+	outputPath := filepath.Join(tempDir, "performance_test.pdf")
+	
+	// 测试导出性能
+	start := time.Now()
+	err = exporter.ExportToPDF(context.Background(), outputPath)
+	duration := time.Since(start)
+	
+	if err != nil {
+		t.Fatalf("性能测试PDF导出失败: %v", err)
+	}
+	
+	// 验证文件已创建
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		t.Error("性能测试PDF文件应该被创建")
+	}
+	
+	// 验证导出时间合理（应该小于1秒）
+	if duration > time.Second {
+		t.Errorf("PDF导出时间过长: %v", duration)
+	}
+	
+	t.Logf("PDF导出耗时: %v", duration)
+}
