@@ -484,6 +484,10 @@ func NewLayoutManagerTableLayout() *LayoutManagerTableLayout {
 
 // ProcessLayout 处理布局
 func (lm *LayoutManager) ProcessLayout(content *types.DocumentContent) error {
+	if content == nil {
+		return fmt.Errorf("文档内容不能为空")
+	}
+	
 	startTime := time.Now()
 	
 	// 处理段落布局
