@@ -4,8 +4,10 @@ package wordprocessingml
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/tanqiangyes/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/utils"
 )
 
 // AdvancedStyleSystem represents the advanced style system
@@ -21,6 +23,9 @@ type AdvancedStyleSystem struct {
 	
 	// 样式冲突解决器
 	ConflictResolver *StyleConflictResolver
+	
+	// 日志记录器
+	logger *utils.Logger
 }
 
 // StyleManager manages all styles in the document
@@ -73,7 +78,7 @@ type StyleDefinition struct {
 	Hidden         bool
 	
 	// 样式属性
-	Properties     *StyleProperties
+	Properties     *types.StyleProperties
 }
 
 // StyleType defines the type of style
@@ -166,8 +171,14 @@ type CharacterStyleDefinition struct {
 // CharacterStyleProperties represents character style properties
 type CharacterStyleProperties struct {
 	// 字体属性
-	Font           *Font
-	Effects        *TextEffects
+	FontName       string
+	FontSize       int
+	FontColor      string
+	BackgroundColor string
+	Bold           bool
+	Italic         bool
+	Underline      bool
+	StrikeThrough  bool
 	
 	// 其他属性
 	Hidden         bool
@@ -349,7 +360,7 @@ type StyleConflictResolver struct {
 	ResolutionStrategy ConflictResolutionStrategy
 	
 	// 冲突记录
-	Conflicts []StyleConflict
+	Conflicts []types.StyleConflict
 	
 	// 解决规则
 	Rules []ConflictResolutionRule
@@ -368,23 +379,6 @@ const (
 	// UserChoiceStrategy lets user choose
 	UserChoiceStrategy
 )
-
-// StyleConflict represents a style conflict
-type StyleConflict struct {
-	// 基础信息
-	ID          string
-	StyleName   string
-	ConflictType ConflictType
-	
-	// 冲突详情
-	OriginalStyle *StyleDefinition
-	NewStyle      *StyleDefinition
-	Resolution    *StyleDefinition
-	
-	// 属性
-	Resolved      bool
-	ResolutionDate string
-}
 
 // ConflictType defines the type of conflict
 type ConflictType int
@@ -432,7 +426,7 @@ func NewAdvancedStyleSystem() *AdvancedStyleSystem {
 		InheritanceChain:  make(map[string][]string),
 		ConflictResolver:  &StyleConflictResolver{
 			ResolutionStrategy: KeepOriginalStrategy,
-			Conflicts:          make([]StyleConflict, 0),
+			Conflicts:          make([]types.StyleConflict, 0),
 			Rules:              make([]ConflictResolutionRule, 0),
 		},
 	}
@@ -578,25 +572,92 @@ func (ass *AdvancedStyleSystem) GetInheritanceChain(id string) []string {
 	return ass.InheritanceChain[id]
 }
 
+// convertTypesStyleToStyleDefinition converts types.Style to StyleDefinition
+func (ass *AdvancedStyleSystem) convertTypesStyleToStyleDefinition(style *types.Style) *StyleDefinition {
+	if style == nil {
+		return nil
+	}
+	
+	return &StyleDefinition{
+		ID:          style.ID,
+		Name:        style.Name,
+		Type:        ass.convertStringToStyleType(string(style.Type)),
+		Category:    CustomCategory,
+		BasedOn:     "",
+		Next:        "",
+		Link:        "",
+		Parent:      "",
+		SemiHidden:  false,
+		UnhideWhenUsed: false,
+		QFormat:     false,
+		Locked:      false,
+		Hidden:      false,
+		Properties:  &types.StyleProperties{},
+	}
+}
+
+// convertStringToStyleType converts string to StyleType
+func (ass *AdvancedStyleSystem) convertStringToStyleType(styleType string) StyleType {
+	switch styleType {
+	case "paragraph":
+		return ParagraphStyleType
+	case "character":
+		return CharacterStyleType
+	case "table":
+		return TableStyleType
+	case "numbering":
+		return NumberingStyleType
+	case "list":
+		return ListStyleType
+	default:
+		return ParagraphStyleType
+	}
+}
+
+// convertStyleTypeToString converts StyleType to string
+func (ass *AdvancedStyleSystem) convertStyleTypeToString(styleType StyleType) string {
+	switch styleType {
+	case ParagraphStyleType:
+		return "paragraph"
+	case CharacterStyleType:
+		return "character"
+	case TableStyleType:
+		return "table"
+	case NumberingStyleType:
+		return "numbering"
+	case ListStyleType:
+		return "list"
+	default:
+		return "paragraph"
+	}
+}
+
 // checkStyleConflict checks for style conflicts
-func (ass *AdvancedStyleSystem) checkStyleConflict(id string, styleType StyleType) *StyleConflict {
+func (ass *AdvancedStyleSystem) checkStyleConflict(id string, styleType StyleType) *types.StyleConflict {
 	existingStyle := ass.StyleCache[id]
 	if existingStyle == nil {
 		return nil
 	}
 	
 	// 检查同名冲突
-	return &StyleConflict{
+	return &types.StyleConflict{
 		ID:          fmt.Sprintf("conflict_%s", id),
 		StyleName:   id,
-		ConflictType: NamingConflict,
-		OriginalStyle: existingStyle,
+		Type:        types.StyleConflictTypeProperty,
+		Description: fmt.Sprintf("Style conflict detected for %s", id),
+		Severity:    "medium",
 		Resolved:    false,
+		Priority:    0,
+		OriginalStyle: &types.Style{
+			ID:   existingStyle.ID,
+			Name: existingStyle.Name,
+			Type: types.StyleType(ass.convertStyleTypeToString(existingStyle.Type)),
+		},
 	}
 }
 
 // resolveStyleConflict resolves a style conflict
-func (ass *AdvancedStyleSystem) resolveStyleConflict(conflict *StyleConflict) error {
+func (ass *AdvancedStyleSystem) resolveStyleConflict(conflict *types.StyleConflict) error {
 	switch ass.ConflictResolver.ResolutionStrategy {
 	case KeepOriginalStrategy:
 		return fmt.Errorf("style conflict: keeping original style %s", conflict.StyleName)
@@ -617,10 +678,451 @@ func (ass *AdvancedStyleSystem) resolveStyleConflict(conflict *StyleConflict) er
 }
 
 // mergeStyles merges conflicting styles
-func (ass *AdvancedStyleSystem) mergeStyles(conflict *StyleConflict) error {
-	// 简单的合并策略：保留原始样式，添加新样式的非冲突属性
-	// 这里可以实现更复杂的合并逻辑
-	return fmt.Errorf("style merging not implemented yet")
+func (ass *AdvancedStyleSystem) mergeStyles(conflict *types.StyleConflict) error {
+	ass.logger.Info("开始合并样式", map[string]interface{}{
+		"style_id": conflict.StyleID,
+		"conflict_type": conflict.Type,
+		"priority": conflict.Priority,
+	})
+
+	// 获取冲突的样式
+	originalStyle := ass.GetStyle(conflict.StyleID)
+	if originalStyle == nil {
+		return fmt.Errorf("原始样式未找到: %s", conflict.StyleID)
+	}
+
+	newStyle := ass.convertTypesStyleToStyleDefinition(conflict.NewStyle)
+	if newStyle == nil {
+		return fmt.Errorf("新样式为空")
+	}
+
+	// 根据冲突类型选择合并策略
+	switch conflict.Type {
+	case types.StyleConflictTypeProperty:
+		return ass.mergePropertyConflicts(originalStyle, newStyle, conflict)
+	case types.StyleConflictTypeInheritance:
+		return ass.mergeInheritanceConflicts(originalStyle, newStyle, conflict)
+	case types.StyleConflictTypePriority:
+		return ass.mergePriorityConflicts(originalStyle, newStyle, conflict)
+	case types.StyleConflictTypeFormat:
+		return ass.mergeFormatConflicts(originalStyle, newStyle, conflict)
+	default:
+		return ass.mergeDefaultStrategy(originalStyle, newStyle, conflict)
+	}
+}
+
+// mergePropertyConflicts 合并属性冲突
+func (ass *AdvancedStyleSystem) mergePropertyConflicts(original, new *StyleDefinition, conflict *types.StyleConflict) error {
+	ass.logger.Info("合并属性冲突", map[string]interface{}{
+		"style_id": original.ID,
+		"conflict_count": len(conflict.ConflictingProperties),
+	})
+
+	// 创建合并后的样式
+	mergedStyle := &StyleDefinition{
+		ID:          original.ID,
+		Name:        original.Name,
+		Type:        original.Type,
+		BasedOn:     original.BasedOn,
+		Next:        original.Next,
+		Link:        original.Link,
+		Parent:      original.Parent,
+		SemiHidden:  original.SemiHidden,
+		UnhideWhenUsed: original.UnhideWhenUsed,
+		QFormat:     original.QFormat,
+		Locked:      original.Locked,
+		Hidden:      original.Hidden,
+		Properties:  &types.StyleProperties{},
+	}
+
+	// 合并样式属性
+	if original.Properties != nil && new.Properties != nil {
+		mergedStyle.Properties = ass.mergeStyleProperties(original.Properties, new.Properties, conflict)
+	} else if original.Properties != nil {
+		mergedStyle.Properties = original.Properties
+	} else if new.Properties != nil {
+		mergedStyle.Properties = new.Properties
+	}
+
+	// 更新样式缓存
+	ass.StyleCache[mergedStyle.ID] = mergedStyle
+
+	// 记录合并结果
+	ass.logger.Info("属性冲突合并完成", map[string]interface{}{
+		"style_id": mergedStyle.ID,
+		"merged_properties": len(conflict.ConflictingProperties),
+	})
+
+	return nil
+}
+
+// mergeInheritanceConflicts 合并继承冲突
+func (ass *AdvancedStyleSystem) mergeInheritanceConflicts(original, new *StyleDefinition, conflict *types.StyleConflict) error {
+	ass.logger.Info("合并继承冲突", map[string]interface{}{
+		"style_id": original.ID,
+		"original_based_on": original.BasedOn,
+		"new_based_on": new.BasedOn,
+	})
+
+	// 分析继承链
+	originalChain := ass.getInheritanceChain(original.ID)
+	newChain := ass.getInheritanceChain(new.ID)
+
+	// 选择最优的继承链
+	optimalChain := ass.selectOptimalInheritanceChain(originalChain, newChain, conflict.Priority)
+
+	// 更新样式
+	mergedStyle := &StyleDefinition{
+		ID:          original.ID,
+		Name:        original.Name,
+		Type:        original.Type,
+		BasedOn:     optimalChain[0],
+		Next:        original.Next,
+		Link:        original.Link,
+		Parent:      original.Parent,
+		SemiHidden:  original.SemiHidden,
+		UnhideWhenUsed: original.UnhideWhenUsed,
+		QFormat:     original.QFormat,
+		Locked:      original.Locked,
+		Hidden:      original.Hidden,
+		Properties:  original.Properties,
+	}
+
+	// 更新继承链
+	ass.InheritanceChain[mergedStyle.ID] = optimalChain
+
+	// 更新样式缓存
+	ass.StyleCache[mergedStyle.ID] = mergedStyle
+
+	ass.logger.Info("继承冲突合并完成", map[string]interface{}{
+		"style_id": mergedStyle.ID,
+		"new_based_on": mergedStyle.BasedOn,
+		"chain_length": len(optimalChain),
+	})
+
+	return nil
+}
+
+// mergePriorityConflicts 合并优先级冲突
+func (ass *AdvancedStyleSystem) mergePriorityConflicts(original, new *StyleDefinition, conflict *types.StyleConflict) error {
+	ass.logger.Info("合并优先级冲突", map[string]interface{}{
+		"style_id": original.ID,
+		"original_priority": conflict.OriginalPriority,
+		"new_priority": conflict.NewPriority,
+	})
+
+	// 根据优先级选择样式
+	var selectedStyle *StyleDefinition
+	if conflict.NewPriority > conflict.OriginalPriority {
+		selectedStyle = new
+		ass.logger.Info("选择新样式（更高优先级）", map[string]interface{}{
+			"style_id": new.ID,
+		})
+	} else {
+		selectedStyle = original
+		ass.logger.Info("保留原始样式（更高或相等优先级）", map[string]interface{}{
+			"style_id": original.ID,
+		})
+	}
+
+	// 更新样式缓存
+	ass.StyleCache[selectedStyle.ID] = selectedStyle
+
+	return nil
+}
+
+// mergeFormatConflicts 合并格式冲突
+func (ass *AdvancedStyleSystem) mergeFormatConflicts(original, new *StyleDefinition, conflict *types.StyleConflict) error {
+	ass.logger.Info("合并格式冲突", map[string]interface{}{
+		"style_id": original.ID,
+		"conflict_count": len(conflict.ConflictingProperties),
+	})
+
+	// 创建合并后的样式
+	mergedStyle := &StyleDefinition{
+		ID:          original.ID,
+		Name:        original.Name,
+		Type:        original.Type,
+		BasedOn:     original.BasedOn,
+		Next:        original.Next,
+		Link:        original.Link,
+		Parent:      original.Parent,
+		SemiHidden:  original.SemiHidden,
+		UnhideWhenUsed: original.UnhideWhenUsed,
+		QFormat:     original.QFormat,
+		Locked:      original.Locked,
+		Hidden:      original.Hidden,
+		Properties:  original.Properties,
+	}
+
+	// 合并格式属性
+	if original.Properties != nil && new.Properties != nil {
+		mergedStyle.Properties = ass.mergeFormatProperties(original.Properties, new.Properties, conflict)
+	}
+
+	// 更新样式缓存
+	ass.StyleCache[mergedStyle.ID] = mergedStyle
+
+	ass.logger.Info("格式冲突合并完成", map[string]interface{}{
+		"style_id": mergedStyle.ID,
+		"merged_formats": len(conflict.ConflictingProperties),
+	})
+
+	return nil
+}
+
+// mergeDefaultStrategy 默认合并策略
+func (ass *AdvancedStyleSystem) mergeDefaultStrategy(original, new *StyleDefinition, conflict *types.StyleConflict) error {
+	ass.logger.Info("使用默认合并策略", map[string]interface{}{
+		"style_id": original.ID,
+		"strategy": "conservative",
+	})
+
+	// 保守策略：保留原始样式，只添加新样式中不冲突的属性
+	mergedStyle := &StyleDefinition{
+		ID:          original.ID,
+		Name:        original.Name,
+		Type:        original.Type,
+		BasedOn:     original.BasedOn,
+		Next:        original.Next,
+		Link:        original.Link,
+		Parent:      original.Parent,
+		SemiHidden:  original.SemiHidden,
+		UnhideWhenUsed: original.UnhideWhenUsed,
+		QFormat:     original.QFormat,
+		Locked:      original.Locked,
+		Hidden:      original.Hidden,
+		Properties:  original.Properties,
+	}
+
+	// 合并非冲突属性
+	if new.Properties != nil {
+		if mergedStyle.Properties == nil {
+			mergedStyle.Properties = &types.StyleProperties{}
+		}
+		
+		// 安全地合并属性
+		ass.safeMergeProperties(mergedStyle.Properties, new.Properties)
+	}
+
+	// 更新样式缓存
+	ass.StyleCache[mergedStyle.ID] = mergedStyle
+
+	return nil
+}
+
+// 辅助方法
+func (ass *AdvancedStyleSystem) mergeStringProperty(original, new, propertyName string) string {
+	if new != "" && new != original {
+		ass.logger.Debug("合并字符串属性", map[string]interface{}{
+			"property": propertyName,
+			"original": original,
+			"new": new,
+		})
+		return new
+	}
+	return original
+}
+
+func (ass *AdvancedStyleSystem) mergeStringSlice(original, new []string) []string {
+	if len(new) > 0 {
+		// 合并并去重
+		merged := make(map[string]bool)
+		for _, item := range original {
+			merged[item] = true
+		}
+		for _, item := range new {
+			merged[item] = true
+		}
+		
+		result := make([]string, 0, len(merged))
+		for item := range merged {
+			result = append(result, item)
+		}
+		return result
+	}
+	return original
+}
+
+// mergeIntProperty merges integer properties
+func (ass *AdvancedStyleSystem) mergeIntProperty(original, new int, propertyName string) int {
+	if new > 0 && new != original {
+		ass.logger.Debug("合并整数属性", map[string]interface{}{
+			"property": propertyName,
+			"original": original,
+			"new": new,
+		})
+		return new
+	}
+	return original
+}
+
+// mergeFloatProperty merges float properties
+func (ass *AdvancedStyleSystem) mergeFloatProperty(original, new float64, propertyName string) float64 {
+	if new > 0 && new != original {
+		ass.logger.Debug("合并浮点数属性", map[string]interface{}{
+			"property": propertyName,
+			"original": original,
+			"new": new,
+		})
+		return new
+	}
+	return original
+}
+
+// mergeBoolProperty merges boolean properties
+func (ass *AdvancedStyleSystem) mergeBoolProperty(original, new bool, propertyName string) bool {
+	if new != original {
+		ass.logger.Debug("合并布尔属性", map[string]interface{}{
+			"property": propertyName,
+			"original": original,
+			"new": new,
+		})
+		return new
+	}
+	return original
+}
+
+func (ass *AdvancedStyleSystem) mergeStyleProperties(original, new *types.StyleProperties, conflict *types.StyleConflict) *types.StyleProperties {
+	merged := &types.StyleProperties{}
+
+	// 合并字体属性
+	merged.FontName = ass.mergeStringProperty(original.FontName, new.FontName, "fontName")
+	merged.FontSize = ass.mergeIntProperty(original.FontSize, new.FontSize, "fontSize")
+	merged.FontColor = ass.mergeStringProperty(original.FontColor, new.FontColor, "fontColor")
+	merged.BackgroundColor = ass.mergeStringProperty(original.BackgroundColor, new.BackgroundColor, "backgroundColor")
+	merged.Bold = ass.mergeBoolProperty(original.Bold, new.Bold, "bold")
+	merged.Italic = ass.mergeBoolProperty(original.Italic, new.Italic, "italic")
+	merged.Underline = ass.mergeBoolProperty(original.Underline, new.Underline, "underline")
+	merged.StrikeThrough = ass.mergeBoolProperty(original.StrikeThrough, new.StrikeThrough, "strikeThrough")
+
+	// 合并段落属性
+	merged.Alignment = ass.mergeStringProperty(original.Alignment, new.Alignment, "alignment")
+	merged.LineSpacing = ass.mergeFloatProperty(original.LineSpacing, new.LineSpacing, "lineSpacing")
+	merged.SpaceBefore = ass.mergeFloatProperty(original.SpaceBefore, new.SpaceBefore, "spaceBefore")
+	merged.SpaceAfter = ass.mergeFloatProperty(original.SpaceAfter, new.SpaceAfter, "spaceAfter")
+	merged.FirstLineIndent = ass.mergeFloatProperty(original.FirstLineIndent, new.FirstLineIndent, "firstLineIndent")
+	merged.LeftIndent = ass.mergeFloatProperty(original.LeftIndent, new.LeftIndent, "leftIndent")
+	merged.RightIndent = ass.mergeFloatProperty(original.RightIndent, new.RightIndent, "rightIndent")
+	merged.KeepLines = ass.mergeBoolProperty(original.KeepLines, new.KeepLines, "keepLines")
+	merged.KeepNext = ass.mergeBoolProperty(original.KeepNext, new.KeepNext, "keepNext")
+	merged.PageBreakBefore = ass.mergeBoolProperty(original.PageBreakBefore, new.PageBreakBefore, "pageBreakBefore")
+	merged.WidowControl = ass.mergeBoolProperty(original.WidowControl, new.WidowControl, "widowControl")
+
+	// 表格属性在 types.StyleProperties 中不可用，跳过
+
+	return merged
+}
+
+// 此函数已被重写为使用 types.StyleProperties，不再需要
+
+// 此函数已被重写为使用 types.StyleProperties，不再需要
+
+// 此函数已被重写为使用 types.StyleProperties，不再需要
+
+func (ass *AdvancedStyleSystem) getInheritanceChain(styleID string) []string {
+	if chain, exists := ass.InheritanceChain[styleID]; exists {
+		return chain
+	}
+	return []string{styleID}
+}
+
+func (ass *AdvancedStyleSystem) selectOptimalInheritanceChain(originalChain, newChain []string, priority int) []string {
+	// 简单的选择策略：选择更长的继承链
+	if len(newChain) > len(originalChain) {
+		return newChain
+	}
+	return originalChain
+}
+
+func (ass *AdvancedStyleSystem) mergeFormatProperties(original, new *types.StyleProperties, conflict *types.StyleConflict) *types.StyleProperties {
+	merged := &types.StyleProperties{}
+	
+	// 合并格式相关的属性
+	merged.FontName = ass.mergeStringProperty(original.FontName, new.FontName, "fontName")
+	merged.FontSize = ass.mergeIntProperty(original.FontSize, new.FontSize, "fontSize")
+	merged.FontColor = ass.mergeStringProperty(original.FontColor, new.FontColor, "fontColor")
+	merged.BackgroundColor = ass.mergeStringProperty(original.BackgroundColor, new.BackgroundColor, "backgroundColor")
+	merged.Bold = ass.mergeBoolProperty(original.Bold, new.Bold, "bold")
+	merged.Italic = ass.mergeBoolProperty(original.Italic, new.Italic, "italic")
+	merged.Underline = ass.mergeBoolProperty(original.Underline, new.Underline, "underline")
+	merged.StrikeThrough = ass.mergeBoolProperty(original.StrikeThrough, new.StrikeThrough, "strikeThrough")
+
+	// 合并段落属性
+	merged.Alignment = ass.mergeStringProperty(original.Alignment, new.Alignment, "alignment")
+	merged.LineSpacing = ass.mergeFloatProperty(original.LineSpacing, new.LineSpacing, "lineSpacing")
+	merged.SpaceBefore = ass.mergeFloatProperty(original.SpaceBefore, new.SpaceBefore, "spaceBefore")
+	merged.SpaceAfter = ass.mergeFloatProperty(original.SpaceAfter, new.SpaceAfter, "spaceAfter")
+	merged.FirstLineIndent = ass.mergeFloatProperty(original.FirstLineIndent, new.FirstLineIndent, "firstLineIndent")
+	merged.LeftIndent = ass.mergeFloatProperty(original.LeftIndent, new.LeftIndent, "leftIndent")
+	merged.RightIndent = ass.mergeFloatProperty(original.RightIndent, new.RightIndent, "rightIndent")
+	merged.KeepLines = ass.mergeBoolProperty(original.KeepLines, new.KeepLines, "keepLines")
+	merged.KeepNext = ass.mergeBoolProperty(original.KeepNext, new.KeepNext, "keepNext")
+	merged.PageBreakBefore = ass.mergeBoolProperty(original.PageBreakBefore, new.PageBreakBefore, "pageBreakBefore")
+	merged.WidowControl = ass.mergeBoolProperty(original.WidowControl, new.WidowControl, "widowControl")
+	
+	return merged
+}
+
+func (ass *AdvancedStyleSystem) safeMergeProperties(target, source *types.StyleProperties) {
+	// 安全地合并属性，避免覆盖现有值
+	if source.FontName != "" && target.FontName == "" {
+		target.FontName = source.FontName
+	}
+	if source.FontSize > 0 && target.FontSize == 0 {
+		target.FontSize = source.FontSize
+	}
+	if source.FontColor != "" && target.FontColor == "" {
+		target.FontColor = source.FontColor
+	}
+	if source.BackgroundColor != "" && target.BackgroundColor == "" {
+		target.BackgroundColor = source.BackgroundColor
+	}
+	if source.Bold && !target.Bold {
+		target.Bold = source.Bold
+	}
+	if source.Italic && !target.Italic {
+		target.Italic = source.Italic
+	}
+	if source.Underline && !target.Underline {
+		target.Underline = source.Underline
+	}
+	if source.StrikeThrough && !target.StrikeThrough {
+		target.StrikeThrough = source.StrikeThrough
+	}
+	if source.Alignment != "" && target.Alignment == "" {
+		target.Alignment = source.Alignment
+	}
+	if source.LineSpacing > 0 && target.LineSpacing == 0 {
+		target.LineSpacing = source.LineSpacing
+	}
+	if source.SpaceBefore > 0 && target.SpaceBefore == 0 {
+		target.SpaceBefore = source.SpaceBefore
+	}
+	if source.SpaceAfter > 0 && target.SpaceAfter == 0 {
+		target.SpaceAfter = source.SpaceAfter
+	}
+	if source.FirstLineIndent > 0 && target.FirstLineIndent == 0 {
+		target.FirstLineIndent = source.FirstLineIndent
+	}
+	if source.LeftIndent > 0 && target.LeftIndent == 0 {
+		target.LeftIndent = source.LeftIndent
+	}
+	if source.RightIndent > 0 && target.RightIndent == 0 {
+		target.RightIndent = source.RightIndent
+	}
+	if source.KeepLines && !target.KeepLines {
+		target.KeepLines = source.KeepLines
+	}
+	if source.KeepNext && !target.KeepNext {
+		target.KeepNext = source.KeepNext
+	}
+	if source.PageBreakBefore && !target.PageBreakBefore {
+		target.PageBreakBefore = source.PageBreakBefore
+	}
+	if source.WidowControl && !target.WidowControl {
+		target.WidowControl = source.WidowControl
+	}
 }
 
 // updateInheritanceChain updates the inheritance chain for a style
@@ -719,19 +1221,17 @@ func (ass *AdvancedStyleSystem) applyCharacterStyle(run *types.Run, styleID stri
 	
 	// 应用样式属性
 	if style.Properties != nil {
-		if style.Properties.Font != nil {
-			if style.Properties.Font.Name != "" {
-				run.FontName = style.Properties.Font.Name
-			}
-			if style.Properties.Font.Size > 0 {
-				run.FontSize = int(style.Properties.Font.Size)
-			}
-			if style.Properties.Font.Bold {
-				run.Bold = true
-			}
-			if style.Properties.Font.Italic {
-				run.Italic = true
-			}
+		if style.Properties.FontName != "" {
+			run.FontName = style.Properties.FontName
+		}
+		if style.Properties.FontSize > 0 {
+			run.FontSize = style.Properties.FontSize
+		}
+		if style.Properties.Bold {
+			run.Bold = true
+		}
+		if style.Properties.Italic {
+			run.Italic = true
 		}
 	}
 	

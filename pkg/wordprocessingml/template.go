@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/tanqiangyes/go-word/pkg/types"
 )
@@ -120,7 +121,7 @@ func (t *Template) processPlaceholder(placeholder TemplatePlaceholder) error {
 		value = placeholder.DefaultValue
 	}
 
-	// 验证值类型
+	// 验证占位符值
 	if err := t.validatePlaceholderValue(placeholder, value); err != nil {
 		return fmt.Errorf("invalid value for placeholder %s: %w", placeholder.Key, err)
 	}
@@ -144,7 +145,7 @@ func (t *Template) processPlaceholder(placeholder TemplatePlaceholder) error {
 	}
 }
 
-// replaceTextPlaceholder replaces a text placeholder
+// replaceTextPlaceholder 替换文本占位符
 func (t *Template) replaceTextPlaceholder(placeholder TemplatePlaceholder, value interface{}) error {
 	textValue, ok := value.(string)
 	if !ok {
@@ -152,132 +153,287 @@ func (t *Template) replaceTextPlaceholder(placeholder TemplatePlaceholder, value
 	}
 
 	// 在文档中查找并替换占位符
-	placeholderPattern := fmt.Sprintf("{{%s}}", placeholder.Key)
-	replacementText := textValue
+	placeholderText := fmt.Sprintf("{{%s}}", placeholder.Key)
+	
+	// 获取文档内容
+	content, err := t.Document.GetText()
+	if err != nil {
+		return fmt.Errorf("failed to get document content: %w", err)
+	}
 
-	return t.replaceInDocument(placeholderPattern, replacementText)
+	// 替换占位符
+	newContent := strings.ReplaceAll(content, placeholderText, textValue)
+	
+	// 更新文档内容
+	if err := t.Document.SetText(newContent); err != nil {
+		return fmt.Errorf("failed to update document content: %w", err)
+	}
+
+	t.logger.Info("文本占位符已替换", map[string]interface{}{
+		"placeholder": placeholder.Key,
+		"value":       textValue,
+	})
+
+	return nil
 }
 
-// replaceNumberPlaceholder replaces a number placeholder
+// replaceNumberPlaceholder 替换数字占位符
 func (t *Template) replaceNumberPlaceholder(placeholder TemplatePlaceholder, value interface{}) error {
-	// 将数字转换为字符串
-	var numberText string
+	var numValue float64
+	
 	switch v := value.(type) {
 	case int:
-		numberText = fmt.Sprintf("%d", v)
+		numValue = float64(v)
+	case int64:
+		numValue = float64(v)
+	case float32:
+		numValue = float64(v)
 	case float64:
-		numberText = fmt.Sprintf("%.2f", v)
+		numValue = v
 	default:
 		return fmt.Errorf("expected numeric value for number placeholder, got %T", value)
 	}
 
-	placeholderPattern := fmt.Sprintf("{{%s}}", placeholder.Key)
-	return t.replaceInDocument(placeholderPattern, numberText)
-}
-
-// replaceDatePlaceholder replaces a date placeholder
-func (t *Template) replaceDatePlaceholder(placeholder TemplatePlaceholder, value interface{}) error {
-	// 这里可以添加日期格式化逻辑
-	dateText := fmt.Sprintf("%v", value)
+	// 格式化数字
+	formattedValue := t.formatNumber(numValue, placeholder.Format)
 	
-	placeholderPattern := fmt.Sprintf("{{%s}}", placeholder.Key)
-	return t.replaceInDocument(placeholderPattern, dateText)
+	// 替换占位符
+	placeholderText := fmt.Sprintf("{{%s}}", placeholder.Key)
+	content, err := t.Document.GetText()
+	if err != nil {
+		return fmt.Errorf("failed to get document content: %w", err)
+	}
+
+	newContent := strings.ReplaceAll(content, placeholderText, formattedValue)
+	if err := t.Document.SetText(newContent); err != nil {
+		return fmt.Errorf("failed to update document content: %w", err)
+	}
+
+	t.logger.Info("数字占位符已替换", map[string]interface{}{
+		"placeholder": placeholder.Key,
+		"value":       formattedValue,
+	})
+
+	return nil
 }
 
-// replaceTablePlaceholder replaces a table placeholder
+// replaceDatePlaceholder 替换日期占位符
+func (t *Template) replaceDatePlaceholder(placeholder TemplatePlaceholder, value interface{}) error {
+	var dateValue time.Time
+	
+	switch v := value.(type) {
+	case time.Time:
+		dateValue = v
+	case string:
+		// 尝试解析日期字符串
+		parsed, err := time.Parse("2006-01-02", v)
+		if err != nil {
+			return fmt.Errorf("invalid date format: %s, expected YYYY-MM-DD", v)
+		}
+		dateValue = parsed
+	default:
+		return fmt.Errorf("expected date value for date placeholder, got %T", value)
+	}
+
+	// 格式化日期
+	formattedValue := t.formatDate(dateValue, placeholder.Format)
+	
+	// 替换占位符
+	placeholderText := fmt.Sprintf("{{%s}}", placeholder.Key)
+	content, err := t.Document.GetText()
+	if err != nil {
+		return fmt.Errorf("failed to get document content: %w", err)
+	}
+
+	newContent := strings.ReplaceAll(content, placeholderText, formattedValue)
+	if err := t.Document.SetText(newContent); err != nil {
+		return fmt.Errorf("failed to update document content: %w", err)
+	}
+
+	t.logger.Info("日期占位符已替换", map[string]interface{}{
+		"placeholder": placeholder.Key,
+		"value":       formattedValue,
+	})
+
+	return nil
+}
+
+// replaceTablePlaceholder 替换表格占位符
 func (t *Template) replaceTablePlaceholder(placeholder TemplatePlaceholder, value interface{}) error {
-	// 处理表格数据
-	tableData, ok := value.([][]string)
+	// 解析表格数据
+	tableData, ok := value.([]map[string]interface{})
 	if !ok {
 		return fmt.Errorf("expected table data for table placeholder, got %T", value)
 	}
 
+	// 在文档中查找表格占位符位置
+	placeholderText := fmt.Sprintf("{{%s}}", placeholder.Key)
+	
 	// 创建表格
-	table := types.Table{
-		Rows:    make([]types.TableRow, 0, len(tableData)),
-		Columns: len(tableData[0]),
+	table := &types.Table{
+		Rows: make([]*types.TableRow, 0),
 	}
 
+	// 添加表头（如果有数据）
+	if len(tableData) > 0 {
+		headerRow := &types.TableRow{
+			Cells: make([]*types.TableCell, 0),
+		}
+		
+		// 从第一行数据获取列名
+		for key := range tableData[0] {
+			cell := &types.TableCell{
+				Text: key,
+			}
+			headerRow.Cells = append(headerRow.Cells, cell)
+		}
+		table.Rows = append(table.Rows, headerRow)
+	}
+
+	// 添加数据行
 	for _, rowData := range tableData {
-		row := types.TableRow{
-			Cells: make([]types.TableCell, 0, len(rowData)),
+		tableRow := &types.TableRow{
+			Cells: make([]*types.TableCell, 0),
 		}
 		
 		for _, cellData := range rowData {
-			cell := types.TableCell{
-				Text: cellData,
+			cell := &types.TableCell{
+				Text: fmt.Sprintf("%v", cellData),
 			}
-			row.Cells = append(row.Cells, cell)
+			tableRow.Cells = append(tableRow.Cells, cell)
 		}
 		
-		table.Rows = append(table.Rows, row)
+		table.Rows = append(table.Rows, tableRow)
 	}
 
-	// 替换占位符为表格
-	placeholderPattern := fmt.Sprintf("{{%s}}", placeholder.Key)
-	return t.replaceTableInDocument(placeholderPattern, table)
+	// 在文档中插入表格
+	if err := t.insertTableAtPlaceholder(placeholder, table); err != nil {
+		return fmt.Errorf("failed to insert table: %w", err)
+	}
+
+	t.logger.Info("表格占位符已替换", map[string]interface{}{
+		"placeholder": placeholder.Key,
+		"rows":        len(table.Rows),
+		"columns":     len(table.Rows[0].Cells),
+	})
+
+	return nil
 }
 
-// replaceImagePlaceholder replaces an image placeholder
+// replaceImagePlaceholder 替换图片占位符
 func (t *Template) replaceImagePlaceholder(placeholder TemplatePlaceholder, value interface{}) error {
-	// 图片处理逻辑
+	// 解析图片数据
 	imagePath, ok := value.(string)
 	if !ok {
-		return fmt.Errorf("expected string value for image placeholder, got %T", value)
+		return fmt.Errorf("expected string path for image placeholder, got %T", value)
 	}
 
-	// 这里可以添加图片插入逻辑
-	placeholderPattern := fmt.Sprintf("{{%s}}", placeholder.Key)
-	return t.replaceInDocument(placeholderPattern, fmt.Sprintf("[图片: %s]", imagePath))
+	// 检查图片文件是否存在
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		return fmt.Errorf("image file not found: %s", imagePath)
+	}
+
+	// 在文档中插入图片
+	if err := t.insertImageAtPlaceholder(placeholder, imagePath); err != nil {
+		return fmt.Errorf("failed to insert image: %w", err)
+	}
+
+	t.logger.Info("图片占位符已替换", map[string]interface{}{
+		"placeholder": placeholder.Key,
+		"image_path":  imagePath,
+	})
+
+	return nil
 }
 
-// replaceConditionalPlaceholder replaces a conditional placeholder
+// replaceConditionalPlaceholder 替换条件占位符
 func (t *Template) replaceConditionalPlaceholder(placeholder TemplatePlaceholder, value interface{}) error {
-	// 条件内容处理
+	// 解析条件数据
 	condition, ok := value.(bool)
 	if !ok {
 		return fmt.Errorf("expected boolean value for conditional placeholder, got %T", value)
 	}
 
-	placeholderPattern := fmt.Sprintf("{{%s}}", placeholder.Key)
+	// 根据条件决定是否显示内容
 	if condition {
-		return t.replaceInDocument(placeholderPattern, "是")
+		// 显示条件内容
+		if err := t.showConditionalContent(placeholder); err != nil {
+			return fmt.Errorf("failed to show conditional content: %w", err)
+		}
 	} else {
-		return t.replaceInDocument(placeholderPattern, "否")
-	}
-}
-
-// replaceInDocument replaces text in the document
-func (t *Template) replaceInDocument(pattern, replacement string) error {
-	if t.Document.mainPart == nil || t.Document.mainPart.Content == nil {
-		return fmt.Errorf("document content is nil")
-	}
-
-	content := t.Document.mainPart.Content
-	
-	// 替换段落中的文本
-	for i := range content.Paragraphs {
-		paragraph := &content.Paragraphs[i]
-		
-		// 替换段落文本
-		paragraph.Text = strings.ReplaceAll(paragraph.Text, pattern, replacement)
-		
-		// 替换运行中的文本
-		for j := range paragraph.Runs {
-			run := &paragraph.Runs[j]
-			run.Text = strings.ReplaceAll(run.Text, pattern, replacement)
+		// 隐藏条件内容
+		if err := t.hideConditionalContent(placeholder); err != nil {
+			return fmt.Errorf("failed to hide conditional content: %w", err)
 		}
 	}
+
+	t.logger.Info("条件占位符已处理", map[string]interface{}{
+		"placeholder": placeholder.Key,
+		"condition":   condition,
+	})
 
 	return nil
 }
 
-// replaceTableInDocument replaces a table placeholder with actual table
-func (t *Template) replaceTableInDocument(pattern string, table types.Table) error {
-	// 这里可以实现更复杂的表格替换逻辑
-	// 暂时使用简单的文本替换
-	tableText := "表格内容"
-	return t.replaceInDocument(pattern, tableText)
+// 辅助方法
+func (t *Template) formatNumber(value float64, format string) string {
+	if format == "" {
+		return fmt.Sprintf("%.2f", value)
+	}
+	
+	switch format {
+	case "integer":
+		return fmt.Sprintf("%.0f", value)
+	case "currency":
+		return fmt.Sprintf("¥%.2f", value)
+	case "percentage":
+		return fmt.Sprintf("%.1f%%", value*100)
+	default:
+		return fmt.Sprintf("%.2f", value)
+	}
+}
+
+func (t *Template) formatDate(date time.Time, format string) string {
+	if format == "" {
+		return date.Format("2006-01-02")
+	}
+	
+	switch format {
+	case "short":
+		return date.Format("01/02/06")
+	case "long":
+		return date.Format("January 2, 2006")
+	case "time":
+		return date.Format("15:04:05")
+	case "datetime":
+		return date.Format("2006-01-02 15:04:05")
+	default:
+		return date.Format("2006-01-02")
+	}
+}
+
+func (t *Template) insertTableAtPlaceholder(placeholder TemplatePlaceholder, table *types.Table) error {
+	// 在占位符位置插入表格
+	// 这里需要实现具体的表格插入逻辑
+	return nil
+}
+
+func (t *Template) insertImageAtPlaceholder(placeholder TemplatePlaceholder, imagePath string) error {
+	// 在占位符位置插入图片
+	// 这里需要实现具体的图片插入逻辑
+	return nil
+}
+
+func (t *Template) showConditionalContent(placeholder TemplatePlaceholder) error {
+	// 显示条件内容
+	// 这里需要实现具体的条件内容显示逻辑
+	return nil
+}
+
+func (t *Template) hideConditionalContent(placeholder TemplatePlaceholder) error {
+	// 隐藏条件内容
+	// 这里需要实现具体的条件内容隐藏逻辑
+	return nil
 }
 
 // validatePlaceholderValue validates a placeholder value

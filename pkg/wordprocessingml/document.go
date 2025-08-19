@@ -46,6 +46,8 @@ type Document struct {
 	mainPart      *MainDocumentPart
 	parts         map[string]*opc.Part
 	documentParts *DocumentParts
+	coreProperties *types.CoreProperties
+	metadata      map[string]interface{}
 }
 
 // MainDocumentPart represents the main content of a Word document.
