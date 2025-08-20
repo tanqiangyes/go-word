@@ -28,7 +28,7 @@
 
 ### 核心功能（优先级1）
 1. **文档解析**
-   - WordprocessingML 文档结构解析
+   - word 文档结构解析
    - OPC (Open Packaging Convention) 容器解析
    - 文档内容提取（文本、段落、表格等）
    - 样式和格式信息解析
@@ -62,7 +62,7 @@
 go-word/
 ├── pkg/
 │   ├── opc/           # OPC 容器处理
-│   ├── wordprocessingml/  # Word 文档处理
+│   ├── word/  # Word 文档处理
 │   ├── parser/        # 解析器
 │   ├── writer/        # 写入器
 │   └── utils/         # 工具函数
@@ -92,7 +92,7 @@ go-word/
 - [ ] 错误处理机制
 
 ### 阶段2：核心解析（3-4周）
-- [ ] WordprocessingML 解析
+- [ ] word 解析
 - [ ] 文档内容提取
 - [ ] 样式和格式解析
 - [ ] 基础 API 设计

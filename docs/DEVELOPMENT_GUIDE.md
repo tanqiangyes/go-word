@@ -166,7 +166,7 @@ go-word/
 │   └── ...                 # 更多示例
 ├── pkg/                    # 核心包
 │   ├── opc/               # OPC 容器处理
-│   ├── wordprocessingml/  # Word 文档处理
+│   ├── word/  # Word 文档处理
 │   ├── parser/            # XML 解析器
 │   ├── writer/            # 文档写入器
 │   ├── types/             # 共享类型定义
@@ -189,7 +189,7 @@ OPC（Open Packaging Convention）容器处理，负责 Word 文档的 ZIP 容�
 - 访问文档内部文件
 - 管理文档部分
 
-#### pkg/wordprocessingml
+#### pkg/word
 Word 文档处理核心包，提供文档的读取、解析和操作功能。
 
 **主要功能:**
@@ -199,7 +199,7 @@ Word 文档处理核心包，提供文档的读取、解析和操作功能。
 - 文档保护
 
 #### pkg/parser
-XML 解析器，专门处理 WordprocessingML XML 格式。
+XML 解析器，专门处理 word XML 格式。
 
 **主要功能:**
 - WordML XML 解析
@@ -347,7 +347,7 @@ func TestFunctionName_Scenario(t *testing.T) {
 **示例**:
 ```go
 func TestDocumentOpen(t *testing.T) {
-    doc, err := wordprocessingml.Open("testdata/sample.docx")
+    doc, err := word.Open("testdata/sample.docx")
     if err != nil {
         t.Fatalf("Failed to open document: %v", err)
     }
@@ -396,7 +396,7 @@ func TestDocumentCreationAndModification(t *testing.T) {
     defer os.Remove(tempFile)
     
     // 验证保存的文档
-    doc, err := wordprocessingml.Open(tempFile)
+    doc, err := word.Open(tempFile)
     if err != nil {
         t.Fatalf("Failed to open saved document: %v", err)
     }
@@ -423,7 +423,7 @@ func TestDocumentCreationAndModification(t *testing.T) {
 ```go
 func BenchmarkDocumentOpen(b *testing.B) {
     for i := 0; i < b.N; i++ {
-        doc, err := wordprocessingml.Open("testdata/large_document.docx")
+        doc, err := word.Open("testdata/large_document.docx")
         if err != nil {
             b.Fatalf("Failed to open document: %v", err)
         }
@@ -432,7 +432,7 @@ func BenchmarkDocumentOpen(b *testing.B) {
 }
 
 func BenchmarkTextExtraction(b *testing.B) {
-    doc, err := wordprocessingml.Open("testdata/large_document.docx")
+    doc, err := word.Open("testdata/large_document.docx")
     if err != nil {
         b.Fatalf("Failed to open document: %v", err)
     }
@@ -457,7 +457,7 @@ go test ./...
 
 #### 运行特定包的测试
 ```bash
-go test ./pkg/wordprocessingml
+go test ./pkg/word
 ```
 
 #### 运行覆盖率测试
@@ -508,12 +508,12 @@ testdata/
 
 ```go
 // 正确
-package wordprocessingml
+package word
 package opc
 package parser
 
 // 错误
-package WordProcessingML
+package word
 package word_processing_ml
 ```
 
@@ -559,7 +559,7 @@ var fmt bool
 const (
     DefaultFontSize = 12
     MaxTableRows    = 1000
-    WordMLNamespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    WordMLNamespace = "http://schemas.openxmlformats.org/word/2006/main"
 )
 
 // 错误
@@ -620,9 +620,9 @@ if errors.Is(err, &DocumentError{}) {
 
 #### 包注释
 ```go
-// Package wordprocessingml provides WordprocessingML document processing functionality.
+// Package word provides word document processing functionality.
 // It includes functions for reading, parsing, and manipulating Word documents.
-package wordprocessingml
+package word
 ```
 
 #### 函数注释
@@ -701,7 +701,7 @@ return utils.NewError("invalid document format")
 ```go
 // 使用 defer 确保资源释放
 func ProcessDocument(filename string) error {
-    doc, err := wordprocessingml.Open(filename)
+    doc, err := word.Open(filename)
     if err != nil {
         return err
     }
@@ -716,7 +716,7 @@ func ProcessDocument(filename string) error {
 ```go
 // 处理大量文档时，及时释放资源
 for _, filename := range filenames {
-    doc, err := wordprocessingml.Open(filename)
+    doc, err := word.Open(filename)
     if err != nil {
         continue
     }
@@ -831,7 +831,7 @@ git push origin feature/your-feature-name
 
 #### 示例
 ```
-feat(wordprocessingml): add support for table cell merging
+feat(word): add support for table cell merging
 
 - Add MergeCells function to AdvancedFormatter
 - Support cell reference parsing (A1, B2, etc.)

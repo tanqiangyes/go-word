@@ -1,4 +1,4 @@
-// Package wordprocessingml provides WordprocessingML document processing functionality.
+// Package word provides Word document processing functionality.
 // This package implements the core functionality for reading, parsing, and manipulating
 // Word documents (.docx files) according to the Office Open XML specification.
 //
@@ -10,7 +10,7 @@
 //
 // Example usage:
 //
-//	doc, err := wordprocessingml.Open("document.docx")
+//	doc, err := word.Open("document.docx")
 //	if err != nil {
 //		log.Fatal(err)
 //	}
@@ -24,12 +24,12 @@
 package word
 
 import (
-    "fmt"
-    "strings"
+	"fmt"
+	"strings"
 
-    "github.com/tanqiangyes/go-word/pkg/opc"
-    "github.com/tanqiangyes/go-word/pkg/parser"
-    "github.com/tanqiangyes/go-word/pkg/types"
+	"github.com/tanqiangyes/go-word/pkg/opc"
+	"github.com/tanqiangyes/go-word/pkg/parser"
+	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
 // Document represents a Word document and provides methods for accessing
@@ -42,12 +42,12 @@ import (
 //   - parts: A map of all document parts (headers, footers, styles, etc.)
 //   - documentParts: A manager for document parts and their relationships
 type Document struct {
-    container      *opc.Container
-    mainPart       *MainDocumentPart
-    parts          map[string]*opc.Part
-    documentParts  *DocumentParts
-    coreProperties *types.CoreProperties
-    metadata       map[string]interface{}
+	container      *opc.Container
+	mainPart       *MainDocumentPart
+	parts          map[string]*opc.Part
+	documentParts  *DocumentParts
+	coreProperties *types.CoreProperties
+	metadata       map[string]interface{}
 }
 
 // MainDocumentPart represents the main content of a Word document.
@@ -89,7 +89,7 @@ type TableCell = types.TableCell
 //
 // Example:
 //
-//	doc, err := wordprocessingml.Open("document.docx")
+//	doc, err := word.Open("document.docx")
 //	if err != nil {
 //		log.Fatal("Failed to open document:", err)
 //	}
@@ -98,26 +98,66 @@ type TableCell = types.TableCell
 // Note: This function will attempt to parse the document structure and may
 // return an error if the document is corrupted or uses unsupported features.
 func Open(filename string) (*Document, error) {
-    // Open the OPC container (ZIP file) that contains the Word document
-    container, err := opc.Open(filename)
-    if err != nil {
-        return nil, fmt.Errorf("failed to open document: %w", err)
-    }
+	// Open the OPC container (ZIP file) that contains the Word document
+	container, err := opc.Open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open document: %w", err)
+	}
 
-    // Create a new document instance
-    doc := &Document{
-        container:     container,
-        parts:         make(map[string]*opc.Part),
-        documentParts: NewDocumentParts(),
-    }
+	// Create a new document instance
+	doc := &Document{
+		container:     container,
+		parts:         make(map[string]*opc.Part),
+		documentParts: NewDocumentParts(),
+	}
 
-    // Load the main document part (word/document.xml)
-    if err := doc.loadMainDocumentPart(); err != nil {
-        container.Close()
-        return nil, fmt.Errorf("failed to load main document part: %w", err)
-    }
+	// Load the main document part (word/document.xml)
+	if err := doc.loadMainDocumentPart(); err != nil {
+		container.Close()
+		return nil, fmt.Errorf("failed to load main document part: %w", err)
+	}
 
-    return doc, nil
+	return doc, nil
+}
+
+// New creates a new empty Word document.
+// This function creates a document with basic structure that can be
+// populated with content and then saved.
+//
+// Returns:
+//   - *Document: A new empty document instance
+//   - error: An error if the document cannot be created
+//
+// Example:
+//
+//	doc, err := word.New()
+//	if err != nil {
+//		log.Fatal("Failed to create document:", err)
+//	}
+//	defer doc.Close()
+func New() (*Document, error) {
+	// Create a new OPC container
+	container, err := opc.New()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create container: %w", err)
+	}
+
+	// Create a new document instance
+	doc := &Document{
+		container:     container,
+		parts:         make(map[string]*opc.Part),
+		documentParts: NewDocumentParts(),
+	}
+
+	// Initialize with empty content
+	doc.mainPart = &MainDocumentPart{
+		Content: &types.DocumentContent{
+			Paragraphs: []types.Paragraph{},
+			Tables:     []types.Table{},
+		},
+	}
+
+	return doc, nil
 }
 
 // Close closes the document and releases all associated resources.
@@ -129,16 +169,16 @@ func Open(filename string) (*Document, error) {
 //
 // Example:
 //
-//	doc, err := wordprocessingml.Open("document.docx")
+//	doc, err := word.Open("document.docx")
 //	if err != nil {
 //		log.Fatal(err)
 //	}
 //	defer doc.Close() // Ensure resources are freed
 func (d *Document) Close() error {
-    if d.container != nil {
-        return d.container.Close()
-    }
-    return nil
+	if d.container != nil {
+		return d.container.Close()
+	}
+	return nil
 }
 
 // GetContainer returns the underlying OPC container.
@@ -151,7 +191,7 @@ func (d *Document) Close() error {
 // Note: This method is intended for advanced users who need to perform
 // custom operations on the document structure.
 func (d *Document) GetContainer() *opc.Container {
-    return d.container
+	return d.container
 }
 
 // GetText returns the plain text content of the document.
@@ -173,17 +213,17 @@ func (d *Document) GetContainer() *opc.Container {
 // Note: The returned text includes newline characters between paragraphs
 // and may not preserve the exact formatting of the original document.
 func (d *Document) GetText() (string, error) {
-    if d.mainPart == nil || d.mainPart.Content == nil {
-        return "", fmt.Errorf("document content not loaded")
-    }
+	if d.mainPart == nil || d.mainPart.Content == nil {
+		return "", fmt.Errorf("document content not loaded")
+	}
 
-    var text strings.Builder
-    for _, paragraph := range d.mainPart.Content.Paragraphs {
-        text.WriteString(paragraph.Text)
-        text.WriteString("\n")
-    }
+	var text strings.Builder
+	for _, paragraph := range d.mainPart.Content.Paragraphs {
+		text.WriteString(paragraph.Text)
+		text.WriteString("\n")
+	}
 
-    return text.String(), nil
+	return text.String(), nil
 }
 
 // GetParagraphs returns all paragraphs in the document.
@@ -199,7 +239,7 @@ func (d *Document) GetText() (string, error) {
 //	if err != nil {
 //		log.Fatal("Failed to get paragraphs:", err)
 //	}
-//	
+//
 //	for i, paragraph := range paragraphs {
 //		fmt.Printf("Paragraph %d: %s\n", i+1, paragraph.Text)
 //		for j, run := range paragraph.Runs {
@@ -208,11 +248,11 @@ func (d *Document) GetText() (string, error) {
 //		}
 //	}
 func (d *Document) GetParagraphs() ([]Paragraph, error) {
-    if d.mainPart == nil || d.mainPart.Content == nil {
-        return nil, fmt.Errorf("document content not loaded")
-    }
+	if d.mainPart == nil || d.mainPart.Content == nil {
+		return nil, fmt.Errorf("document content not loaded")
+	}
 
-    return d.mainPart.Content.Paragraphs, nil
+	return d.mainPart.Content.Paragraphs, nil
 }
 
 // GetTables returns all tables in the document.
@@ -228,11 +268,11 @@ func (d *Document) GetParagraphs() ([]Paragraph, error) {
 //	if err != nil {
 //		log.Fatal("Failed to get tables:", err)
 //	}
-//	
+//
 //	for i, table := range tables {
 //		fmt.Printf("Table %d: %d rows x %d columns\n",
 //			i+1, len(table.Rows), table.Columns)
-//		
+//
 //		for rowIdx, row := range table.Rows {
 //			for colIdx, cell := range row.Cells {
 //				fmt.Printf("  Cell [%d,%d]: %s\n", rowIdx, colIdx, cell.Text)
@@ -240,11 +280,11 @@ func (d *Document) GetParagraphs() ([]Paragraph, error) {
 //		}
 //	}
 func (d *Document) GetTables() ([]Table, error) {
-    if d.mainPart == nil || d.mainPart.Content == nil {
-        return nil, fmt.Errorf("document content not loaded")
-    }
+	if d.mainPart == nil || d.mainPart.Content == nil {
+		return nil, fmt.Errorf("document content not loaded")
+	}
 
-    return d.mainPart.Content.Tables, nil
+	return d.mainPart.Content.Tables, nil
 }
 
 // GetDocumentParts returns the document parts manager.
@@ -254,7 +294,7 @@ func (d *Document) GetTables() ([]Table, error) {
 // Returns:
 //   - *DocumentParts: The document parts manager
 func (d *Document) GetDocumentParts() *DocumentParts {
-    return d.documentParts
+	return d.documentParts
 }
 
 // GetPartsSummary returns a summary of all document parts.
@@ -263,28 +303,28 @@ func (d *Document) GetDocumentParts() *DocumentParts {
 // Returns:
 //   - string: A formatted summary of all document parts
 func (d *Document) GetPartsSummary() string {
-    if d.container == nil {
-        return "Document not loaded"
-    }
+	if d.container == nil {
+		return "Document not loaded"
+	}
 
-    parts, err := d.container.ListParts()
-    if err != nil {
-        return fmt.Sprintf("Error listing parts: %v", err)
-    }
+	parts, err := d.container.ListParts()
+	if err != nil {
+		return fmt.Sprintf("Error listing parts: %v", err)
+	}
 
-    var summary strings.Builder
-    summary.WriteString(fmt.Sprintf("Document contains %d parts:\n", len(parts)))
+	var summary strings.Builder
+	summary.WriteString(fmt.Sprintf("Document contains %d parts:\n", len(parts)))
 
-    for _, partName := range parts {
-        part, err := d.container.GetPart(partName)
-        if err != nil {
-            summary.WriteString(fmt.Sprintf("  %s (error: %v)\n", partName, err))
-        } else {
-            summary.WriteString(fmt.Sprintf("  %s (%d bytes)\n", partName, len(part.Content)))
-        }
-    }
+	for _, partName := range parts {
+		part, err := d.container.GetPart(partName)
+		if err != nil {
+			summary.WriteString(fmt.Sprintf("  %s (error: %v)\n", partName, err))
+		} else {
+			summary.WriteString(fmt.Sprintf("  %s (%d bytes)\n", partName, len(part.Content)))
+		}
+	}
 
-    return summary.String()
+	return summary.String()
 }
 
 // loadMainDocumentPart loads the main document part from the container.
@@ -294,28 +334,28 @@ func (d *Document) GetPartsSummary() string {
 // Returns:
 //   - error: An error if the main document part cannot be loaded
 func (d *Document) loadMainDocumentPart() error {
-    // Get the main document part from the container
-    part, err := d.container.GetPart("word/document.xml")
-    if err != nil {
-        return fmt.Errorf("failed to get main document part: %w", err)
-    }
+	// Get the main document part from the container
+	part, err := d.container.GetPart("word/document.xml")
+	if err != nil {
+		return fmt.Errorf("failed to get main document part: %w", err)
+	}
 
-    // Parse the document content
-    content, err := parseDocumentContent(part.Content)
-    if err != nil {
-        return fmt.Errorf("failed to parse document content: %w", err)
-    }
+	// Parse the document content
+	content, err := parseDocumentContent(part.Content)
+	if err != nil {
+		return fmt.Errorf("failed to parse document content: %w", err)
+	}
 
-    // Create the main document part
-    d.mainPart = &MainDocumentPart{
-        Content: content,
-    }
+	// Create the main document part
+	d.mainPart = &MainDocumentPart{
+		Content: content,
+	}
 
-    return nil
+	return nil
 }
 
 // parseDocumentContent parses the XML content of the main document part.
-// This function converts the WordprocessingML XML into structured data
+// This function converts the word XML into structured data
 // that can be easily accessed by the Document methods.
 //
 // Parameters:
@@ -325,13 +365,13 @@ func (d *Document) loadMainDocumentPart() error {
 //   - *types.DocumentContent: The parsed document content
 //   - error: An error if the XML cannot be parsed
 func parseDocumentContent(content []byte) (*types.DocumentContent, error) {
-    // Parse the WordprocessingML XML
-    docContent, err := parser.ParseWordML(content)
-    if err != nil {
-        return nil, fmt.Errorf("failed to parse WordML: %w", err)
-    }
+	// Parse the word XML
+	docContent, err := parser.ParseWordML(content)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse WordML: %w", err)
+	}
 
-    return docContent, nil
+	return docContent, nil
 }
 
 // GetMainPart returns the main document part.
@@ -341,7 +381,7 @@ func parseDocumentContent(content []byte) (*types.DocumentContent, error) {
 // Returns:
 //   - *MainDocumentPart: The main document part
 func (d *Document) GetMainPart() *MainDocumentPart {
-    return d.mainPart
+	return d.mainPart
 }
 
 // SetMainPart sets the main document part.
@@ -352,5 +392,5 @@ func (d *Document) GetMainPart() *MainDocumentPart {
 // Parameters:
 //   - mainPart: The main document part to set
 func (d *Document) SetMainPart(mainPart *MainDocumentPart) {
-    d.mainPart = mainPart
+	d.mainPart = mainPart
 }

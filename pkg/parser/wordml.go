@@ -1,4 +1,4 @@
-// Package parser provides specialized parsing for WordprocessingML documents
+// Package parser provides specialized parsing for word documents
 package parser
 
 import (
@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	
+
 	"github.com/tanqiangyes/go-word/pkg/types"
 )
 
-// WordMLParser provides WordprocessingML specific parsing
+// WordMLParser provides word specific parsing
 type WordMLParser struct{}
 
 // WordDocument represents the complete Word document structure
@@ -30,8 +30,8 @@ type WordBody struct {
 type WordParagraph struct {
 	XMLName    xml.Name        `xml:"p"`
 	Properties *ParagraphProps `xml:"pPr,omitempty"`
-	Runs       []WordRun      `xml:"r"`
-	Text       string         `xml:",chardata"`
+	Runs       []WordRun       `xml:"r"`
+	Text       string          `xml:",chardata"`
 }
 
 // ParagraphProps represents paragraph properties
@@ -48,22 +48,22 @@ type Style struct {
 
 // WordRun represents a text run
 type WordRun struct {
-	XMLName    xml.Name     `xml:"r"`
-	Properties *RunProps    `xml:"rPr,omitempty"`
-	Text       *WordText    `xml:"t,omitempty"`
-	Tab        *Tab         `xml:"tab,omitempty"`
-	Break      *Break       `xml:"br,omitempty"`
+	XMLName    xml.Name  `xml:"r"`
+	Properties *RunProps `xml:"rPr,omitempty"`
+	Text       *WordText `xml:"t,omitempty"`
+	Tab        *Tab      `xml:"tab,omitempty"`
+	Break      *Break    `xml:"br,omitempty"`
 }
 
 // RunProps represents run properties
 type RunProps struct {
-	XMLName    xml.Name `xml:"rPr"`
-	Bold       *types.Bold    `xml:"b,omitempty"`
-	Italic     *types.Italic  `xml:"i,omitempty"`
-	Underline  *types.Underline `xml:"u,omitempty"`
-	Size       *types.Size    `xml:"sz,omitempty"`
-	Font       *types.Font    `xml:"rFonts,omitempty"`
-	Color      *types.Color   `xml:"color,omitempty"`
+	XMLName   xml.Name         `xml:"rPr"`
+	Bold      *types.Bold      `xml:"b,omitempty"`
+	Italic    *types.Italic    `xml:"i,omitempty"`
+	Underline *types.Underline `xml:"u,omitempty"`
+	Size      *types.Size      `xml:"sz,omitempty"`
+	Font      *types.Font      `xml:"rFonts,omitempty"`
+	Color     *types.Color     `xml:"color,omitempty"`
 }
 
 // WordText represents text content
@@ -92,9 +92,9 @@ type Color struct {
 
 // WordTable represents a table
 type WordTable struct {
-	XMLName    xml.Name        `xml:"tbl"`
-	Properties *TableProps     `xml:"tblPr,omitempty"`
-	Rows       []WordTableRow  `xml:"tr"`
+	XMLName    xml.Name       `xml:"tbl"`
+	Properties *TableProps    `xml:"tblPr,omitempty"`
+	Rows       []WordTableRow `xml:"tr"`
 }
 
 // TableProps represents table properties
@@ -105,8 +105,8 @@ type TableProps struct {
 
 // WordTableRow represents a table row
 type WordTableRow struct {
-	XMLName    xml.Name         `xml:"tr"`
-	Properties *RowProps        `xml:"trPr,omitempty"`
+	XMLName    xml.Name        `xml:"tr"`
+	Properties *RowProps       `xml:"trPr,omitempty"`
 	Cells      []WordTableCell `xml:"tc"`
 }
 
@@ -133,14 +133,14 @@ func (p *WordMLParser) ParseWordDocument(content []byte) (*WordDocument, error) 
 	if err := xml.Unmarshal(content, &doc); err != nil {
 		return nil, fmt.Errorf("failed to parse Word document: %w", err)
 	}
-	
+
 	return &doc, nil
 }
 
 // ExtractText extracts plain text from the document
 func (p *WordMLParser) ExtractText(doc *WordDocument) string {
 	var text strings.Builder
-	
+
 	for _, paragraph := range doc.Body.Paragraphs {
 		paragraphText := p.extractParagraphText(paragraph)
 		if paragraphText != "" {
@@ -148,7 +148,7 @@ func (p *WordMLParser) ExtractText(doc *WordDocument) string {
 			text.WriteString("\n")
 		}
 	}
-	
+
 	return text.String()
 }
 
@@ -217,7 +217,7 @@ func (p *WordMLParser) ExtractTables(doc *WordDocument) []types.Table {
 // extractParagraphText extracts text from a paragraph
 func (p *WordMLParser) extractParagraphText(paragraph WordParagraph) string {
 	var text strings.Builder
-	
+
 	for _, run := range paragraph.Runs {
 		if run.Text != nil {
 			text.WriteString(run.Text.Content)
@@ -229,7 +229,7 @@ func (p *WordMLParser) extractParagraphText(paragraph WordParagraph) string {
 			text.WriteString("\n")
 		}
 	}
-	
+
 	return text.String()
 }
 
@@ -273,34 +273,34 @@ func (p *WordMLParser) convertRun(run WordRun) types.Run {
 // extractCellText extracts text from a table cell
 func (p *WordMLParser) extractCellText(cell WordTableCell) string {
 	var text strings.Builder
-	
+
 	// 遍历单元格内容，查找段落和文本
 	for _, content := range cell.Paragraphs {
 		text.WriteString(p.extractParagraphText(content))
 	}
-	
-	return text.String()
-} 
 
-// ParseWordML parses WordprocessingML XML data and returns document content
+	return text.String()
+}
+
+// ParseWordML parses word XML data and returns document content
 // This is the main entry point for parsing Word documents
 func ParseWordML(data []byte) (*types.DocumentContent, error) {
 	parser := &WordMLParser{}
-	
+
 	// Parse the Word document
 	doc, err := parser.ParseWordDocument(data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse Word document: %w", err)
 	}
-	
+
 	// Extract content
 	text := parser.ExtractText(doc)
 	paragraphs := parser.ExtractParagraphs(doc)
 	tables := parser.ExtractTables(doc)
-	
+
 	return &types.DocumentContent{
 		Text:       text,
 		Paragraphs: paragraphs,
 		Tables:     tables,
 	}, nil
-} 
+}

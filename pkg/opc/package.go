@@ -34,6 +34,13 @@ type Relationship struct {
 	Target string
 }
 
+// New creates a new empty OPC container
+func New() (*Container, error) {
+	return &Container{
+		parts: make(map[string]*Part),
+	}, nil
+}
+
 // Open opens an OPC container from a file
 func Open(filename string) (*Container, error) {
 	reader, err := zip.OpenReader(filename)

@@ -41,12 +41,12 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
     // 打开Word文档
-    doc, err := wordprocessingml.Open("example.docx")
+    doc, err := word.Open("example.docx")
     if err != nil {
         log.Fatal(err)
     }
@@ -69,10 +69,10 @@ func main() {
 #### 打开现有文档
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 打开Word文档
-doc, err := wordprocessingml.Open("document.docx")
+doc, err := word.Open("document.docx")
 if err != nil {
     return fmt.Errorf("无法打开文档: %w", err)
 }
@@ -194,10 +194,10 @@ if err := w.AddParagraph("这是一段引用文字", "Quote"); err != nil {
 #### 段落格式设置
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建文字处理器
-textProcessor := wordprocessingml.NewTextProcessor()
+textProcessor := word.NewTextProcessor()
 
 // 设置段落格式
 paragraphFormat := &types.ParagraphFormat{
@@ -233,10 +233,10 @@ if err := w.AddTable(tableData); err != nil {
 #### 高级表格操作
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建高级格式化器
-formatter := wordprocessingml.NewAdvancedFormatter()
+formatter := word.NewAdvancedFormatter()
 
 // 创建表格配置
 tableConfig := &types.TableConfig{
@@ -415,10 +415,10 @@ if err := applyTableStyling(table, "professional"); err != nil {
 #### 创建和应用样式
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建样式系统
-styleSystem := wordprocessingml.NewStyleSystem()
+styleSystem := word.NewStyleSystem()
 
 // 创建字符样式
 charStyle := &types.Style{
@@ -484,10 +484,10 @@ styleSystem.AddStyle(derivedStyle)
 #### 高级样式管理
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建样式库
-styleLibrary := wordprocessingml.NewStyleLibrary()
+styleLibrary := word.NewStyleLibrary()
 
 // 创建主题样式
 themeStyles := map[string]*types.Style{
@@ -613,10 +613,10 @@ for _, paragraph := range paragraphs {
 #### 设置文档保护
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建文档保护器
-protector := wordprocessingml.NewDocumentProtector()
+protector := word.NewDocumentProtector()
 
 // 设置密码保护
 protectionConfig := &types.ProtectionConfig{
@@ -661,10 +661,10 @@ if err := protector.ProtectRange(doc, rangeConfig); err != nil {
 #### 插入图片
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建图片处理器
-imageProcessor := wordprocessingml.NewImageProcessor()
+imageProcessor := word.NewImageProcessor()
 
 // 插入图片
 imageConfig := &types.ImageConfig{
@@ -709,7 +709,7 @@ if err := imageProcessor.MoveImage(image, 100, 50); err != nil {
 
 ```go
 // 批量处理图片
-func processImagesInDocument(doc *Document, imageProcessor *wordprocessingml.ImageProcessor) error {
+func processImagesInDocument(doc *Document, imageProcessor *word.ImageProcessor) error {
     // 获取文档中的所有图片
     images, err := doc.GetImages()
     if err != nil {
@@ -718,17 +718,17 @@ func processImagesInDocument(doc *Document, imageProcessor *wordprocessingml.Ima
     
     for i, image := range images {
         // 应用统一的效果
-        effects := []*wordprocessingml.ImageProcessorEffect{
+        effects := []*word.ImageProcessorEffect{
             {
-                Type:      wordprocessingml.ImageProcessorEffectTypeBrightness,
+                Type:      word.ImageProcessorEffectTypeBrightness,
                 Intensity: 1.1,
             },
             {
-                Type:      wordprocessingml.ImageProcessorEffectTypeContrast,
+                Type:      word.ImageProcessorEffectTypeContrast,
                 Intensity: 1.05,
             },
             {
-                Type:      wordprocessingml.ImageProcessorEffectTypeSharpness,
+                Type:      word.ImageProcessorEffectTypeSharpness,
                 Intensity: 1.2,
             },
         }
@@ -745,18 +745,18 @@ func processImagesInDocument(doc *Document, imageProcessor *wordprocessingml.Ima
         }
         
         // 设置统一位置
-        image.Position.Alignment = wordprocessingml.ImageProcessorAlignmentCenter
-        image.Position.Wrapping = wordprocessingml.ImageProcessorWrappingSquare
+        image.Position.Alignment = word.ImageProcessorAlignmentCenter
+        image.Position.Wrapping = word.ImageProcessorWrappingSquare
     }
     
     return nil
 }
 
 // 图片水印处理
-func addWatermarkToImage(image *wordprocessingml.ImageProcessorImage, watermarkText string) error {
+func addWatermarkToImage(image *word.ImageProcessorImage, watermarkText string) error {
     // 创建水印效果
-    watermarkEffect := &wordprocessingml.ImageProcessorEffect{
-        Type:      wordprocessingml.ImageProcessorEffectTypeWatermark,
+    watermarkEffect := &word.ImageProcessorEffect{
+        Type:      word.ImageProcessorEffectTypeWatermark,
         Intensity: 0.3,
         Properties: map[string]interface{}{
             "text":        watermarkText,
@@ -772,8 +772,8 @@ func addWatermarkToImage(image *wordprocessingml.ImageProcessorImage, watermarkT
 }
 
 // 图片格式转换
-func convertImageFormat(image *wordprocessingml.ImageProcessorImage, targetFormat string) error {
-    conversionConfig := &wordprocessingml.ImageConversionConfig{
+func convertImageFormat(image *word.ImageProcessorImage, targetFormat string) error {
+    conversionConfig := &word.ImageConversionConfig{
         TargetFormat: targetFormat,
         Quality:      90,
         Compression:  true,
@@ -807,14 +807,14 @@ import (
     "context"
     "fmt"
     "os"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 // 创建自定义功能区
-customRibbon := wordprocessingml.NewCustomRibbon(doc, nil)
+customRibbon := word.NewCustomRibbon(doc, nil)
 
 // 添加选项卡
-tab := &wordprocessingml.RibbonTab{
+tab := &word.RibbonTab{
     ID:          "custom_tab",
     Label:       "自定义工具",
     Description: "用户自定义的工具选项卡",
@@ -828,7 +828,7 @@ if err := customRibbon.AddTab(tab); err != nil {
 }
 
 // 添加组
-group := &wordprocessingml.RibbonGroup{
+group := &word.RibbonGroup{
     ID:          "custom_group",
     Label:       "常用工具",
     Description: "常用工具集合",
@@ -843,16 +843,16 @@ if err := customRibbon.AddGroup(group); err != nil {
 }
 
 // 添加按钮控件
-button := &wordprocessingml.RibbonControl{
+button := &word.RibbonControl{
     ID:          "custom_button",
-    Type:        wordprocessingml.ControlTypeButton,
+    Type:        word.ControlTypeButton,
     Label:       "快速格式化",
     Description: "快速应用常用格式",
     Tooltip:     "点击应用快速格式化",
     GroupID:     "custom_group",
     Action:      "quick_format",
     Shortcut:    "Ctrl+Shift+F",
-    Size:        wordprocessingml.ControlSizeMedium,
+    Size:        word.ControlSizeMedium,
 }
 
 if err := customRibbon.AddControl(button); err != nil {
@@ -864,7 +864,7 @@ if err := customRibbon.AddControl(button); err != nil {
 
 ```go
 // 注册按钮回调函数
-err := customRibbon.RegisterCallback("custom_button", func(ctx context.Context, control *wordprocessingml.RibbonControl, args map[string]interface{}) error {
+err := customRibbon.RegisterCallback("custom_button", func(ctx context.Context, control *word.RibbonControl, args map[string]interface{}) error {
     // 执行快速格式化逻辑
     fmt.Println("执行快速格式化...")
     
@@ -932,15 +932,15 @@ if err := os.WriteFile("custom_ribbon.xml", ribbonData, 0644); err != nil {
 ```go
 import (
     "context"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 // 创建文件嵌入器
-fileEmbedder := wordprocessingml.NewFileEmbedder(doc, nil)
+fileEmbedder := word.NewFileEmbedder(doc, nil)
 
 // 嵌入文件
 embedResult, err := fileEmbedder.EmbedFile(context.Background(), "document.pdf", 
-    wordprocessingml.EmbedTypeAttachment, &wordprocessingml.EmbedPosition{
+    word.EmbedTypeAttachment, &word.EmbedPosition{
         ParagraphIndex: 0,
         RunIndex:       0,
         CharIndex:      0,
@@ -957,7 +957,7 @@ fmt.Printf("文件嵌入成功，ID: %s\n", embedResult.FileID)
 ```go
 // 创建外部链接
 linkResult, err := fileEmbedder.CreateLink(context.Background(), 
-    wordprocessingml.LinkTypeExternal, 
+    word.LinkTypeExternal, 
     "https://example.com", 
     "访问示例网站", 
     nil, nil)
@@ -967,7 +967,7 @@ if err != nil {
 
 // 创建邮件链接
 emailLink, err := fileEmbedder.CreateLink(context.Background(), 
-    wordprocessingml.LinkTypeEmail, 
+    word.LinkTypeEmail, 
     "contact@example.com", 
     "联系我们", 
     nil, nil)
@@ -977,7 +977,7 @@ if err != nil {
 
 // 创建文件链接
 fileLink, err := fileEmbedder.CreateLink(context.Background(), 
-    wordprocessingml.LinkTypeFile, 
+    word.LinkTypeFile, 
     "./reference.pdf", 
     "参考文档", 
     nil, nil)
@@ -1014,17 +1014,17 @@ if err := fileEmbedder.RemoveEmbeddedFile(embedResult.FileID); err != nil {
 ```go
 import (
     "context"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 // 创建图表生成器
-chartGenerator := wordprocessingml.NewChartGenerator(nil)
+chartGenerator := word.NewChartGenerator(nil)
 
 // 创建折线图
-chart := &wordprocessingml.ChartGeneratorChart{
-    Type:   wordprocessingml.ChartGeneratorChartTypeLine,
+chart := &word.ChartGeneratorChart{
+    Type:   word.ChartGeneratorChartTypeLine,
     Title:  "销售趋势图",
-    Options: &wordprocessingml.ChartGeneratorOptions{
+    Options: &word.ChartGeneratorOptions{
         Width:  600,
         Height: 400,
     },
@@ -1035,7 +1035,7 @@ if err := chartGenerator.CreateChart(context.Background(), chart); err != nil {
 }
 
 // 添加数据点
-dataPoints := []*wordprocessingml.ChartGeneratorDataPoint{
+dataPoints := []*word.ChartGeneratorDataPoint{
     {Label: "1月", Value: 100},
     {Label: "2月", Value: 150},
     {Label: "3月", Value: 200},
@@ -1061,10 +1061,10 @@ if err != nil {
 
 ```go
 // 柱状图
-barChart := &wordprocessingml.ChartGeneratorChart{
-    Type:   wordprocessingml.ChartGeneratorChartTypeBar,
+barChart := &word.ChartGeneratorChart{
+    Type:   word.ChartGeneratorChartTypeBar,
     Title:  "产品销量对比",
-    Options: &wordprocessingml.ChartGeneratorOptions{
+    Options: &word.ChartGeneratorOptions{
         Width:  500,
         Height: 300,
     },
@@ -1074,10 +1074,10 @@ if err := chartGenerator.CreateChart(context.Background(), barChart); err != nil
 }
 
 // 饼图
-pieChart := &wordprocessingml.ChartGeneratorChart{
-    Type:   wordprocessingml.ChartGeneratorChartTypePie,
+pieChart := &word.ChartGeneratorChart{
+    Type:   word.ChartGeneratorChartTypePie,
     Title:  "市场份额分布",
-    Options: &wordprocessingml.ChartGeneratorOptions{
+    Options: &word.ChartGeneratorOptions{
         Width:  400,
         Height: 400,
     },
@@ -1087,10 +1087,10 @@ if err := chartGenerator.CreateChart(context.Background(), pieChart); err != nil
 }
 
 // 散点图
-scatterChart := &wordprocessingml.ChartGeneratorChart{
-    Type:   wordprocessingml.ChartGeneratorChartTypeScatter,
+scatterChart := &word.ChartGeneratorChart{
+    Type:   word.ChartGeneratorChartTypeScatter,
     Title:  "相关性分析",
-    Options: &wordprocessingml.ChartGeneratorOptions{
+    Options: &word.ChartGeneratorOptions{
         Width:  600,
         Height: 400,
     },
@@ -1107,11 +1107,11 @@ if err := chartGenerator.CreateChart(context.Background(), scatterChart); err !=
 ```go
 import (
     "context"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 // 创建PDF导出器
-pdfExporter := wordprocessingml.NewPDFExporter(doc, nil)
+pdfExporter := word.NewPDFExporter(doc, nil)
 
 // 导出PDF
 if err := pdfExporter.ExportToPDF(context.Background(), "output.pdf"); err != nil {
@@ -1122,10 +1122,10 @@ if err := pdfExporter.ExportToPDF(context.Background(), "output.pdf"); err != ni
 #### 导出为其他格式
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建增强文档构建器
-builder := wordprocessingml.NewEnhancedDocumentBuilder(nil)
+builder := word.NewEnhancedDocumentBuilder(nil)
 
 // 导出为RTF格式
 if err := builder.ExportDocument(doc, "output.rtf", "rtf"); err != nil {
@@ -1151,7 +1151,7 @@ import (
     "fmt"
     "path/filepath"
     "strings"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 // 批量转换多个文档
@@ -1159,7 +1159,7 @@ documents := []string{"doc1.docx", "doc2.docx", "doc3.docx"}
 formats := []string{"pdf", "rtf", "html"}
 
 for _, docPath := range documents {
-    doc, err := wordprocessingml.Open(docPath)
+    doc, err := word.Open(docPath)
     if err != nil {
         fmt.Printf("无法打开文档 %s: %v\n", docPath, err)
         continue
@@ -1173,14 +1173,14 @@ for _, docPath := range documents {
         
         switch format {
         case "pdf":
-            pdfExporter := wordprocessingml.NewPDFExporter(doc, nil)
+            pdfExporter := word.NewPDFExporter(doc, nil)
             if err := pdfExporter.ExportToPDF(context.Background(), outputPath); err != nil {
                 fmt.Printf("PDF导出失败 %s: %v\n", docPath, err)
             } else {
                 fmt.Printf("成功导出 %s 为 %s\n", docPath, outputPath)
             }
         case "rtf", "html", "txt":
-            builder := wordprocessingml.NewEnhancedDocumentBuilder(nil)
+            builder := word.NewEnhancedDocumentBuilder(nil)
             if err := builder.ExportDocument(doc, outputPath, format); err != nil {
                 fmt.Printf("%s导出失败 %s: %v\n", strings.ToUpper(format), docPath, err)
             } else {
@@ -1194,11 +1194,11 @@ for _, docPath := range documents {
 ```go
 import (
     "context"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 // 创建PDF导出器
-pdfExporter := wordprocessingml.NewPDFExporter(doc, nil)
+pdfExporter := word.NewPDFExporter(doc, nil)
 
 // 导出PDF
 if err := pdfExporter.ExportToPDF(context.Background(), "output.pdf"); err != nil {
@@ -1213,7 +1213,7 @@ import (
     "context"
     "fmt"
     "strings"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 // 批量处理多个文档
@@ -1222,7 +1222,7 @@ results := make(chan error, len(documents))
 
 for _, docPath := range documents {
     go func(path string) {
-        doc, err := wordprocessingml.Open(path)
+        doc, err := word.Open(path)
         if err != nil {
             results <- fmt.Errorf("无法打开文档 %s: %w", path, err)
             return
@@ -1230,7 +1230,7 @@ for _, docPath := range documents {
         defer doc.Close()
         
         // 创建PDF导出器
-        pdfExporter := wordprocessingml.NewPDFExporter(doc, nil)
+        pdfExporter := word.NewPDFExporter(doc, nil)
         
         // 导出PDF
         outputPath := strings.Replace(path, ".docx", ".pdf", 1)
@@ -1260,10 +1260,10 @@ for i := 0; i < len(documents); i++ {
 #### 启用修订跟踪
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建修订跟踪器
-revisionTracker := wordprocessingml.NewRevisionTracker()
+revisionTracker := word.NewRevisionTracker()
 
 // 启用修订跟踪
 if err := revisionTracker.EnableTracking(doc); err != nil {
@@ -1320,10 +1320,10 @@ if err := revisionTracker.AcceptAllRevisions(doc); err != nil {
 #### 协作编辑
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建协作编辑器
-collabEditor := wordprocessingml.NewCollaborativeEditor()
+collabEditor := word.NewCollaborativeEditor()
 
 // 创建编辑会话
 sessionConfig := &types.CollaborationConfig{
@@ -1379,10 +1379,10 @@ for _, conflict := range conflicts {
 #### 创建讨论
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建讨论管理器
-discussionManager := wordprocessingml.NewDiscussionManager()
+discussionManager := word.NewDiscussionManager()
 
 // 创建讨论
 discussion := &types.Discussion{
@@ -1443,10 +1443,10 @@ if err := discussionManager.SendNotification(notification); err != nil {
 ### 内存管理
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建性能优化器
-optimizer := wordprocessingml.NewPerformanceOptimizer()
+optimizer := word.NewPerformanceOptimizer()
 
 // 配置内存池
 poolConfig := &types.MemoryPoolConfig{
@@ -1493,7 +1493,7 @@ for _, docPath := range documents {
     go func(path string) {
         result := &types.ProcessResult{FilePath: path}
         
-        doc, err := wordprocessingml.Open(path)
+        doc, err := word.Open(path)
         if err != nil {
             result.Error = err
             results <- result
@@ -1609,10 +1609,10 @@ utils.SetLogOutput(logFile)
 ### 文档验证
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建文档验证器
-validator := wordprocessingml.NewDocumentValidator()
+validator := word.NewDocumentValidator()
 
 // 验证文档
 validationResult, err := validator.ValidateDocument(doc)
@@ -1644,13 +1644,13 @@ A: 对于大文档，建议使用流式处理和分块读取：
 
 ```go
 // 启用流式处理
-options := &wordprocessingml.OpenOptions{
+options := &word.OpenOptions{
     StreamMode:    true,
     ChunkSize:     1024 * 1024,  // 1MB chunks
     LazyLoading:   true,
 }
 
-doc, err := wordprocessingml.OpenWithOptions("large_document.docx", options)
+doc, err := word.OpenWithOptions("large_document.docx", options)
 if err != nil {
     return err
 }
@@ -1706,7 +1706,7 @@ A: 使用文档修复功能：
 
 ```go
 // 创建文档修复器
-repairer := wordprocessingml.NewDocumentRepairer()
+repairer := word.NewDocumentRepairer()
 
 // 检查文档
 diagnosis, err := repairer.DiagnoseDocument("corrupted.docx")
@@ -1816,10 +1816,10 @@ if err := styleSystem.ApplyStyle(paragraph, "MyCustomStyle"); err != nil {
 A: 使用图片处理器：
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建图片处理器
-imageProcessor := wordprocessingml.NewImageProcessor(nil)
+imageProcessor := word.NewImageProcessor(nil)
 
 // 加载图片
 image, err := imageProcessor.LoadImage(context.Background(), "image.jpg")
@@ -1833,8 +1833,8 @@ if err := imageProcessor.ResizeImage(image, 400, 300); err != nil {
 }
 
 // 应用图片效果
-effect := &wordprocessingml.ImageProcessorEffect{
-    Type:      wordprocessingml.ImageProcessorEffectTypeBrightness,
+effect := &word.ImageProcessorEffect{
+    Type:      word.ImageProcessorEffectTypeBrightness,
     Intensity: 1.2,
 }
 if err := imageProcessor.ApplyEffect(image, effect); err != nil {
@@ -1847,16 +1847,16 @@ if err := imageProcessor.ApplyEffect(image, effect); err != nil {
 A: 使用图表生成器：
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建图表生成器
-chartGenerator := wordprocessingml.NewChartGenerator(nil)
+chartGenerator := word.NewChartGenerator(nil)
 
 // 创建图表
-chart := &wordprocessingml.ChartGeneratorChart{
-    Type:   wordprocessingml.ChartGeneratorChartTypeBar,
+chart := &word.ChartGeneratorChart{
+    Type:   word.ChartGeneratorChartTypeBar,
     Title:  "销售数据",
-    Options: &wordprocessingml.ChartGeneratorOptions{
+    Options: &word.ChartGeneratorOptions{
         Width:  600,
         Height: 400,
     },
@@ -1867,7 +1867,7 @@ if err := chartGenerator.CreateChart(context.Background(), chart); err != nil {
 }
 
 // 添加数据点
-dataPoint := &wordprocessingml.ChartGeneratorDataPoint{
+dataPoint := &word.ChartGeneratorDataPoint{
     Label: "Q1",
     Value: 100,
 }
@@ -1881,21 +1881,21 @@ if err := chartGenerator.AddDataPoint(context.Background(), chart.ID, dataPoint)
 A: 使用文件嵌入器：
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建文件嵌入器
-fileEmbedder := wordprocessingml.NewFileEmbedder(doc, nil)
+fileEmbedder := word.NewFileEmbedder(doc, nil)
 
 // 嵌入PDF文件
 embedResult, err := fileEmbedder.EmbedFile(context.Background(), "report.pdf", 
-    wordprocessingml.EmbedTypeAttachment, nil)
+    word.EmbedTypeAttachment, nil)
 if err != nil {
     return fmt.Errorf("嵌入文件失败: %w", err)
 }
 
 // 创建外部链接
 linkResult, err := fileEmbedder.CreateLink(context.Background(), 
-    wordprocessingml.LinkTypeExternal, 
+    word.LinkTypeExternal, 
     "https://example.com", 
     "访问网站", nil, nil)
 if err != nil {
@@ -1914,13 +1914,13 @@ for _, file := range embeddedFiles {
 A: 使用自定义功能区：
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建自定义功能区
-customRibbon := wordprocessingml.NewCustomRibbon(doc, nil)
+customRibbon := word.NewCustomRibbon(doc, nil)
 
 // 添加选项卡
-tab := &wordprocessingml.RibbonTab{
+tab := &word.RibbonTab{
     ID:    "my_tools",
     Label: "我的工具",
 }
@@ -1929,9 +1929,9 @@ if err := customRibbon.AddTab(tab); err != nil {
 }
 
 // 添加按钮控件
-button := &wordprocessingml.RibbonControl{
+button := &word.RibbonControl{
     ID:      "quick_action",
-    Type:    wordprocessingml.ControlTypeButton,
+    Type:    word.ControlTypeButton,
     Label:   "快速操作",
     GroupID: "my_group",
 }
@@ -1940,7 +1940,7 @@ if err := customRibbon.AddControl(button); err != nil {
 }
 
 // 注册回调函数
-err := customRibbon.RegisterCallback("quick_action", func(ctx context.Context, control *wordprocessingml.RibbonControl, args map[string]interface{}) error {
+err := customRibbon.RegisterCallback("quick_action", func(ctx context.Context, control *word.RibbonControl, args map[string]interface{}) error {
     fmt.Println("执行快速操作...")
     return nil
 })
@@ -1954,10 +1954,10 @@ if err != nil {
 A: 使用性能优化器：
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建性能优化器
-optimizer := wordprocessingml.NewPerformanceOptimizer()
+optimizer := word.NewPerformanceOptimizer()
 
 // 配置内存池
 poolConfig := &types.MemoryPoolConfig{
@@ -1995,10 +1995,10 @@ if err := optimizer.ConfigureConcurrency(concurrencyConfig); err != nil {
 A: 使用协作系统：
 
 ```go
-import "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+import "github.com/tanqiangyes/go-word/pkg/word"
 
 // 创建修订跟踪器
-revisionTracker := wordprocessingml.NewRevisionTracker()
+revisionTracker := word.NewRevisionTracker()
 
 // 启用修订跟踪
 if err := revisionTracker.EnableTracking(doc); err != nil {
@@ -2006,7 +2006,7 @@ if err := revisionTracker.EnableTracking(doc); err != nil {
 }
 
 // 创建协作编辑器
-collabEditor := wordprocessingml.NewCollaborativeEditor()
+collabEditor := word.NewCollaborativeEditor()
 
 // 创建编辑会话
 sessionConfig := &types.CollaborationConfig{
@@ -2046,7 +2046,7 @@ type BatchDocumentProcessor struct {
 
 // 处理单个文档
 func (bdp *BatchDocumentProcessor) ProcessDocument(docPath string) error {
-    doc, err := wordprocessingml.Open(docPath)
+    doc, err := word.Open(docPath)
     if err != nil {
         return fmt.Errorf("打开文档失败: %w", err)
     }
@@ -2101,9 +2101,9 @@ func (bdp *BatchDocumentProcessor) ProcessDocuments(docPaths []string) error {
 }
 
 // 应用标准格式
-func (bdp *BatchDocumentProcessor) applyStandardFormatting(doc *wordprocessingml.Document) error {
+func (bdp *BatchDocumentProcessor) applyStandardFormatting(doc *word.Document) error {
     // 应用标准样式
-    styleSystem := wordprocessingml.NewStyleSystem()
+    styleSystem := word.NewStyleSystem()
     
     // 设置标准字体
     standardFont := &types.Font{
@@ -2145,12 +2145,12 @@ type DocumentQualityChecker struct {
 type QualityRule struct {
     Name        string
     Description string
-    Check       func(*wordprocessingml.Document) (bool, string)
+    Check       func(*word.Document) (bool, string)
     Severity    string // "error", "warning", "info"
 }
 
 // 检查文档质量
-func (dqc *DocumentQualityChecker) CheckDocument(doc *wordprocessingml.Document) []QualityIssue {
+func (dqc *DocumentQualityChecker) CheckDocument(doc *word.Document) []QualityIssue {
     var issues []QualityIssue
     
     for _, rule := range dqc.rules {
@@ -2175,7 +2175,7 @@ func (dqc *DocumentQualityChecker) InitializeDefaultRules() {
             Name:        "字体一致性",
             Description: "检查文档中字体使用是否一致",
             Severity:    "warning",
-            Check: func(doc *wordprocessingml.Document) (bool, string) {
+            Check: func(doc *word.Document) (bool, string) {
                 // 实现字体一致性检查逻辑
                 return true, "字体使用一致"
             },
@@ -2184,7 +2184,7 @@ func (dqc *DocumentQualityChecker) InitializeDefaultRules() {
             Name:        "段落间距",
             Description: "检查段落间距是否合理",
             Severity:    "info",
-            Check: func(doc *wordprocessingml.Document) (bool, string) {
+            Check: func(doc *word.Document) (bool, string) {
                 // 实现段落间距检查逻辑
                 return true, "段落间距合理"
             },
@@ -2193,7 +2193,7 @@ func (dqc *DocumentQualityChecker) InitializeDefaultRules() {
             Name:        "表格格式",
             Description: "检查表格格式是否规范",
             Severity:    "warning",
-            Check: func(doc *wordprocessingml.Document) (bool, string) {
+            Check: func(doc *word.Document) (bool, string) {
                 // 实现表格格式检查逻辑
                 return true, "表格格式规范"
             },
@@ -2232,7 +2232,7 @@ qualityChecker := &DocumentQualityChecker{
 qualityChecker.InitializeDefaultRules()
 
 // 检查文档质量
-doc, err := wordprocessingml.Open("document.docx")
+doc, err := word.Open("document.docx")
 if err != nil {
     log.Fatalf("打开文档失败: %v", err)
 }

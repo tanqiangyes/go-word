@@ -7,7 +7,7 @@
 ## 目录
 
 - [核心包](#核心包)
-  - [wordprocessingml](#wordprocessingml)
+  - [word](#word)
   - [writer](#writer)
   - [opc](#opc)
   - [parser](#parser)
@@ -19,7 +19,7 @@
 
 ## 核心包
 
-### wordprocessingml
+### word
 
 Word 文档处理的核心包，提供文档的读取、解析和操作功能。
 
@@ -89,7 +89,7 @@ func Open(filename string) (*Document, error)
 
 **示例:**
 ```go
-doc, err := wordprocessingml.Open("document.docx")
+doc, err := word.Open("document.docx")
 if err != nil {
     log.Fatal(err)
 }
@@ -223,7 +223,7 @@ func (af *AdvancedFormatter) CreateComplexTable(rows, cols int) *Table
 
 **示例:**
 ```go
-formatter := wordprocessingml.NewAdvancedFormatter(doc)
+formatter := word.NewAdvancedFormatter(doc)
 table := formatter.CreateComplexTable(3, 3)
 ```
 
@@ -328,7 +328,7 @@ func (dp *DocumentProtector) SetPassword(password string) error
 
 **示例:**
 ```go
-protector := wordprocessingml.NewDocumentProtector(doc)
+protector := word.NewDocumentProtector(doc)
 err := protector.SetPassword("password123")
 if err != nil {
     log.Fatal(err)
@@ -790,10 +790,10 @@ err = utils.WrapError(err, "解析文档时出错")
 
 ```go
 // 批量处理多个文档
-processor := wordprocessingml.NewBatchProcessor()
+processor := word.NewBatchProcessor()
 
 // 添加处理任务
-processor.AddTask("document1.docx", func(doc *wordprocessingml.Document) error {
+processor.AddTask("document1.docx", func(doc *word.Document) error {
     // 处理文档
     return nil
 })
@@ -806,7 +806,7 @@ err := processor.Process()
 
 ```go
 // 验证文档结构
-validator := wordprocessingml.NewDocumentValidator(doc)
+validator := word.NewDocumentValidator(doc)
 err := validator.Validate()
 if err != nil {
     log.Fatal(err)
@@ -817,7 +817,7 @@ if err != nil {
 
 ```go
 // 使用模板创建文档
-template := wordprocessingml.NewTemplate("template.docx")
+template := word.NewTemplate("template.docx")
 doc, err := template.CreateDocument(map[string]string{
     "name": "张三",
     "age":  "25",
@@ -838,7 +838,7 @@ doc, err := template.CreateDocument(map[string]string{
 ### 错误处理最佳实践
 
 ```go
-doc, err := wordprocessingml.Open("document.docx")
+doc, err := word.Open("document.docx")
 if err != nil {
     switch {
     case errors.Is(err, &DocumentError{}):
@@ -860,7 +860,7 @@ defer doc.Close()
 始终使用 `defer` 关闭文档：
 
 ```go
-doc, err := wordprocessingml.Open("document.docx")
+doc, err := word.Open("document.docx")
 if err != nil {
     log.Fatal(err)
 }
@@ -906,13 +906,13 @@ for i, paragraph := range paragraphs {
 ```go
 // 每个 goroutine 使用独立的文档实例
 go func() {
-    doc1, _ := wordprocessingml.Open("doc1.docx")
+    doc1, _ := word.Open("doc1.docx")
     defer doc1.Close()
     // 处理文档1
 }()
 
 go func() {
-    doc2, _ := wordprocessingml.Open("doc2.docx")
+    doc2, _ := word.Open("doc2.docx")
     defer doc2.Close()
     // 处理文档2
 }()
@@ -925,7 +925,7 @@ go func() {
 ```go
 // 处理完一个文档后立即关闭
 for _, filename := range filenames {
-    doc, err := wordprocessingml.Open(filename)
+    doc, err := word.Open(filename)
     if err != nil {
         continue
     }
@@ -975,7 +975,7 @@ func NewDocumentQualityManager(doc *Document) *DocumentQualityManager
 
 **示例:**
 ```go
-manager := wordprocessingml.NewDocumentQualityManager(doc)
+manager := word.NewDocumentQualityManager(doc)
 err := manager.ImproveDocumentQuality()
 if err != nil {
     log.Fatal(err)
@@ -1019,14 +1019,14 @@ func NewAdvancedStyleSystem() *AdvancedStyleSystem
 
 **示例:**
 ```go
-system := wordprocessingml.NewAdvancedStyleSystem()
+system := word.NewAdvancedStyleSystem()
 
 // 添加段落样式
-style := &wordprocessingml.ParagraphStyleDefinition{
+style := &word.ParagraphStyleDefinition{
     ID:   "Heading1",
     Name: "Heading 1",
     BasedOn: "Normal",
-    Properties: &wordprocessingml.ParagraphStyleProperties{
+    Properties: &word.ParagraphStyleProperties{
         Alignment: "left",
     },
 }
@@ -1101,8 +1101,8 @@ func (dp *DocumentProtection) EnableProtection(protectionType ProtectionType, pa
 
 **示例:**
 ```go
-protection := wordprocessingml.NewDocumentProtection()
-err := protection.EnableProtection(wordprocessingml.ReadOnlyProtection, "password123")
+protection := word.NewDocumentProtection()
+err := protection.EnableProtection(word.ReadOnlyProtection, "password123")
 if err != nil {
     log.Fatal(err)
 }
@@ -1145,12 +1145,12 @@ func (dv *DocumentValidator) AddRule(rule ValidationRule) error
 
 **示例:**
 ```go
-validator := wordprocessingml.NewDocumentValidator()
+validator := word.NewDocumentValidator()
 
-rule := wordprocessingml.ValidationRule{
+rule := word.ValidationRule{
     ID: "check_spelling",
     Name: "拼写检查",
-    Type: wordprocessingml.SpellingRule,
+    Type: word.SpellingRule,
     Enabled: true,
 }
 
@@ -1216,7 +1216,7 @@ func NewBatchProcessor(workers int) *BatchProcessor
 
 **示例:**
 ```go
-processor := wordprocessingml.NewBatchProcessor(4)
+processor := word.NewBatchProcessor(4)
 
 // 添加处理任务
 processor.AddTask("doc1.docx", func(doc *Document) error {

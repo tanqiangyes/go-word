@@ -10,8 +10,8 @@
 
 #### 核心架构
 - **OPC容器处理** (`pkg/opc`): 完整的Open Packaging Convention实现
-- **Word文档处理** (`pkg/wordprocessingml`): Word文档的读取和解析
-- **XML解析器** (`pkg/parser`): 专门的WordprocessingML XML解析
+- **Word文档处理** (`pkg/word`): Word文档的读取和解析
+- **XML解析器** (`pkg/parser`): 专门的word XML解析
 - **文档写入器** (`pkg/writer`): 文档修改和创建功能
 - **共享类型定义** (`pkg/types`): 解决导入循环的共享数据结构
 - **错误处理** (`pkg/utils`): 结构化错误处理系统
@@ -36,7 +36,7 @@
 go-word/
 ├── pkg/
 │   ├── opc/              # OPC 容器处理 ✅
-│   ├── wordprocessingml/ # Word 文档处理 ✅
+│   ├── word/ # Word 文档处理 ✅
 │   ├── parser/           # XML 解析器 ✅
 │   ├── writer/           # 文档写入器 ✅
 │   ├── types/            # 共享类型定义 ✅
@@ -83,7 +83,7 @@ part, err := container.GetPart("word/document.xml")
 ### 2. Word文档解析
 ```go
 // 打开Word文档
-doc, err := wordprocessingml.Open("document.docx")
+doc, err := word.Open("document.docx")
 defer doc.Close()
 
 // 提取文本内容
@@ -173,12 +173,12 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
     // 打开Word文档
-    doc, err := wordprocessingml.Open("example.docx")
+    doc, err := word.Open("example.docx")
     if err != nil {
         log.Fatal(err)
     }

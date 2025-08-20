@@ -39,7 +39,7 @@ package main
 
 import (
     "fmt"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
@@ -65,12 +65,12 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
     // 打开 Word 文档
-    doc, err := wordprocessingml.Open("your_document.docx")
+    doc, err := word.Open("your_document.docx")
     if err != nil {
         log.Fatal("无法打开文档:", err)
     }
@@ -103,12 +103,12 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
     // 打开文档
-    doc, err := wordprocessingml.Open("document.docx")
+    doc, err := word.Open("document.docx")
     if err != nil {
         log.Fatal("无法打开文档:", err)
     }
@@ -126,11 +126,11 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
-    doc, err := wordprocessingml.Open("document.docx")
+    doc, err := word.Open("document.docx")
     if err != nil {
         log.Fatal(err)
     }
@@ -234,7 +234,7 @@ func main() {
 }
 ```
 // 打开文档
-doc, err := wordprocessingml.Open("document.docx")
+doc, err := word.Open("document.docx")
 if err != nil {
     log.Fatal(err)
 }
@@ -375,7 +375,7 @@ func main() {
 
 ```go
 // 创建高级格式化器
-formatter := wordprocessingml.NewAdvancedFormatter(doc)
+formatter := word.NewAdvancedFormatter(doc)
 
 // 创建复杂表格
 table := formatter.CreateComplexTable(3, 3)
@@ -403,7 +403,7 @@ if err != nil {
 
 ```go
 // 创建文档保护器
-protector := wordprocessingml.NewDocumentProtector(doc)
+protector := word.NewDocumentProtector(doc)
 
 // 设置密码
 err := protector.SetPassword("password123")
@@ -425,7 +425,7 @@ if err != nil {
 filenames := []string{"doc1.docx", "doc2.docx", "doc3.docx"}
 
 for _, filename := range filenames {
-    doc, err := wordprocessingml.Open(filename)
+    doc, err := word.Open(filename)
     if err != nil {
         log.Printf("无法打开 %s: %v", filename, err)
         continue
@@ -527,7 +527,7 @@ if hasFormatting {
 ### Q: 如何处理错误？
 
 ```go
-doc, err := wordprocessingml.Open("document.docx")
+doc, err := word.Open("document.docx")
 if err != nil {
     // 检查错误类型
     switch {
@@ -547,7 +547,7 @@ defer doc.Close()
 
 ```go
 // 获取文档统计信息
-func getDocumentStats(doc *wordprocessingml.Document) {
+func getDocumentStats(doc *word.Document) {
     paragraphs, _ := doc.GetParagraphs()
     tables, _ := doc.GetTables()
     text, _ := doc.GetText()
@@ -577,19 +577,19 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
     // 打开文档
-    doc, err := wordprocessingml.Open("document.docx")
+    doc, err := word.Open("document.docx")
     if err != nil {
         log.Fatal(err)
     }
     defer doc.Close()
 
     // 创建质量改进管理器
-    manager := wordprocessingml.NewDocumentQualityManager(doc)
+    manager := word.NewDocumentQualityManager(doc)
 
     // 改进文档质量
     err = manager.ImproveDocumentQuality()
@@ -611,20 +611,20 @@ package main
 
 import (
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
     "github.com/tanqiangyes/go-word/pkg/types"
 )
 
 func main() {
     // 创建样式系统
-    system := wordprocessingml.NewAdvancedStyleSystem()
+    system := word.NewAdvancedStyleSystem()
 
     // 定义标题样式
-    headingStyle := &wordprocessingml.ParagraphStyleDefinition{
+    headingStyle := &word.ParagraphStyleDefinition{
         ID:   "Heading1",
         Name: "Heading 1",
         BasedOn: "Normal",
-        Properties: &wordprocessingml.ParagraphStyleProperties{
+        Properties: &word.ParagraphStyleProperties{
             Alignment: "left",
         },
     }
@@ -653,15 +653,15 @@ package main
 
 import (
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
     // 创建文档保护
-    protection := wordprocessingml.NewDocumentProtection()
+    protection := word.NewDocumentProtection()
 
     // 启用只读保护
-    err := protection.EnableProtection(wordprocessingml.ReadOnlyProtection, "password123")
+    err := protection.EnableProtection(word.ReadOnlyProtection, "password123")
     if err != nil {
         log.Fatal(err)
     }
@@ -686,25 +686,25 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
     // 打开文档
-    doc, err := wordprocessingml.Open("document.docx")
+    doc, err := word.Open("document.docx")
     if err != nil {
         log.Fatal(err)
     }
     defer doc.Close()
 
     // 创建验证器
-    validator := wordprocessingml.NewDocumentValidator()
+    validator := word.NewDocumentValidator()
 
     // 添加验证规则
-    rule := wordprocessingml.ValidationRule{
+    rule := word.ValidationRule{
         ID: "check_spelling",
         Name: "拼写检查",
-        Type: wordprocessingml.SpellingRule,
+        Type: word.SpellingRule,
         Enabled: true,
     }
 
@@ -735,18 +735,18 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
     // 创建批处理器
-    processor := wordprocessingml.NewBatchProcessor(4)
+    processor := word.NewBatchProcessor(4)
 
     // 添加处理任务
     filenames := []string{"doc1.docx", "doc2.docx", "doc3.docx"}
     
     for _, filename := range filenames {
-        processor.AddTask(filename, func(doc *wordprocessingml.Document) error {
+        processor.AddTask(filename, func(doc *word.Document) error {
             // 处理文档
             text, err := doc.GetText()
             if err != nil {
@@ -777,14 +777,14 @@ import (
     "fmt"
     "log"
     "errors"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
     // 使用结构化错误处理
-    doc, err := wordprocessingml.Open("document.docx")
+    doc, err := word.Open("document.docx")
     if err != nil {
-        var docErr *wordprocessingml.DocumentError
+        var docErr *word.DocumentError
         if errors.As(err, &docErr) {
             switch docErr.Code {
             case "FILE_NOT_FOUND":
@@ -813,7 +813,7 @@ import (
     "log"
     "runtime"
     "sync"
-    "github.com/tanqiangyes/go-word/pkg/wordprocessingml"
+    "github.com/tanqiangyes/go-word/pkg/word"
 )
 
 func main() {
@@ -830,7 +830,7 @@ func main() {
             semaphore <- struct{}{} // 获取信号量
             defer func() { <-semaphore }() // 释放信号量
             
-            doc, err := wordprocessingml.Open(fname)
+            doc, err := word.Open(fname)
             if err != nil {
                 log.Printf("处理文件 %s 时出错: %v", fname, err)
                 return

@@ -1,4 +1,4 @@
-// package word provides WordprocessingML document processing functionality
+// package word provides word document processing functionality
 package word
 
 import (
@@ -13,16 +13,16 @@ import (
 type AdvancedStyleSystem struct {
 	// 样式管理器
 	StyleManager *StyleManager
-	
+
 	// 样式缓存
 	StyleCache map[string]*StyleDefinition
-	
+
 	// 样式继承链
 	InheritanceChain map[string][]string
-	
+
 	// 样式冲突解决器
 	ConflictResolver *StyleConflictResolver
-	
+
 	// 日志记录器
 	logger *utils.Logger
 }
@@ -35,10 +35,10 @@ type StyleManager struct {
 	TableStyles     map[string]*TableStyleDefinition
 	NumberingStyles map[string]*NumberingStyleDefinition
 	ListStyles      map[string]*ListStyleDefinition
-	
+
 	// 默认样式
 	DefaultStyles *DefaultStyleSet
-	
+
 	// 样式属性
 	Properties *StyleManagerProperties
 }
@@ -46,38 +46,38 @@ type StyleManager struct {
 // StyleManagerProperties represents style manager properties
 type StyleManagerProperties struct {
 	// 基础设置
-	Language    string
-	Theme       string
-	Version     string
-	
+	Language string
+	Theme    string
+	Version  string
+
 	// 其他属性
-	Hidden      bool
-	Locked      bool
+	Hidden bool
+	Locked bool
 }
 
 // StyleDefinition represents a complete style definition
 type StyleDefinition struct {
 	// 基础信息
-	ID          string
-	Name        string
-	Type        StyleType
-	Category    StyleCategory
-	
+	ID       string
+	Name     string
+	Type     StyleType
+	Category StyleCategory
+
 	// 继承关系
-	BasedOn     string
-	Next        string
-	Link        string
-	Parent      string
-	
+	BasedOn string
+	Next    string
+	Link    string
+	Parent  string
+
 	// 属性
 	SemiHidden     bool
 	UnhideWhenUsed bool
 	QFormat        bool
 	Locked         bool
 	Hidden         bool
-	
+
 	// 样式属性
-	Properties     *types.StyleProperties
+	Properties *types.StyleProperties
 }
 
 // StyleType defines the type of style
@@ -111,173 +111,173 @@ const (
 // ParagraphStyleDefinition represents a paragraph style definition
 type ParagraphStyleDefinition struct {
 	// 基础信息
-	ID          string
-	Name        string
-	BasedOn     string
-	Next        string
-	Link        string
-	
+	ID      string
+	Name    string
+	BasedOn string
+	Next    string
+	Link    string
+
 	// 属性
 	SemiHidden     bool
 	UnhideWhenUsed bool
 	QFormat        bool
 	Locked         bool
-	
+
 	// 样式属性
-	Properties     *ParagraphStyleProperties
+	Properties *ParagraphStyleProperties
 }
 
 // ParagraphStyleProperties represents paragraph style properties
 type ParagraphStyleProperties struct {
 	// 段落属性
-	Alignment      string
-	Indent         *IndentFormat
-	Spacing        *SpacingFormat
-	Borders        *BorderFormat
-	Shading        *ShadingFormat
-	Tabs           []TabStop
-	
+	Alignment string
+	Indent    *IndentFormat
+	Spacing   *SpacingFormat
+	Borders   *BorderFormat
+	Shading   *ShadingFormat
+	Tabs      []TabStop
+
 	// 文本属性
-	Font           *Font
-	Effects        *TextEffects
-	
+	Font    *Font
+	Effects *TextEffects
+
 	// 其他属性
-	KeepLines      bool
-	KeepNext       bool
+	KeepLines       bool
+	KeepNext        bool
 	PageBreakBefore bool
-	WidowControl   bool
-	OutlineLevel   int
+	WidowControl    bool
+	OutlineLevel    int
 }
 
 // CharacterStyleDefinition represents a character style definition
 type CharacterStyleDefinition struct {
 	// 基础信息
-	ID          string
-	Name        string
-	BasedOn     string
-	Link        string
-	
+	ID      string
+	Name    string
+	BasedOn string
+	Link    string
+
 	// 属性
 	SemiHidden     bool
 	UnhideWhenUsed bool
 	QFormat        bool
 	Locked         bool
-	
+
 	// 样式属性
-	Properties     *CharacterStyleProperties
+	Properties *CharacterStyleProperties
 }
 
 // CharacterStyleProperties represents character style properties
 type CharacterStyleProperties struct {
 	// 字体属性
-	FontName       string
-	FontSize       int
-	FontColor      string
+	FontName        string
+	FontSize        int
+	FontColor       string
 	BackgroundColor string
-	Bold           bool
-	Italic         bool
-	Underline      bool
-	StrikeThrough  bool
-	
+	Bold            bool
+	Italic          bool
+	Underline       bool
+	StrikeThrough   bool
+
 	// 其他属性
-	Hidden         bool
-	Vanish         bool
-	SpecVanish     bool
-	Display        string
+	Hidden     bool
+	Vanish     bool
+	SpecVanish bool
+	Display    string
 }
 
 // TableStyleDefinition represents a table style definition
 type TableStyleDefinition struct {
 	// 基础信息
-	ID          string
-	Name        string
-	BasedOn     string
-	Next        string
-	
+	ID      string
+	Name    string
+	BasedOn string
+	Next    string
+
 	// 属性
 	SemiHidden     bool
 	UnhideWhenUsed bool
 	QFormat        bool
 	Locked         bool
-	
+
 	// 样式属性
-	Properties     *TableStyleProperties
+	Properties *TableStyleProperties
 }
 
 // TableStyleProperties represents table style properties
 type TableStyleProperties struct {
 	// 表格属性
-	Borders        *TableBorders
-	Shading        *TableShading
-	Layout          *TableLayout
-	Alignment      string
-	
+	Borders   *TableBorders
+	Shading   *TableShading
+	Layout    *TableLayout
+	Alignment string
+
 	// 单元格属性
-	CellProperties  *CellProperties
-	
+	CellProperties *CellProperties
+
 	// 其他属性
-	Hidden         bool
-	AllowOverlap   bool
-	AllowBreak     bool
+	Hidden       bool
+	AllowOverlap bool
+	AllowBreak   bool
 }
 
 // NumberingStyleDefinition represents a numbering style definition
 type NumberingStyleDefinition struct {
 	// 基础信息
-	ID          string
-	Name        string
-	BasedOn     string
-	
+	ID      string
+	Name    string
+	BasedOn string
+
 	// 属性
 	SemiHidden     bool
 	UnhideWhenUsed bool
 	QFormat        bool
 	Locked         bool
-	
+
 	// 样式属性
-	Properties     *NumberingStyleProperties
+	Properties *NumberingStyleProperties
 }
 
 // NumberingStyleProperties represents numbering style properties
 type NumberingStyleProperties struct {
 	// 编号属性
-	Numbering      *NumberingFormat
-	Indent         *IndentFormat
-	Alignment      string
-	
+	Numbering *NumberingFormat
+	Indent    *IndentFormat
+	Alignment string
+
 	// 其他属性
-	Hidden         bool
-	Restart        bool
-	Legal          bool
+	Hidden  bool
+	Restart bool
+	Legal   bool
 }
 
 // ListStyleDefinition represents a list style definition
 type ListStyleDefinition struct {
 	// 基础信息
-	ID          string
-	Name        string
-	BasedOn     string
-	
+	ID      string
+	Name    string
+	BasedOn string
+
 	// 属性
 	SemiHidden     bool
 	UnhideWhenUsed bool
 	QFormat        bool
 	Locked         bool
-	
+
 	// 样式属性
-	Properties     *ListStyleProperties
+	Properties *ListStyleProperties
 }
 
 // ListStyleProperties represents list style properties
 type ListStyleProperties struct {
 	// 列表属性
-	ListType       ListType
-	Levels         []ListLevel
-	Restart        bool
-	
+	ListType ListType
+	Levels   []ListLevel
+	Restart  bool
+
 	// 其他属性
-	Hidden         bool
-	Legal          bool
+	Hidden bool
+	Legal  bool
 }
 
 // ListType defines the type of list
@@ -295,28 +295,28 @@ const (
 // ListLevel represents a list level
 type ListLevel struct {
 	// 基础信息
-	Index       int
-	Start       int
-	
+	Index int
+	Start int
+
 	// 格式设置
-	Format      string
-	Alignment   string
-	Indent      float64
-	Hanging     float64
-	TextIndent  float64
-	
+	Format     string
+	Alignment  string
+	Indent     float64
+	Hanging    float64
+	TextIndent float64
+
 	// 属性
-	Restart     bool
-	Legal       bool
-	Legacy      bool
+	Restart bool
+	Legal   bool
+	Legacy  bool
 }
 
 // TabStop represents a tab stop
 type TabStop struct {
 	// 基础信息
-	Position    float64
-	Alignment   TabAlignment
-	Leader      TabLeader
+	Position  float64
+	Alignment TabAlignment
+	Leader    TabLeader
 }
 
 // TabAlignment defines tab alignment
@@ -357,10 +357,10 @@ const (
 type StyleConflictResolver struct {
 	// 冲突解决策略
 	ResolutionStrategy ConflictResolutionStrategy
-	
+
 	// 冲突记录
 	Conflicts []types.StyleConflict
-	
+
 	// 解决规则
 	Rules []ConflictResolutionRule
 }
@@ -396,14 +396,14 @@ const (
 // ConflictResolutionRule represents a conflict resolution rule
 type ConflictResolutionRule struct {
 	// 基础信息
-	ID          string
-	Name        string
-	Priority    int
-	
+	ID       string
+	Name     string
+	Priority int
+
 	// 规则条件
-	Condition   string
-	Action      string
-	
+	Condition string
+	Action    string
+
 	// 属性
 	Enabled     bool
 	Description string
@@ -421,9 +421,9 @@ func NewAdvancedStyleSystem() *AdvancedStyleSystem {
 			DefaultStyles:   &DefaultStyleSet{},
 			Properties:      &StyleManagerProperties{},
 		},
-		StyleCache:        make(map[string]*StyleDefinition),
-		InheritanceChain:  make(map[string][]string),
-		ConflictResolver:  &StyleConflictResolver{
+		StyleCache:       make(map[string]*StyleDefinition),
+		InheritanceChain: make(map[string][]string),
+		ConflictResolver: &StyleConflictResolver{
 			ResolutionStrategy: KeepOriginalStrategy,
 			Conflicts:          make([]types.StyleConflict, 0),
 			Rules:              make([]ConflictResolutionRule, 0),
@@ -436,37 +436,37 @@ func (ass *AdvancedStyleSystem) AddParagraphStyle(style *ParagraphStyleDefinitio
 	if style == nil {
 		return fmt.Errorf("style cannot be nil")
 	}
-	
+
 	if style.ID == "" {
 		return fmt.Errorf("style ID cannot be empty")
 	}
-	
+
 	// 检查冲突
 	if conflict := ass.checkStyleConflict(style.ID, ParagraphStyleType); conflict != nil {
 		return ass.resolveStyleConflict(conflict)
 	}
-	
+
 	// 添加到样式管理器
 	ass.StyleManager.ParagraphStyles[style.ID] = style
-	
+
 	// 添加到缓存
 	ass.StyleCache[style.ID] = &StyleDefinition{
-		ID:          style.ID,
-		Name:        style.Name,
-		Type:        ParagraphStyleType,
-		Category:    CustomCategory,
-		BasedOn:     style.BasedOn,
-		Next:        style.Next,
-		Link:        style.Link,
+		ID:             style.ID,
+		Name:           style.Name,
+		Type:           ParagraphStyleType,
+		Category:       CustomCategory,
+		BasedOn:        style.BasedOn,
+		Next:           style.Next,
+		Link:           style.Link,
 		SemiHidden:     style.SemiHidden,
 		UnhideWhenUsed: style.UnhideWhenUsed,
 		QFormat:        style.QFormat,
 		Locked:         style.Locked,
 	}
-	
+
 	// 更新继承链
 	ass.updateInheritanceChain(style.ID, style.BasedOn)
-	
+
 	return nil
 }
 
@@ -475,36 +475,36 @@ func (ass *AdvancedStyleSystem) AddCharacterStyle(style *CharacterStyleDefinitio
 	if style == nil {
 		return fmt.Errorf("style cannot be nil")
 	}
-	
+
 	if style.ID == "" {
 		return fmt.Errorf("style ID cannot be empty")
 	}
-	
+
 	// 检查冲突
 	if conflict := ass.checkStyleConflict(style.ID, CharacterStyleType); conflict != nil {
 		return ass.resolveStyleConflict(conflict)
 	}
-	
+
 	// 添加到样式管理器
 	ass.StyleManager.CharacterStyles[style.ID] = style
-	
+
 	// 添加到缓存
 	ass.StyleCache[style.ID] = &StyleDefinition{
-		ID:          style.ID,
-		Name:        style.Name,
-		Type:        CharacterStyleType,
-		Category:    CustomCategory,
-		BasedOn:     style.BasedOn,
-		Link:        style.Link,
+		ID:             style.ID,
+		Name:           style.Name,
+		Type:           CharacterStyleType,
+		Category:       CustomCategory,
+		BasedOn:        style.BasedOn,
+		Link:           style.Link,
 		SemiHidden:     style.SemiHidden,
 		UnhideWhenUsed: style.UnhideWhenUsed,
 		QFormat:        style.QFormat,
 		Locked:         style.Locked,
 	}
-	
+
 	// 更新继承链
 	ass.updateInheritanceChain(style.ID, style.BasedOn)
-	
+
 	return nil
 }
 
@@ -513,36 +513,36 @@ func (ass *AdvancedStyleSystem) AddTableStyle(style *TableStyleDefinition) error
 	if style == nil {
 		return fmt.Errorf("style cannot be nil")
 	}
-	
+
 	if style.ID == "" {
 		return fmt.Errorf("style ID cannot be empty")
 	}
-	
+
 	// 检查冲突
 	if conflict := ass.checkStyleConflict(style.ID, TableStyleType); conflict != nil {
 		return ass.resolveStyleConflict(conflict)
 	}
-	
+
 	// 添加到样式管理器
 	ass.StyleManager.TableStyles[style.ID] = style
-	
+
 	// 添加到缓存
 	ass.StyleCache[style.ID] = &StyleDefinition{
-		ID:          style.ID,
-		Name:        style.Name,
-		Type:        TableStyleType,
-		Category:    CustomCategory,
-		BasedOn:     style.BasedOn,
-		Next:        style.Next,
+		ID:             style.ID,
+		Name:           style.Name,
+		Type:           TableStyleType,
+		Category:       CustomCategory,
+		BasedOn:        style.BasedOn,
+		Next:           style.Next,
 		SemiHidden:     style.SemiHidden,
 		UnhideWhenUsed: style.UnhideWhenUsed,
 		QFormat:        style.QFormat,
 		Locked:         style.Locked,
 	}
-	
+
 	// 更新继承链
 	ass.updateInheritanceChain(style.ID, style.BasedOn)
-	
+
 	return nil
 }
 
@@ -576,22 +576,22 @@ func (ass *AdvancedStyleSystem) convertTypesStyleToStyleDefinition(style *types.
 	if style == nil {
 		return nil
 	}
-	
+
 	return &StyleDefinition{
-		ID:          style.ID,
-		Name:        style.Name,
-		Type:        ass.convertStringToStyleType(string(style.Type)),
-		Category:    CustomCategory,
-		BasedOn:     "",
-		Next:        "",
-		Link:        "",
-		Parent:      "",
-		SemiHidden:  false,
+		ID:             style.ID,
+		Name:           style.Name,
+		Type:           ass.convertStringToStyleType(string(style.Type)),
+		Category:       CustomCategory,
+		BasedOn:        "",
+		Next:           "",
+		Link:           "",
+		Parent:         "",
+		SemiHidden:     false,
 		UnhideWhenUsed: false,
-		QFormat:     false,
-		Locked:      false,
-		Hidden:      false,
-		Properties:  &types.StyleProperties{},
+		QFormat:        false,
+		Locked:         false,
+		Hidden:         false,
+		Properties:     &types.StyleProperties{},
 	}
 }
 
@@ -637,7 +637,7 @@ func (ass *AdvancedStyleSystem) checkStyleConflict(id string, styleType StyleTyp
 	if existingStyle == nil {
 		return nil
 	}
-	
+
 	// 检查同名冲突
 	return &types.StyleConflict{
 		ID:          fmt.Sprintf("conflict_%s", id),
@@ -712,19 +712,19 @@ func (ass *AdvancedStyleSystem) mergePropertyConflicts(original, new *StyleDefin
 
 	// 创建合并后的样式
 	mergedStyle := &StyleDefinition{
-		ID:          original.ID,
-		Name:        original.Name,
-		Type:        original.Type,
-		BasedOn:     original.BasedOn,
-		Next:        original.Next,
-		Link:        original.Link,
-		Parent:      original.Parent,
-		SemiHidden:  original.SemiHidden,
+		ID:             original.ID,
+		Name:           original.Name,
+		Type:           original.Type,
+		BasedOn:        original.BasedOn,
+		Next:           original.Next,
+		Link:           original.Link,
+		Parent:         original.Parent,
+		SemiHidden:     original.SemiHidden,
 		UnhideWhenUsed: original.UnhideWhenUsed,
-		QFormat:     original.QFormat,
-		Locked:      original.Locked,
-		Hidden:      original.Hidden,
-		Properties:  &types.StyleProperties{},
+		QFormat:        original.QFormat,
+		Locked:         original.Locked,
+		Hidden:         original.Hidden,
+		Properties:     &types.StyleProperties{},
 	}
 
 	// 合并样式属性
@@ -758,19 +758,19 @@ func (ass *AdvancedStyleSystem) mergeInheritanceConflicts(original, new *StyleDe
 
 	// 更新样式
 	mergedStyle := &StyleDefinition{
-		ID:          original.ID,
-		Name:        original.Name,
-		Type:        original.Type,
-		BasedOn:     optimalChain[0],
-		Next:        original.Next,
-		Link:        original.Link,
-		Parent:      original.Parent,
-		SemiHidden:  original.SemiHidden,
+		ID:             original.ID,
+		Name:           original.Name,
+		Type:           original.Type,
+		BasedOn:        optimalChain[0],
+		Next:           original.Next,
+		Link:           original.Link,
+		Parent:         original.Parent,
+		SemiHidden:     original.SemiHidden,
 		UnhideWhenUsed: original.UnhideWhenUsed,
-		QFormat:     original.QFormat,
-		Locked:      original.Locked,
-		Hidden:      original.Hidden,
-		Properties:  original.Properties,
+		QFormat:        original.QFormat,
+		Locked:         original.Locked,
+		Hidden:         original.Hidden,
+		Properties:     original.Properties,
 	}
 
 	// 更新继承链
@@ -810,19 +810,19 @@ func (ass *AdvancedStyleSystem) mergeFormatConflicts(original, new *StyleDefinit
 
 	// 创建合并后的样式
 	mergedStyle := &StyleDefinition{
-		ID:          original.ID,
-		Name:        original.Name,
-		Type:        original.Type,
-		BasedOn:     original.BasedOn,
-		Next:        original.Next,
-		Link:        original.Link,
-		Parent:      original.Parent,
-		SemiHidden:  original.SemiHidden,
+		ID:             original.ID,
+		Name:           original.Name,
+		Type:           original.Type,
+		BasedOn:        original.BasedOn,
+		Next:           original.Next,
+		Link:           original.Link,
+		Parent:         original.Parent,
+		SemiHidden:     original.SemiHidden,
 		UnhideWhenUsed: original.UnhideWhenUsed,
-		QFormat:     original.QFormat,
-		Locked:      original.Locked,
-		Hidden:      original.Hidden,
-		Properties:  original.Properties,
+		QFormat:        original.QFormat,
+		Locked:         original.Locked,
+		Hidden:         original.Hidden,
+		Properties:     original.Properties,
 	}
 
 	// 合并格式属性
@@ -844,19 +844,19 @@ func (ass *AdvancedStyleSystem) mergeDefaultStrategy(original, new *StyleDefinit
 
 	// 保守策略：保留原始样式，只添加新样式中不冲突的属性
 	mergedStyle := &StyleDefinition{
-		ID:          original.ID,
-		Name:        original.Name,
-		Type:        original.Type,
-		BasedOn:     original.BasedOn,
-		Next:        original.Next,
-		Link:        original.Link,
-		Parent:      original.Parent,
-		SemiHidden:  original.SemiHidden,
+		ID:             original.ID,
+		Name:           original.Name,
+		Type:           original.Type,
+		BasedOn:        original.BasedOn,
+		Next:           original.Next,
+		Link:           original.Link,
+		Parent:         original.Parent,
+		SemiHidden:     original.SemiHidden,
 		UnhideWhenUsed: original.UnhideWhenUsed,
-		QFormat:     original.QFormat,
-		Locked:      original.Locked,
-		Hidden:      original.Hidden,
-		Properties:  original.Properties,
+		QFormat:        original.QFormat,
+		Locked:         original.Locked,
+		Hidden:         original.Hidden,
+		Properties:     original.Properties,
 	}
 
 	// 合并非冲突属性
@@ -864,7 +864,7 @@ func (ass *AdvancedStyleSystem) mergeDefaultStrategy(original, new *StyleDefinit
 		if mergedStyle.Properties == nil {
 			mergedStyle.Properties = &types.StyleProperties{}
 		}
-		
+
 		// 安全地合并属性
 		ass.safeMergeProperties(mergedStyle.Properties, new.Properties)
 	}
@@ -894,7 +894,7 @@ func (ass *AdvancedStyleSystem) mergeStringSlice(original, new []string) []strin
 		for _, item := range new {
 			merged[item] = true
 		}
-		
+
 		result := make([]string, 0, len(merged))
 		for item := range merged {
 			result = append(result, item)
@@ -985,7 +985,7 @@ func (ass *AdvancedStyleSystem) selectOptimalInheritanceChain(originalChain, new
 
 func (ass *AdvancedStyleSystem) mergeFormatProperties(original, new *types.StyleProperties, conflict *types.StyleConflict) *types.StyleProperties {
 	merged := &types.StyleProperties{}
-	
+
 	// 合并格式相关的属性
 	merged.FontName = ass.mergeStringProperty(original.FontName, new.FontName, "fontName")
 	merged.FontSize = ass.mergeIntProperty(original.FontSize, new.FontSize, "fontSize")
@@ -1008,7 +1008,7 @@ func (ass *AdvancedStyleSystem) mergeFormatProperties(original, new *types.Style
 	merged.KeepNext = ass.mergeBoolProperty(original.KeepNext, new.KeepNext, "keepNext")
 	merged.PageBreakBefore = ass.mergeBoolProperty(original.PageBreakBefore, new.PageBreakBefore, "pageBreakBefore")
 	merged.WidowControl = ass.mergeBoolProperty(original.WidowControl, new.WidowControl, "widowControl")
-	
+
 	return merged
 }
 
@@ -1078,10 +1078,10 @@ func (ass *AdvancedStyleSystem) updateInheritanceChain(id, basedOn string) {
 	if basedOn == "" {
 		return
 	}
-	
+
 	chain := []string{id}
 	current := basedOn
-	
+
 	for current != "" {
 		chain = append(chain, current)
 		if style := ass.StyleCache[current]; style != nil {
@@ -1090,7 +1090,7 @@ func (ass *AdvancedStyleSystem) updateInheritanceChain(id, basedOn string) {
 			break
 		}
 	}
-	
+
 	ass.InheritanceChain[id] = chain
 }
 
@@ -1106,7 +1106,7 @@ func (ass *AdvancedStyleSystem) GetStyleSummary() string {
 	summary.WriteString(fmt.Sprintf("样式缓存: %d\n", len(ass.StyleCache)))
 	summary.WriteString(fmt.Sprintf("继承链: %d\n", len(ass.InheritanceChain)))
 	summary.WriteString(fmt.Sprintf("冲突数量: %d\n", len(ass.ConflictResolver.Conflicts)))
-	
+
 	return summary.String()
 }
 
@@ -1116,7 +1116,7 @@ func (ass *AdvancedStyleSystem) ApplyStyle(content interface{}, styleID string) 
 	if style == nil {
 		return fmt.Errorf("style not found: %s", styleID)
 	}
-	
+
 	switch content := content.(type) {
 	case *types.Paragraph:
 		return ass.applyParagraphStyle(content, styleID)
@@ -1135,9 +1135,9 @@ func (ass *AdvancedStyleSystem) applyParagraphStyle(paragraph *types.Paragraph, 
 	if style == nil {
 		return fmt.Errorf("paragraph style not found: %s", styleID)
 	}
-	
+
 	paragraph.Style = styleID
-	
+
 	// 应用样式属性
 	if style.Properties != nil {
 		if style.Properties.Alignment != "" {
@@ -1156,7 +1156,7 @@ func (ass *AdvancedStyleSystem) applyParagraphStyle(paragraph *types.Paragraph, 
 			// 这里可以设置孤行控制
 		}
 	}
-	
+
 	return nil
 }
 
@@ -1166,7 +1166,7 @@ func (ass *AdvancedStyleSystem) applyCharacterStyle(run *types.Run, styleID stri
 	if style == nil {
 		return fmt.Errorf("character style not found: %s", styleID)
 	}
-	
+
 	// 应用样式属性
 	if style.Properties != nil {
 		if style.Properties.FontName != "" {
@@ -1182,7 +1182,7 @@ func (ass *AdvancedStyleSystem) applyCharacterStyle(run *types.Run, styleID stri
 			run.Italic = true
 		}
 	}
-	
+
 	return nil
 }
 
@@ -1192,7 +1192,7 @@ func (ass *AdvancedStyleSystem) applyTableStyle(table *types.Table, styleID stri
 	if style == nil {
 		return fmt.Errorf("table style not found: %s", styleID)
 	}
-	
+
 	// 应用样式属性
 	if style.Properties != nil {
 		if style.Properties.Alignment != "" {
@@ -1202,6 +1202,6 @@ func (ass *AdvancedStyleSystem) applyTableStyle(table *types.Table, styleID stri
 			// 这里可以设置表格隐藏
 		}
 	}
-	
+
 	return nil
-} 
+}

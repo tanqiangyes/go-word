@@ -7,7 +7,7 @@
 ## 需要完善的功能
 
 ### 1. 格式转换功能 (Format Support)
-**文件**: `pkg/wordprocessingml/format_support.go`
+**文件**: `pkg/word/format_support.go`
 **状态**: 基础结构已定义，但转换逻辑未实现
 **需要完善**:
 - [ ] `.docx` 到 `.doc` 的转换
@@ -17,7 +17,7 @@
 - [ ] 转换进度回调
 
 ### 2. 模板系统 (Template System)
-**文件**: `pkg/wordprocessingml/template.go`
+**文件**: `pkg/word/template.go`
 **状态**: 基础结构已定义，但占位符处理逻辑未实现
 **需要完善**:
 - [ ] 文本占位符替换
@@ -29,7 +29,7 @@
 - [ ] 占位符验证系统
 
 ### 3. 样式合并功能 (Style Merging)
-**文件**: `pkg/wordprocessingml/advanced_styles.go`
+**文件**: `pkg/word/advanced_styles.go`
 **状态**: 方法已定义，但返回"not implemented yet"错误
 **需要完善**:
 - [ ] 样式冲突检测
@@ -39,7 +39,7 @@
 - [ ] 合并结果验证
 
 ### 4. API设计完善 (API Design)
-**文件**: `pkg/wordprocessingml/api_design.go`
+**文件**: `pkg/word/api_design.go`
 **状态**: 多个TODO注释，功能未实现
 **需要完善**:
 - [ ] 文档标题属性设置
@@ -52,7 +52,7 @@
 - [ ] 保存功能实现
 
 ### 5. 批处理模板应用 (Batch Template Application)
-**文件**: `pkg/wordprocessingml/batch_processor.go`
+**文件**: `pkg/word/batch_processor.go`
 **状态**: 模板应用逻辑未实现
 **需要完善**:
 - [ ] 模板到文档的应用逻辑

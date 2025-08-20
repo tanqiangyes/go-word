@@ -51,7 +51,7 @@ docs/
 ## 🔍 快速查找
 
 ### 常用功能
-- **打开文档**: `wordprocessingml.Open()`
+- **打开文档**: `word.Open()`
 - **获取文本**: `doc.GetText()`
 - **获取段落**: `doc.GetParagraphs()`
 - **获取表格**: `doc.GetTables()`
