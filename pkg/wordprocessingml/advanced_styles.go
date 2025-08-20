@@ -4,7 +4,6 @@ package wordprocessingml
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/tanqiangyes/go-word/pkg/types"
 	"github.com/tanqiangyes/go-word/pkg/utils"
@@ -679,11 +678,7 @@ func (ass *AdvancedStyleSystem) resolveStyleConflict(conflict *types.StyleConfli
 
 // mergeStyles merges conflicting styles
 func (ass *AdvancedStyleSystem) mergeStyles(conflict *types.StyleConflict) error {
-	ass.logger.Info("开始合并样式", map[string]interface{}{
-		"style_id": conflict.StyleID,
-		"conflict_type": conflict.Type,
-		"priority": conflict.Priority,
-	})
+	ass.logger.Info("开始合并样式，样式ID: %s, 冲突类型: %s, 优先级: %d", conflict.StyleID, conflict.Type, conflict.Priority)
 
 	// 获取冲突的样式
 	originalStyle := ass.GetStyle(conflict.StyleID)
@@ -713,10 +708,7 @@ func (ass *AdvancedStyleSystem) mergeStyles(conflict *types.StyleConflict) error
 
 // mergePropertyConflicts 合并属性冲突
 func (ass *AdvancedStyleSystem) mergePropertyConflicts(original, new *StyleDefinition, conflict *types.StyleConflict) error {
-	ass.logger.Info("合并属性冲突", map[string]interface{}{
-		"style_id": original.ID,
-		"conflict_count": len(conflict.ConflictingProperties),
-	})
+	ass.logger.Info("合并属性冲突，样式ID: %s, 冲突数量: %d", original.ID, len(conflict.ConflictingProperties))
 
 	// 创建合并后的样式
 	mergedStyle := &StyleDefinition{
@@ -748,21 +740,14 @@ func (ass *AdvancedStyleSystem) mergePropertyConflicts(original, new *StyleDefin
 	ass.StyleCache[mergedStyle.ID] = mergedStyle
 
 	// 记录合并结果
-	ass.logger.Info("属性冲突合并完成", map[string]interface{}{
-		"style_id": mergedStyle.ID,
-		"merged_properties": len(conflict.ConflictingProperties),
-	})
+	ass.logger.Info("属性冲突合并完成，样式ID: %s, 合并属性数: %d", mergedStyle.ID, len(conflict.ConflictingProperties))
 
 	return nil
 }
 
 // mergeInheritanceConflicts 合并继承冲突
 func (ass *AdvancedStyleSystem) mergeInheritanceConflicts(original, new *StyleDefinition, conflict *types.StyleConflict) error {
-	ass.logger.Info("合并继承冲突", map[string]interface{}{
-		"style_id": original.ID,
-		"original_based_on": original.BasedOn,
-		"new_based_on": new.BasedOn,
-	})
+	ass.logger.Info("合并继承冲突，样式ID: %s, 原始继承: %s, 新继承: %s", original.ID, original.BasedOn, new.BasedOn)
 
 	// 分析继承链
 	originalChain := ass.getInheritanceChain(original.ID)
@@ -794,35 +779,23 @@ func (ass *AdvancedStyleSystem) mergeInheritanceConflicts(original, new *StyleDe
 	// 更新样式缓存
 	ass.StyleCache[mergedStyle.ID] = mergedStyle
 
-	ass.logger.Info("继承冲突合并完成", map[string]interface{}{
-		"style_id": mergedStyle.ID,
-		"new_based_on": mergedStyle.BasedOn,
-		"chain_length": len(optimalChain),
-	})
+	ass.logger.Info("继承冲突合并完成，样式ID: %s, 新继承: %s, 链长度: %d", mergedStyle.ID, mergedStyle.BasedOn, len(optimalChain))
 
 	return nil
 }
 
 // mergePriorityConflicts 合并优先级冲突
 func (ass *AdvancedStyleSystem) mergePriorityConflicts(original, new *StyleDefinition, conflict *types.StyleConflict) error {
-	ass.logger.Info("合并优先级冲突", map[string]interface{}{
-		"style_id": original.ID,
-		"original_priority": conflict.OriginalPriority,
-		"new_priority": conflict.NewPriority,
-	})
+	ass.logger.Info("合并优先级冲突，样式ID: %s, 原始优先级: %d, 新优先级: %d", original.ID, conflict.OriginalPriority, conflict.NewPriority)
 
 	// 根据优先级选择样式
 	var selectedStyle *StyleDefinition
 	if conflict.NewPriority > conflict.OriginalPriority {
 		selectedStyle = new
-		ass.logger.Info("选择新样式（更高优先级）", map[string]interface{}{
-			"style_id": new.ID,
-		})
+		ass.logger.Info("选择新样式（更高优先级），样式ID: %s", new.ID)
 	} else {
 		selectedStyle = original
-		ass.logger.Info("保留原始样式（更高或相等优先级）", map[string]interface{}{
-			"style_id": original.ID,
-		})
+		ass.logger.Info("保留原始样式（更高或相等优先级），样式ID: %s", original.ID)
 	}
 
 	// 更新样式缓存
@@ -833,10 +806,7 @@ func (ass *AdvancedStyleSystem) mergePriorityConflicts(original, new *StyleDefin
 
 // mergeFormatConflicts 合并格式冲突
 func (ass *AdvancedStyleSystem) mergeFormatConflicts(original, new *StyleDefinition, conflict *types.StyleConflict) error {
-	ass.logger.Info("合并格式冲突", map[string]interface{}{
-		"style_id": original.ID,
-		"conflict_count": len(conflict.ConflictingProperties),
-	})
+	ass.logger.Info("合并格式冲突，样式ID: %s, 冲突数量: %d", original.ID, len(conflict.ConflictingProperties))
 
 	// 创建合并后的样式
 	mergedStyle := &StyleDefinition{
@@ -863,20 +833,14 @@ func (ass *AdvancedStyleSystem) mergeFormatConflicts(original, new *StyleDefinit
 	// 更新样式缓存
 	ass.StyleCache[mergedStyle.ID] = mergedStyle
 
-	ass.logger.Info("格式冲突合并完成", map[string]interface{}{
-		"style_id": mergedStyle.ID,
-		"merged_formats": len(conflict.ConflictingProperties),
-	})
+	ass.logger.Info("格式冲突合并完成，样式ID: %s, 合并格式数: %d", mergedStyle.ID, len(conflict.ConflictingProperties))
 
 	return nil
 }
 
 // mergeDefaultStrategy 默认合并策略
 func (ass *AdvancedStyleSystem) mergeDefaultStrategy(original, new *StyleDefinition, conflict *types.StyleConflict) error {
-	ass.logger.Info("使用默认合并策略", map[string]interface{}{
-		"style_id": original.ID,
-		"strategy": "conservative",
-	})
+	ass.logger.Info("使用默认合并策略，样式ID: %s, 策略: %s", original.ID, "conservative")
 
 	// 保守策略：保留原始样式，只添加新样式中不冲突的属性
 	mergedStyle := &StyleDefinition{
@@ -914,11 +878,7 @@ func (ass *AdvancedStyleSystem) mergeDefaultStrategy(original, new *StyleDefinit
 // 辅助方法
 func (ass *AdvancedStyleSystem) mergeStringProperty(original, new, propertyName string) string {
 	if new != "" && new != original {
-		ass.logger.Debug("合并字符串属性", map[string]interface{}{
-			"property": propertyName,
-			"original": original,
-			"new": new,
-		})
+		ass.logger.Debug("合并字符串属性，属性: %s, 原始: %s, 新: %s", propertyName, original, new)
 		return new
 	}
 	return original
@@ -947,11 +907,7 @@ func (ass *AdvancedStyleSystem) mergeStringSlice(original, new []string) []strin
 // mergeIntProperty merges integer properties
 func (ass *AdvancedStyleSystem) mergeIntProperty(original, new int, propertyName string) int {
 	if new > 0 && new != original {
-		ass.logger.Debug("合并整数属性", map[string]interface{}{
-			"property": propertyName,
-			"original": original,
-			"new": new,
-		})
+		ass.logger.Debug("合并整数属性，属性: %s, 原始: %d, 新: %d", propertyName, original, new)
 		return new
 	}
 	return original
@@ -960,11 +916,7 @@ func (ass *AdvancedStyleSystem) mergeIntProperty(original, new int, propertyName
 // mergeFloatProperty merges float properties
 func (ass *AdvancedStyleSystem) mergeFloatProperty(original, new float64, propertyName string) float64 {
 	if new > 0 && new != original {
-		ass.logger.Debug("合并浮点数属性", map[string]interface{}{
-			"property": propertyName,
-			"original": original,
-			"new": new,
-		})
+		ass.logger.Debug("合并浮点数属性，属性: %s, 原始: %f, 新: %f", propertyName, original, new)
 		return new
 	}
 	return original
@@ -973,11 +925,7 @@ func (ass *AdvancedStyleSystem) mergeFloatProperty(original, new float64, proper
 // mergeBoolProperty merges boolean properties
 func (ass *AdvancedStyleSystem) mergeBoolProperty(original, new bool, propertyName string) bool {
 	if new != original {
-		ass.logger.Debug("合并布尔属性", map[string]interface{}{
-			"property": propertyName,
-			"original": original,
-			"new": new,
-		})
+		ass.logger.Debug("合并布尔属性，属性: %s, 原始: %t, 新: %t", propertyName, original, new)
 		return new
 	}
 	return original

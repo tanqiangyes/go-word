@@ -304,11 +304,11 @@ func (cli *CLI) cmdConvert(args []string) error {
 			return fmt.Errorf("无法复制文件: %w", err)
 		}
 	case ".doc":
-		if err := formatSupport.ConvertToDoc(); err != nil {
+		if err := formatSupport.ConvertFormat(wordprocessingml.DocFormat); err != nil {
 			return fmt.Errorf("无法转换为 .doc 格式: %w", err)
 		}
 	case ".rtf":
-		if err := formatSupport.ConvertToRtf(); err != nil {
+		if err := formatSupport.ConvertFormat(wordprocessingml.RtfFormat); err != nil {
 			return fmt.Errorf("无法转换为 .rtf 格式: %w", err)
 		}
 	default:
@@ -337,11 +337,11 @@ func (cli *CLI) cmdProtect(args []string) error {
 	}
 	defer doc.Close()
 
-	// Create document protector
-	protector := wordprocessingml.NewDocumentProtector(doc)
+	// Create document protection
+	protection := wordprocessingml.NewDocumentProtection()
 
 	// Enable protection
-	if err := protector.EnableProtection(wordprocessingml.ReadOnlyProtection, password); err != nil {
+	if err := protection.EnableProtection(wordprocessingml.ReadOnlyProtection, password); err != nil {
 		return fmt.Errorf("无法启用保护: %w", err)
 	}
 
@@ -376,7 +376,7 @@ func (cli *CLI) cmdValidate(args []string) error {
 	validator := wordprocessingml.NewDocumentValidator(doc)
 
 	// Validate document
-	if err := validator.Validate(); err != nil {
+	if err := validator.ValidateDocument(); err != nil {
 		return fmt.Errorf("文档验证失败: %w", err)
 	}
 

@@ -273,12 +273,7 @@ func (dm *DiscussionManager) CreateThread(ctx context.Context, thread *Discussio
 	// 存储线程
 	dm.threads[thread.ID] = thread
 
-	dm.logger.Info("讨论线程已创建", map[string]interface{}{
-		"thread_id": thread.ID,
-		"title":     thread.Title,
-		"creator":   thread.Creator,
-		"type":      thread.Type,
-	})
+	dm.logger.Info("讨论线程已创建，线程ID: %s, 标题: %s, 创建者: %s, 类型: %s", thread.ID, thread.Title, thread.Creator, thread.Type)
 
 	return nil
 }
@@ -331,12 +326,7 @@ func (dm *DiscussionManager) CreateDiscussion(ctx context.Context, discussion *D
 		}
 	}
 
-	dm.logger.Info("讨论已创建", map[string]interface{}{
-		"discussion_id": discussion.ID,
-		"title":         discussion.Title,
-		"author":        discussion.Author,
-		"thread_id":     discussion.ThreadID,
-	})
+	dm.logger.Info("讨论已创建，讨论ID: %s, 标题: %s, 作者: %s, 线程ID: %s", discussion.ID, discussion.Title, discussion.Author, discussion.ThreadID)
 
 	return nil
 }
@@ -376,12 +366,7 @@ func (dm *DiscussionManager) AddComment(ctx context.Context, comment *Discussion
 	// 存储评论
 	dm.comments[comment.ID] = comment
 
-	dm.logger.Info("评论已添加", map[string]interface{}{
-		"comment_id":    comment.ID,
-		"discussion_id": comment.DiscussionID,
-		"author":        comment.Author,
-		"type":          comment.Type,
-	})
+	dm.logger.Info("评论已添加，评论ID: %s, 讨论ID: %s, 作者: %s, 类型: %s", comment.ID, comment.DiscussionID, comment.Author, comment.Type)
 
 	return nil
 }
@@ -470,9 +455,7 @@ func (dm *DiscussionManager) cleanup() {
 		}
 	}
 
-	dm.logger.Info("自动清理完成", map[string]interface{}{
-		"cutoff_time": cutoff,
-	})
+	dm.logger.Info("自动清理完成，截止时间: %v", cutoff)
 }
 
 // GetStats 获取统计信息

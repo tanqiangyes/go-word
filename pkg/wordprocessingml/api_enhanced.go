@@ -27,9 +27,7 @@ func NewEnhancedDocumentBuilder() *EnhancedDocumentBuilder {
 
 // SetDocumentTitle 设置文档标题
 func (b *EnhancedDocumentBuilder) SetDocumentTitle(doc *Document, title string) error {
-	b.logger.Info("设置文档标题", map[string]interface{}{
-		"title": title,
-	})
+	b.logger.Info("设置文档标题: %s", title)
 
 	// 设置文档核心属性中的标题
 	if doc.coreProperties == nil {
@@ -49,18 +47,14 @@ func (b *EnhancedDocumentBuilder) SetDocumentTitle(doc *Document, title string) 
 	doc.metadata["created"] = doc.coreProperties.Created
 	doc.metadata["modified"] = doc.coreProperties.Modified
 
-	b.logger.Info("文档标题已设置", map[string]interface{}{
-		"title": title,
-	})
+	b.logger.Info("文档标题已设置: %s", title)
 
 	return nil
 }
 
 // SetDocumentAuthor 设置文档作者
 func (b *EnhancedDocumentBuilder) SetDocumentAuthor(doc *Document, author string) error {
-	b.logger.Info("设置文档作者", map[string]interface{}{
-		"author": author,
-	})
+	b.logger.Info("设置文档作者: %s", author)
 
 	// 设置文档核心属性中的作者
 	if doc.coreProperties == nil {
@@ -80,9 +74,7 @@ func (b *EnhancedDocumentBuilder) SetDocumentAuthor(doc *Document, author string
 	doc.metadata["creator"] = author
 	doc.metadata["last_modified_by"] = author
 
-	b.logger.Info("文档作者已设置", map[string]interface{}{
-		"author": author,
-	})
+	b.logger.Info("文档作者已设置: %s", author)
 
 	return nil
 }
@@ -102,9 +94,7 @@ func (b *EnhancedDocumentBuilder) SetDocumentSubject(doc *Document, subject stri
 	}
 	doc.metadata["subject"] = subject
 
-	b.logger.Info("文档主题已设置", map[string]interface{}{
-		"subject": subject,
-	})
+	b.logger.Info("文档主题已设置: %s", subject)
 
 	return nil
 }
@@ -124,19 +114,14 @@ func (b *EnhancedDocumentBuilder) SetDocumentKeywords(doc *Document, keywords []
 	}
 	doc.metadata["keywords"] = keywords
 
-	b.logger.Info("文档关键词已设置", map[string]interface{}{
-		"keywords": keywords,
-	})
+	b.logger.Info("文档关键词已设置: %s", keywords)
 
 	return nil
 }
 
 // ApplyDocumentProtection 应用文档保护
 func (b *EnhancedDocumentBuilder) ApplyDocumentProtection(doc *Document, protection types.DocumentProtectionConfig) error {
-	b.logger.Info("应用文档保护", map[string]interface{}{
-		"protection_type": protection.Type,
-		"enabled":         protection.Enabled,
-	})
+	b.logger.Info("应用文档保护，保护类型: %s, 启用: %t", protection.Type, protection.Enabled)
 
 	// 简化的文档保护实现
 	if protection.Enabled && protection.Type != types.ProtectionTypeNone {
@@ -151,10 +136,7 @@ func (b *EnhancedDocumentBuilder) ApplyDocumentProtection(doc *Document, protect
 			"permissions": protection.Permissions,
 		}
 		
-		b.logger.Info("文档保护已应用", map[string]interface{}{
-			"protection_type": protection.Type,
-			"enabled":         protection.Enabled,
-		})
+		b.logger.Info("文档保护已应用，保护类型: %s, 启用: %t", protection.Type, protection.Enabled)
 	}
 
 	return nil
@@ -162,11 +144,7 @@ func (b *EnhancedDocumentBuilder) ApplyDocumentProtection(doc *Document, protect
 
 // ApplyDocumentValidation 应用文档验证
 func (b *EnhancedDocumentBuilder) ApplyDocumentValidation(doc *Document, validation types.DocumentValidationConfig) error {
-	b.logger.Info("应用文档验证", map[string]interface{}{
-		"validateStructure": validation.ValidateStructure,
-		"validateContent":   validation.ValidateContent,
-		"validateStyles":    validation.ValidateStyles,
-	})
+	b.logger.Info("应用文档验证，验证结构: %t, 验证内容: %t, 验证样式: %t", validation.ValidateStructure, validation.ValidateContent, validation.ValidateStyles)
 
 	// 简化的文档验证实现
 	if validation.Enabled {
@@ -183,11 +161,7 @@ func (b *EnhancedDocumentBuilder) ApplyDocumentValidation(doc *Document, validat
 			"strictMode":        validation.StrictMode,
 		}
 		
-		b.logger.Info("文档验证已应用", map[string]interface{}{
-			"validateStructure": validation.ValidateStructure,
-			"validateContent":   validation.ValidateContent,
-			"validateStyles":    validation.ValidateStyles,
-		})
+		b.logger.Info("文档验证已应用，验证结构: %t, 验证内容: %t, 验证样式: %t", validation.ValidateStructure, validation.ValidateContent, validation.ValidateStyles)
 	}
 
 	return nil
@@ -195,9 +169,7 @@ func (b *EnhancedDocumentBuilder) ApplyDocumentValidation(doc *Document, validat
 
 // AddParagraphToDocument 添加段落到文档
 func (b *EnhancedDocumentBuilder) AddParagraphToDocument(doc *Document, paragraph types.Paragraph) error {
-	b.logger.Info("添加段落到文档", map[string]interface{}{
-		"text_length": len(paragraph.Text),
-	})
+	b.logger.Info("添加段落到文档，文本长度: %d", len(paragraph.Text))
 
 	// 检查文档是否已初始化
 	if doc.mainPart == nil {
@@ -213,20 +185,14 @@ func (b *EnhancedDocumentBuilder) AddParagraphToDocument(doc *Document, paragrap
 
 	doc.mainPart.Content.Paragraphs = append(doc.mainPart.Content.Paragraphs, paragraph)
 
-	b.logger.Info("段落已添加到文档", map[string]interface{}{
-		"text_length":      len(paragraph.Text),
-		"total_paragraphs": len(doc.mainPart.Content.Paragraphs),
-	})
+	b.logger.Info("段落已添加到文档，文本长度: %d, 总段落数: %d", len(paragraph.Text), len(doc.mainPart.Content.Paragraphs))
 
 	return nil
 }
 
 // AddTableToDocument 添加表格到文档
 func (b *EnhancedDocumentBuilder) AddTableToDocument(doc *Document, table types.Table) error {
-	b.logger.Info("添加表格到文档", map[string]interface{}{
-		"rows":    len(table.Rows),
-		"columns": table.Columns,
-	})
+	b.logger.Info("添加表格到文档，行数: %d, 列数: %d", len(table.Rows), table.Columns)
 
 	// 检查文档是否已初始化
 	if doc.mainPart == nil {
@@ -242,22 +208,14 @@ func (b *EnhancedDocumentBuilder) AddTableToDocument(doc *Document, table types.
 
 	doc.mainPart.Content.Tables = append(doc.mainPart.Content.Tables, table)
 
-	b.logger.Info("表格已添加到文档", map[string]interface{}{
-		"rows":         len(table.Rows),
-		"columns":      table.Columns,
-		"total_tables": len(doc.mainPart.Content.Tables),
-	})
+	b.logger.Info("表格已添加到文档，行数: %d, 列数: %d, 总表格数: %d", len(table.Rows), table.Columns, len(doc.mainPart.Content.Tables))
 
 	return nil
 }
 
 // AddImageToDocument 添加图片到文档
 func (b *EnhancedDocumentBuilder) AddImageToDocument(doc *Document, image types.Image) error {
-	b.logger.Info("添加图片到文档", map[string]interface{}{
-		"path":   image.Path,
-		"width":  image.Width,
-		"height": image.Height,
-	})
+	b.logger.Info("添加图片到文档，路径: %s, 宽度: %f, 高度: %f", image.Path, image.Width, image.Height)
 
 	// 检查文档是否已初始化
 	if doc.mainPart == nil {
@@ -277,21 +235,14 @@ func (b *EnhancedDocumentBuilder) AddImageToDocument(doc *Document, image types.
 	images = append(images, image)
 	doc.metadata["images"] = images
 
-	b.logger.Info("图片已添加到文档", map[string]interface{}{
-		"path":        image.Path,
-		"width":       image.Width,
-		"height":      image.Height,
-		"total_images": len(images),
-	})
+	b.logger.Info("图片已添加到文档，路径: %s, 宽度: %f, 高度: %f, 总图片数: %d", image.Path, image.Width, image.Height, len(images))
 
 	return nil
 }
 
 // SaveDocument 保存文档
 func (b *EnhancedDocumentBuilder) SaveDocument(doc *Document, filepath string) error {
-	b.logger.Info("保存文档", map[string]interface{}{
-		"filepath": filepath,
-	})
+	b.logger.Info("保存文档，文件路径: %s", filepath)
 
 	// 使用容器保存文档
 	if doc.container != nil {
@@ -302,20 +253,14 @@ func (b *EnhancedDocumentBuilder) SaveDocument(doc *Document, filepath string) e
 		return fmt.Errorf("文档容器未初始化")
 	}
 
-	b.logger.Info("文档已保存", map[string]interface{}{
-		"filepath": filepath,
-		"format":   "docx",
-	})
+	b.logger.Info("文档已保存，文件路径: %s, 格式: %s", filepath, "docx")
 
 	return nil
 }
 
 // SaveDocumentAs 保存文档为指定格式
 func (b *EnhancedDocumentBuilder) SaveDocumentAs(doc *Document, filepath string, format types.DocumentFormat) error {
-	b.logger.Info("保存文档为指定格式", map[string]interface{}{
-		"filepath": filepath,
-		"format":   format,
-	})
+	b.logger.Info("保存文档为指定格式，文件路径: %s, 格式: %s", filepath, format.Type)
 
 	// 目前只支持DOCX格式
 	if format.Type != "docx" {
@@ -331,20 +276,14 @@ func (b *EnhancedDocumentBuilder) SaveDocumentAs(doc *Document, filepath string,
 		return fmt.Errorf("文档容器未初始化")
 	}
 
-	b.logger.Info("文档已保存为指定格式", map[string]interface{}{
-		"filepath": filepath,
-		"format":   format,
-	})
+	b.logger.Info("文档已保存为指定格式，文件路径: %s, 格式: %s", filepath, format.Type)
 
 	return nil
 }
 
 // ExportDocument 导出文档
 func (b *EnhancedDocumentBuilder) ExportDocument(doc *Document, filepath string, format string) error {
-	b.logger.Info("导出文档", map[string]interface{}{
-		"filepath": filepath,
-		"format":   format,
-	})
+	b.logger.Info("导出文档，文件路径: %s, 格式: %s", filepath, format)
 
 	switch format {
 	case "pdf":
@@ -371,9 +310,7 @@ func (b *EnhancedDocumentBuilder) exportToPDF(doc *Document, filepath string) er
 		return fmt.Errorf("PDF导出失败: %w", err)
 	}
 
-	b.logger.Info("文档已导出为PDF", map[string]interface{}{
-		"filepath": filepath,
-	})
+	b.logger.Info("文档已导出为PDF，文件路径: %s", filepath)
 
 	return nil
 }
@@ -381,9 +318,7 @@ func (b *EnhancedDocumentBuilder) exportToPDF(doc *Document, filepath string) er
 // exportToRTF 导出为RTF
 func (b *EnhancedDocumentBuilder) exportToRTF(doc *Document, filepath string) error {
 	// RTF导出功能待实现
-	b.logger.Info("RTF导出功能待实现", map[string]interface{}{
-		"filepath": filepath,
-	})
+	b.logger.Info("RTF导出功能待实现，文件路径: %s", filepath)
 
 	return fmt.Errorf("RTF导出功能尚未实现")
 }
@@ -391,9 +326,7 @@ func (b *EnhancedDocumentBuilder) exportToRTF(doc *Document, filepath string) er
 // exportToHTML 导出为HTML
 func (b *EnhancedDocumentBuilder) exportToHTML(doc *Document, filepath string) error {
 	// 这里可以实现HTML导出逻辑
-	b.logger.Info("HTML导出功能待实现", map[string]interface{}{
-		"filepath": filepath,
-	})
+	b.logger.Info("HTML导出功能待实现，文件路径: %s", filepath)
 
 	return fmt.Errorf("HTML导出功能尚未实现")
 }
@@ -411,10 +344,7 @@ func (b *EnhancedDocumentBuilder) exportToTXT(doc *Document, filepath string) er
 		return fmt.Errorf("保存文本文件失败: %w", err)
 	}
 
-	b.logger.Info("文档已导出为TXT", map[string]interface{}{
-		"filepath": filepath,
-		"text_length": len(text),
-	})
+	b.logger.Info("文档已导出为TXT，文件路径: %s, 文本长度: %d", filepath, len(text))
 
 	return nil
 }

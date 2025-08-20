@@ -218,12 +218,7 @@ func (ip *ImageProcessor) LoadImage(ctx context.Context, path string) (*ImagePro
 	// 存储图片
 	ip.images[image.ID] = image
 
-	ip.logger.Info("图片已加载", map[string]interface{}{
-		"image_id": image.ID,
-		"path":     path,
-		"format":   format,
-		"size":     size,
-	})
+	ip.logger.Info("图片已加载，图片ID: %s, 路径: %s, 格式: %s, 尺寸: %v", image.ID, path, format, size)
 
 	return image, nil
 }
@@ -245,10 +240,7 @@ func (ip *ImageProcessor) InsertImage(ctx context.Context, imageID string, posit
 
 	image.UpdatedAt = utils.GetCurrentTimestamp()
 
-	ip.logger.Info("图片已插入", map[string]interface{}{
-		"image_id": imageID,
-		"position": position,
-	})
+	ip.logger.Info("图片已插入，图片ID: %s, 位置: %v", imageID, position)
 
 	return nil
 }
@@ -270,10 +262,7 @@ func (ip *ImageProcessor) ResizeImage(ctx context.Context, imageID string, size 
 
 	image.UpdatedAt = utils.GetCurrentTimestamp()
 
-	ip.logger.Info("图片尺寸已调整", map[string]interface{}{
-		"image_id": imageID,
-		"size":     size,
-	})
+	ip.logger.Info("图片尺寸已调整，图片ID: %s, 尺寸: %v", imageID, size)
 
 	return nil
 }
@@ -293,11 +282,7 @@ func (ip *ImageProcessor) MoveImage(ctx context.Context, imageID string, x, y fl
 	image.Position.Y = y
 	image.UpdatedAt = utils.GetCurrentTimestamp()
 
-	ip.logger.Info("图片已移动", map[string]interface{}{
-		"image_id": imageID,
-		"x":        x,
-		"y":        y,
-	})
+	ip.logger.Info("图片已移动，图片ID: %s, X: %f, Y: %f", imageID, x, y)
 
 	return nil
 }
@@ -324,12 +309,7 @@ func (ip *ImageProcessor) ApplyEffect(ctx context.Context, imageID string, effec
 	// 存储效果
 	ip.effects[effect.ID] = effect
 
-	ip.logger.Info("效果已应用", map[string]interface{}{
-		"image_id": imageID,
-		"effect_id": effect.ID,
-		"effect_type": effect.Type,
-		"intensity": effect.Intensity,
-	})
+	ip.logger.Info("效果已应用，图片ID: %s, 效果ID: %s, 效果类型: %s, 强度: %f", imageID, effect.ID, effect.Type, effect.Intensity)
 
 	return nil
 }
@@ -351,10 +331,7 @@ func (ip *ImageProcessor) RemoveEffect(ctx context.Context, imageID string, effe
 			delete(ip.effects, effectID)
 			image.UpdatedAt = utils.GetCurrentTimestamp()
 			
-			ip.logger.Info("效果已移除", map[string]interface{}{
-				"image_id": imageID,
-				"effect_id": effectID,
-			})
+			ip.logger.Info("效果已移除，图片ID: %s, 效果ID: %s", imageID, effectID)
 			
 			return nil
 		}
@@ -389,12 +366,7 @@ func (ip *ImageProcessor) ConvertFormat(ctx context.Context, imageID string, tar
 	image.Format = targetFormat
 	image.UpdatedAt = utils.GetCurrentTimestamp()
 
-	ip.logger.Info("图片格式已转换", map[string]interface{}{
-		"image_id": imageID,
-		"old_format": image.Format,
-		"new_format": targetFormat,
-		"quality": quality,
-	})
+	ip.logger.Info("图片格式已转换，图片ID: %s, 旧格式: %s, 新格式: %s, 质量: %d", imageID, image.Format, targetFormat, quality)
 
 	return nil
 }
@@ -446,10 +418,7 @@ func (ip *ImageProcessor) DeleteImage(ctx context.Context, imageID string) error
 		delete(ip.effects, effect.ID)
 	}
 
-	ip.logger.Info("图片已删除", map[string]interface{}{
-		"image_id": imageID,
-		"path":     image.Path,
-	})
+	ip.logger.Info("图片已删除，图片ID: %s, 路径: %s", imageID, image.Path)
 
 	return nil
 }

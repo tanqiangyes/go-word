@@ -226,11 +226,7 @@ func (rt *RevisionTracker) TrackRevision(ctx context.Context, revision *Revision
 		},
 	})
 
-	rt.logger.Info("修订已跟踪", map[string]interface{}{
-		"revision_id": revision.ID,
-		"author":      revision.Author,
-		"type":        revision.Type,
-	})
+	rt.logger.Info("修订已跟踪，修订ID: %s, 作者: %s, 类型: %s", revision.ID, revision.Author, revision.Type)
 
 	return nil
 }
@@ -275,10 +271,7 @@ func (rt *RevisionTracker) AddComment(ctx context.Context, comment *RevisionTrac
 		},
 	})
 
-	rt.logger.Info("评论已添加", map[string]interface{}{
-		"comment_id": comment.ID,
-		"author":     comment.Author,
-	})
+	rt.logger.Info("评论已添加，评论ID: %s, 作者: %s", comment.ID, comment.Author)
 
 	return nil
 }
@@ -330,12 +323,7 @@ func (rt *RevisionTracker) AddSuggestion(ctx context.Context, suggestion *Revisi
 		},
 	})
 
-	rt.logger.Info("建议已添加", map[string]interface{}{
-		"suggestion_id": suggestion.ID,
-		"author":        suggestion.Author,
-		"type":          suggestion.Type,
-		"priority":      suggestion.Priority,
-	})
+	rt.logger.Info("建议已添加，建议ID: %s, 作者: %s, 类型: %s, 优先级: %s", suggestion.ID, suggestion.Author, suggestion.Type, suggestion.Priority)
 
 	return nil
 }
@@ -406,12 +394,7 @@ func (rt *RevisionTracker) UpdateRevisionStatus(id string, status RevisionTracke
 		},
 	})
 
-	rt.logger.Info("修订状态已更新", map[string]interface{}{
-		"revision_id": id,
-		"old_status":  oldStatus,
-		"new_status":  status,
-		"author":      author,
-	})
+	rt.logger.Info("修订状态已更新，修订ID: %s, 旧状态: %s, 新状态: %s, 作者: %s", id, oldStatus, status, author)
 
 	return nil
 }
@@ -535,11 +518,7 @@ func (rt *RevisionTracker) MergeRevisions(revisionIDs []string, author string) (
 		},
 	})
 
-	rt.logger.Info("修订已合并", map[string]interface{}{
-		"merged_revision_id": mergedRevision.ID,
-		"revision_count":     len(revisionIDs),
-		"author":             author,
-	})
+	rt.logger.Info("修订已合并，合并修订ID: %s, 修订数量: %d, 作者: %s", mergedRevision.ID, len(revisionIDs), author)
 
 	return mergedRevision, nil
 }
@@ -593,9 +572,7 @@ func (rt *RevisionTracker) cleanup() {
 		}
 	}
 
-	rt.logger.Info("自动清理完成", map[string]interface{}{
-		"cutoff_time": cutoff,
-	})
+	rt.logger.Info("自动清理完成，截止时间: %v", cutoff)
 }
 
 // GetStats 获取统计信息

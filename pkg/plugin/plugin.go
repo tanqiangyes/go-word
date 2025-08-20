@@ -113,12 +113,7 @@ func (pm *PluginManager) RegisterPlugin(plugin Plugin) error {
 	pm.pluginInfos[info.ID] = info
 	pm.metrics.TotalPlugins++
 	
-	pm.logger.Info("插件注册成功", map[string]interface{}{
-		"plugin_id":   info.ID,
-		"name":        info.Name,
-		"version":     info.Version,
-		"category":    info.Category,
-	})
+	pm.logger.Info("插件注册成功，插件ID: %s, 名称: %s, 版本: %s, 类别: %s", info.ID, info.Name, info.Version, info.Category)
 	
 	return nil
 }
@@ -135,10 +130,7 @@ func (pm *PluginManager) UnregisterPlugin(pluginID string) error {
 	
 	// 清理插件资源
 	if err := plugin.Cleanup(); err != nil {
-		pm.logger.Warning("插件清理失败", map[string]interface{}{
-			"plugin_id": pluginID,
-			"error":     err.Error(),
-		})
+		pm.logger.Warning("插件清理失败，插件ID: %s, 错误: %s", pluginID, err.Error())
 	}
 	
 	// 注销插件
@@ -149,9 +141,7 @@ func (pm *PluginManager) UnregisterPlugin(pluginID string) error {
 	
 	pm.metrics.TotalPlugins--
 	
-	pm.logger.Info("插件注销成功", map[string]interface{}{
-		"plugin_id": pluginID,
-	})
+	pm.logger.Info("插件注销成功，插件ID: %s", pluginID)
 	
 	return nil
 }
@@ -175,10 +165,7 @@ func (pm *PluginManager) ConfigurePlugin(pluginID string, config map[string]inte
 	pm.configs[pluginID] = config
 	pm.metrics.ActivePlugins++
 	
-	pm.logger.Info("插件配置成功", map[string]interface{}{
-		"plugin_id": pluginID,
-		"config":    config,
-	})
+	pm.logger.Info("插件配置成功，插件ID: %s, 配置数量: %d", pluginID, len(config))
 	
 	return nil
 }
@@ -233,12 +220,7 @@ func (pm *PluginManager) ExecutePlugin(ctx context.Context, pluginID string, arg
 	pm.results[pluginID] = result
 	pm.mu.Unlock()
 	
-	pm.logger.Info("插件执行完成", map[string]interface{}{
-		"plugin_id":     pluginID,
-		"success":        result.Success,
-		"execution_time": executionTime,
-		"error":          err,
-	})
+	pm.logger.Info("插件执行完成，插件ID: %s, 成功: %t, 执行时间: %v, 错误: %v", pluginID, result.Success, executionTime, err)
 	
 	return result, err
 }

@@ -293,13 +293,7 @@ func (ps *PluginSystem) LoadPlugin(ctx context.Context, pluginPath string) (*Plu
 	
 	plugin.Status = PluginStatusActive
 	
-	ps.logger.Info("插件加载成功", map[string]interface{}{
-		"plugin_id":   plugin.ID,
-		"plugin_name": plugin.Name,
-		"version":     plugin.Version,
-		"load_time":   loadTime,
-		"hooks":       len(plugin.Hooks),
-	})
+	ps.logger.Info("插件加载成功，插件ID: %s, 插件名称: %s, 版本: %s, 加载时间: %v, 钩子数: %d", plugin.ID, plugin.Name, plugin.Version, loadTime, len(plugin.Hooks))
 	
 	return plugin, nil
 }
@@ -318,10 +312,7 @@ func (ps *PluginSystem) UnloadPlugin(ctx context.Context, pluginID string) error
 	if pluginInterface, ok := plugin.Instance.(PluginInterface); ok {
 		err := pluginInterface.Cleanup(ctx)
 		if err != nil {
-			ps.logger.Warning("插件清理失败", map[string]interface{}{
-				"plugin_id": pluginID,
-				"error":     err.Error(),
-			})
+			ps.logger.Warning("插件清理失败，插件ID: %s, 错误: %s", pluginID, err.Error())
 		}
 	}
 	
@@ -343,10 +334,7 @@ func (ps *PluginSystem) UnloadPlugin(ctx context.Context, pluginID string) error
 		ps.metrics.ActivePlugins--
 	}
 	
-	ps.logger.Info("插件卸载成功", map[string]interface{}{
-		"plugin_id":   pluginID,
-		"plugin_name": plugin.Name,
-	})
+	ps.logger.Info("插件卸载成功，插件ID: %s, 插件名称: %s", pluginID, plugin.Name)
 	
 	return nil
 }
@@ -381,11 +369,7 @@ func (ps *PluginSystem) ExecuteHook(ctx context.Context, hookName string, args m
 		if err != nil {
 			result.Error = err
 			ps.metrics.ErrorCount++
-			ps.logger.Error("钩子执行失败", map[string]interface{}{
-				"hook":     hookName,
-				"error":    err.Error(),
-				"duration": duration,
-			})
+			ps.logger.Error("钩子执行失败，钩子: %s, 错误: %s, 执行时间: %v", hookName, err.Error(), duration)
 		} else {
 			result.Success = true
 		}
@@ -458,10 +442,7 @@ func (ps *PluginSystem) EnablePlugin(pluginID string) error {
 		ps.metrics.ActivePlugins++
 	}
 	
-	ps.logger.Info("插件已启用", map[string]interface{}{
-		"plugin_id": pluginID,
-		"old_status": oldStatus,
-	})
+	ps.logger.Info("插件已启用，插件ID: %s, 旧状态: %s", pluginID, oldStatus)
 	
 	return nil
 }
@@ -487,10 +468,7 @@ func (ps *PluginSystem) DisablePlugin(pluginID string) error {
 		ps.metrics.ActivePlugins--
 	}
 	
-	ps.logger.Info("插件已禁用", map[string]interface{}{
-		"plugin_id": pluginID,
-		"old_status": oldStatus,
-	})
+	ps.logger.Info("插件已禁用，插件ID: %s, 旧状态: %s", pluginID, oldStatus)
 	
 	return nil
 }
@@ -511,10 +489,7 @@ func (ps *PluginSystem) LoadPluginsFromDir(ctx context.Context, dir string) erro
 		if !info.IsDir() && (strings.HasSuffix(path, ".so") || strings.HasSuffix(path, ".dll")) {
 			_, err := ps.LoadPlugin(ctx, path)
 			if err != nil {
-				ps.logger.Warning("插件加载失败", map[string]interface{}{
-					"path":  path,
-					"error": err.Error(),
-				})
+				ps.logger.Warning("插件加载失败，路径: %s, 错误: %s", path, err.Error())
 			}
 		}
 		
@@ -525,10 +500,7 @@ func (ps *PluginSystem) LoadPluginsFromDir(ctx context.Context, dir string) erro
 		return fmt.Errorf("failed to load plugins from directory: %w", err)
 	}
 	
-	ps.logger.Info("目录插件加载完成", map[string]interface{}{
-		"directory": dir,
-		"loaded":    len(ps.plugins),
-	})
+	ps.logger.Info("目录插件加载完成，目录: %s, 已加载: %d", dir, len(ps.plugins))
 	
 	return nil
 }

@@ -8,25 +8,23 @@ import (
 	"github.com/tanqiangyes/go-word/pkg/utils"
 )
 
-// StyleMerger 样式合并器
+// StyleMerger represents a style merger
 type StyleMerger struct {
 	logger *utils.Logger
+	styles map[string]*types.Style
 }
 
-// NewStyleMerger 创建样式合并器
+// NewStyleMerger creates a new style merger
 func NewStyleMerger() *StyleMerger {
 	return &StyleMerger{
-		logger: utils.NewLogger("StyleMerger"),
+		logger: utils.NewLogger(utils.LogLevelInfo, nil),
+		styles: make(map[string]*types.Style),
 	}
 }
 
 // MergeStyles 合并样式
 func (sm *StyleMerger) MergeStyles(conflict *types.StyleConflict) error {
-	sm.logger.Info("开始合并样式", map[string]interface{}{
-		"style_id":      conflict.StyleID,
-		"conflict_type": conflict.Type,
-		"priority":      conflict.Priority,
-	})
+	sm.logger.Info("开始合并样式，样式ID: %s, 冲突类型: %s, 优先级: %d", conflict.StyleID, conflict.Type, conflict.Priority)
 
 	// 获取冲突的样式
 	originalStyle := conflict.OriginalStyle
@@ -56,10 +54,7 @@ func (sm *StyleMerger) MergeStyles(conflict *types.StyleConflict) error {
 
 // mergePropertyConflicts 合并属性冲突
 func (sm *StyleMerger) mergePropertyConflicts(original, new *types.Style, conflict *types.StyleConflict) error {
-	sm.logger.Info("合并属性冲突", map[string]interface{}{
-		"style_id":        original.ID,
-		"conflict_count":  len(conflict.ConflictingProperties),
-	})
+	sm.logger.Info("合并属性冲突，样式ID: %s, 冲突数量: %d", original.ID, len(conflict.ConflictingProperties))
 
 	// 创建合并后的样式
 	mergedStyle := &types.Style{
@@ -70,7 +65,7 @@ func (sm *StyleMerger) mergePropertyConflicts(original, new *types.Style, confli
 		Next:       original.Next,
 		Properties: &types.StyleProperties{},
 		CreatedAt:  original.CreatedAt,
-		UpdatedAt:  time.Now(),
+		UpdatedAt:  &time.Time{},
 	}
 
 	// 合并基础属性
@@ -89,24 +84,17 @@ func (sm *StyleMerger) mergePropertyConflicts(original, new *types.Style, confli
 
 	// 更新冲突结果
 	conflict.ResolvedStyle = mergedStyle
-	conflict.ResolvedAt = time.Now()
+	conflict.ResolvedAt = &time.Time{}
 	conflict.Status = types.StyleConflictStatusResolved
 
-	sm.logger.Info("属性冲突合并完成", map[string]interface{}{
-		"style_id":           mergedStyle.ID,
-		"merged_properties":  len(conflict.ConflictingProperties),
-	})
+	sm.logger.Info("属性冲突合并完成，样式ID: %s, 合并属性数: %d", mergedStyle.ID, len(conflict.ConflictingProperties))
 
 	return nil
 }
 
 // mergeInheritanceConflicts 合并继承冲突
 func (sm *StyleMerger) mergeInheritanceConflicts(original, new *types.Style, conflict *types.StyleConflict) error {
-	sm.logger.Info("合并继承冲突", map[string]interface{}{
-		"style_id":         original.ID,
-		"original_based_on": original.BasedOn,
-		"new_based_on":     new.BasedOn,
-	})
+	sm.logger.Info("合并继承冲突，样式ID: %s, 原始继承: %s, 新继承: %s", original.ID, original.BasedOn, new.BasedOn)
 
 	// 分析继承链
 	originalChain := sm.getInheritanceChain(original)
@@ -118,49 +106,35 @@ func (sm *StyleMerger) mergeInheritanceConflicts(original, new *types.Style, con
 	// 更新样式
 	mergedStyle := original.Clone()
 	mergedStyle.BasedOn = optimalChain[0]
-	mergedStyle.UpdatedAt = time.Now()
+	mergedStyle.UpdatedAt = &time.Time{}
 
 	// 更新冲突结果
 	conflict.ResolvedStyle = mergedStyle
-	conflict.ResolvedAt = time.Now()
+	conflict.ResolvedAt = &time.Time{}
 	conflict.Status = types.StyleConflictStatusResolved
 
-	sm.logger.Info("继承冲突合并完成", map[string]interface{}{
-		"style_id":      mergedStyle.ID,
-		"new_based_on":  mergedStyle.BasedOn,
-		"chain_length":  len(optimalChain),
-	})
+	sm.logger.Info("继承冲突合并完成，样式ID: %s, 新继承: %s, 链长度: %d", mergedStyle.ID, mergedStyle.BasedOn, len(optimalChain))
 
 	return nil
 }
 
 // mergePriorityConflicts 合并优先级冲突
 func (sm *StyleMerger) mergePriorityConflicts(original, new *types.Style, conflict *types.StyleConflict) error {
-	sm.logger.Info("合并优先级冲突", map[string]interface{}{
-		"style_id":         original.ID,
-		"original_priority": conflict.OriginalPriority,
-		"new_priority":     conflict.NewPriority,
-	})
+	sm.logger.Info("合并优先级冲突，样式ID: %s, 原始优先级: %d, 新优先级: %d", original.ID, conflict.OriginalPriority, conflict.NewPriority)
 
 	// 根据优先级选择样式
 	var selectedStyle *types.Style
 	if conflict.NewPriority > conflict.OriginalPriority {
 		selectedStyle = new
-		sm.logger.Info("选择新样式（更高优先级）", map[string]interface{}{
-			"style_id": new.ID,
-			"priority": new.Priority,
-		})
+		sm.logger.Info("选择新样式（更高优先级），样式ID: %s", new.ID)
 	} else {
 		selectedStyle = original
-		sm.logger.Info("保留原始样式（更高或相等优先级）", map[string]interface{}{
-			"style_id": original.ID,
-			"priority": original.Priority,
-		})
+		sm.logger.Info("保留原始样式（更高或相等优先级），样式ID: %s", original.ID)
 	}
 
 	// 更新冲突结果
 	conflict.ResolvedStyle = selectedStyle
-	conflict.ResolvedAt = time.Now()
+	conflict.ResolvedAt = &time.Time{}
 	conflict.Status = types.StyleConflictStatusResolved
 
 	return nil
@@ -168,14 +142,11 @@ func (sm *StyleMerger) mergePriorityConflicts(original, new *types.Style, confli
 
 // mergeFormatConflicts 合并格式冲突
 func (sm *StyleMerger) mergeFormatConflicts(original, new *types.Style, conflict *types.StyleConflict) error {
-	sm.logger.Info("合并格式冲突", map[string]interface{}{
-		"style_id":       original.ID,
-		"conflict_count": len(conflict.ConflictingProperties),
-	})
+	sm.logger.Info("合并格式冲突，样式ID: %s, 冲突数量: %d", original.ID, len(conflict.ConflictingProperties))
 
 	// 创建合并后的样式
 	mergedStyle := original.Clone()
-	mergedStyle.UpdatedAt = time.Now()
+	mergedStyle.UpdatedAt = &time.Time{}
 
 	// 合并格式属性
 	if original.Properties != nil && new.Properties != nil {
@@ -184,27 +155,21 @@ func (sm *StyleMerger) mergeFormatConflicts(original, new *types.Style, conflict
 
 	// 更新冲突结果
 	conflict.ResolvedStyle = mergedStyle
-	conflict.ResolvedAt = time.Now()
+	conflict.ResolvedAt = &time.Time{}
 	conflict.Status = types.StyleConflictStatusResolved
 
-	sm.logger.Info("格式冲突合并完成", map[string]interface{}{
-		"style_id":       mergedStyle.ID,
-		"merged_formats": len(conflict.ConflictingProperties),
-	})
+	sm.logger.Info("格式冲突合并完成，样式ID: %s, 合并格式数: %d", mergedStyle.ID, len(conflict.ConflictingProperties))
 
 	return nil
 }
 
 // mergeDefaultStrategy 默认合并策略
 func (sm *StyleMerger) mergeDefaultStrategy(original, new *types.Style, conflict *types.StyleConflict) error {
-	sm.logger.Info("使用默认合并策略", map[string]interface{}{
-		"style_id": original.ID,
-		"strategy": "conservative",
-	})
+	sm.logger.Info("使用默认合并策略，样式ID: %s, 策略: %s", original.ID, "conservative")
 
 	// 保守策略：保留原始样式，只添加新样式中不冲突的属性
 	mergedStyle := original.Clone()
-	mergedStyle.UpdatedAt = time.Now()
+	mergedStyle.UpdatedAt = &time.Time{}
 
 	// 合并非冲突属性
 	if new.Properties != nil {
@@ -218,7 +183,7 @@ func (sm *StyleMerger) mergeDefaultStrategy(original, new *types.Style, conflict
 
 	// 更新冲突结果
 	conflict.ResolvedStyle = mergedStyle
-	conflict.ResolvedAt = time.Now()
+	conflict.ResolvedAt = &time.Time{}
 	conflict.Status = types.StyleConflictStatusResolved
 
 	return nil
@@ -227,11 +192,7 @@ func (sm *StyleMerger) mergeDefaultStrategy(original, new *types.Style, conflict
 // 辅助方法
 func (sm *StyleMerger) mergeStringProperty(original, new, propertyName string) string {
 	if new != "" && new != original {
-		sm.logger.Debug("合并字符串属性", map[string]interface{}{
-			"property": propertyName,
-			"original": original,
-			"new":      new,
-		})
+		sm.logger.Debug("合并字符串属性，属性: %s, 原始: %s, 新: %s", propertyName, original, new)
 		return new
 	}
 	return original
@@ -257,96 +218,154 @@ func (sm *StyleMerger) mergeStringSlice(original, new []string) []string {
 	return original
 }
 
+// mergeStyleProperties 合并样式属性
 func (sm *StyleMerger) mergeStyleProperties(original, new *types.StyleProperties, conflict *types.StyleConflict) *types.StyleProperties {
 	merged := &types.StyleProperties{}
 
 	// 合并字体属性
-	if original.Font != nil && new.Font != nil {
-		merged.Font = sm.mergeFontProperties(original.Font, new.Font)
-	} else if original.Font != nil {
-		merged.Font = original.Font
-	} else if new.Font != nil {
-		merged.Font = new.Font
+	if original.FontName != "" && new.FontName != "" {
+		merged.FontName = sm.mergeStringProperty(original.FontName, new.FontName, "fontName")
+	} else if original.FontName != "" {
+		merged.FontName = original.FontName
+	} else if new.FontName != "" {
+		merged.FontName = new.FontName
 	}
 
-	// 合并段落属性
-	if original.Paragraph != nil && new.Paragraph != nil {
-		merged.Paragraph = sm.mergeParagraphProperties(original.Paragraph, new.Paragraph)
-	} else if original.Paragraph != nil {
-		merged.Paragraph = original.Paragraph
-	} else if new.Paragraph != nil {
-		merged.Paragraph = new.Paragraph
+	// 合并字体大小
+	if original.FontSize > 0 && new.FontSize > 0 {
+		merged.FontSize = sm.mergeIntProperty(original.FontSize, new.FontSize, "fontSize")
+	} else if original.FontSize > 0 {
+		merged.FontSize = original.FontSize
+	} else if new.FontSize > 0 {
+		merged.FontSize = new.FontSize
 	}
 
-	// 合并表格属性
-	if original.Table != nil && new.Table != nil {
-		merged.Table = sm.mergeTableProperties(original.Table, new.Table)
-	} else if original.Table != nil {
-		merged.Table = original.Table
-	} else if new.Table != nil {
-		merged.Table = new.Table
+	// 合并布尔属性
+	merged.Bold = sm.mergeBoolProperty(original.Bold, new.Bold, "bold")
+	merged.Italic = sm.mergeBoolProperty(original.Italic, new.Italic, "italic")
+	merged.Underline = sm.mergeBoolProperty(original.Underline, new.Underline, "underline")
+
+	// 合并对齐方式
+	if original.Alignment != "" && new.Alignment != "" {
+		merged.Alignment = sm.mergeStringProperty(original.Alignment, new.Alignment, "alignment")
+	} else if original.Alignment != "" {
+		merged.Alignment = original.Alignment
+	} else if new.Alignment != "" {
+		merged.Alignment = new.Alignment
 	}
 
 	return merged
 }
 
+// mergeFontProperties 合并字体属性
 func (sm *StyleMerger) mergeFontProperties(original, new *types.Font) *types.Font {
-	merged := original.Clone()
-
-	// 合并字体属性，新样式优先
-	if new.Name != "" {
-		merged.Name = new.Name
+	if original == nil && new == nil {
+		return nil
 	}
-	if new.Size > 0 {
-		merged.Size = new.Size
+	
+	if original == nil {
+		return new
 	}
-	if new.Bold {
-		merged.Bold = new.Bold
+	
+	if new == nil {
+		return original
 	}
-	if new.Italic {
-		merged.Italic = new.Italic
+	
+	// 创建合并后的字体
+	merged := &types.Font{}
+	
+	// 合并Ascii字段
+	if original.Ascii != "" && new.Ascii != "" {
+		merged.Ascii = sm.mergeStringProperty(original.Ascii, new.Ascii, "fontAscii")
+	} else if original.Ascii != "" {
+		merged.Ascii = original.Ascii
+	} else if new.Ascii != "" {
+		merged.Ascii = new.Ascii
 	}
-	if new.Underline {
-		merged.Underline = new.Underline
+	
+	// 合并HAnsi字段
+	if original.HAnsi != "" && new.HAnsi != "" {
+		merged.HAnsi = sm.mergeStringProperty(original.HAnsi, new.HAnsi, "fontHAnsi")
+	} else if original.HAnsi != "" {
+		merged.HAnsi = original.HAnsi
+	} else if new.HAnsi != "" {
+		merged.HAnsi = new.HAnsi
 	}
-	if new.Color != "" {
-		merged.Color = new.Color
-	}
-
+	
 	return merged
 }
 
+// mergeParagraphProperties 合并段落属性
 func (sm *StyleMerger) mergeParagraphProperties(original, new *types.Paragraph) *types.Paragraph {
-	merged := original.Clone()
-
-	// 合并段落属性
-	if new.Alignment != "" {
-		merged.Alignment = new.Alignment
+	if original == nil && new == nil {
+		return nil
 	}
-	if new.Indent > 0 {
-		merged.Indent = new.Indent
+	
+	if original == nil {
+		return new
 	}
-	if new.Spacing > 0 {
-		merged.Spacing = new.Spacing
+	
+	if new == nil {
+		return original
 	}
-
+	
+	// 创建合并后的段落
+	merged := &types.Paragraph{
+		Text:       original.Text,
+		Style:      original.Style,
+		Runs:       original.Runs,
+		HasComment: original.HasComment,
+		CommentID:  original.CommentID,
+	}
+	
+	// 合并文本
+	if new.Text != "" {
+		merged.Text = new.Text
+	}
+	
+	// 合并样式
+	if new.Style != "" {
+		merged.Style = new.Style
+	}
+	
+	// 合并运行
+	if len(new.Runs) > 0 {
+		merged.Runs = new.Runs
+	}
+	
 	return merged
 }
 
+// mergeTableProperties 合并表格属性
 func (sm *StyleMerger) mergeTableProperties(original, new *types.Table) *types.Table {
-	merged := original.Clone()
-
-	// 合并表格属性
-	if new.Width > 0 {
-		merged.Width = new.Width
+	if original == nil && new == nil {
+		return nil
 	}
-	if new.Height > 0 {
-		merged.Height = new.Height
+	
+	if original == nil {
+		return new
 	}
-	if new.Alignment != "" {
-		merged.Alignment = new.Alignment
+	
+	if new == nil {
+		return original
 	}
-
+	
+	// 创建合并后的表格
+	merged := &types.Table{
+		Rows:    original.Rows,
+		Columns: original.Columns,
+	}
+	
+	// 合并行
+	if len(new.Rows) > 0 {
+		merged.Rows = new.Rows
+	}
+	
+	// 合并列数
+	if new.Columns > 0 {
+		merged.Columns = new.Columns
+	}
+	
 	return merged
 }
 
@@ -376,11 +395,17 @@ func (sm *StyleMerger) mergeFormatProperties(original, new *types.StylePropertie
 	merged := original.Clone()
 
 	// 合并格式相关的属性
-	if new.Font != nil {
-		merged.Font = sm.mergeFontProperties(original.Font, new.Font)
+	if new.FontName != "" {
+		merged.FontName = new.FontName
 	}
-	if new.Paragraph != nil {
-		merged.Paragraph = sm.mergeParagraphProperties(original.Paragraph, new.Paragraph)
+	if new.FontSize > 0 {
+		merged.FontSize = new.FontSize
+	}
+	if new.FontColor != "" {
+		merged.FontColor = new.FontColor
+	}
+	if new.BackgroundColor != "" {
+		merged.BackgroundColor = new.BackgroundColor
 	}
 
 	return merged
@@ -388,14 +413,17 @@ func (sm *StyleMerger) mergeFormatProperties(original, new *types.StylePropertie
 
 func (sm *StyleMerger) safeMergeProperties(target, source *types.StyleProperties) {
 	// 安全地合并属性，避免覆盖现有值
-	if source.Font != nil && target.Font == nil {
-		target.Font = source.Font.Clone()
+	if source.FontName != "" && target.FontName == "" {
+		target.FontName = source.FontName
 	}
-	if source.Paragraph != nil && target.Paragraph == nil {
-		target.Paragraph = source.Paragraph.Clone()
+	if source.FontSize > 0 && target.FontSize == 0 {
+		target.FontSize = source.FontSize
 	}
-	if source.Table != nil && target.Table == nil {
-		target.Table = source.Table.Clone()
+	if source.FontColor != "" && target.FontColor == "" {
+		target.FontColor = source.FontColor
+	}
+	if source.BackgroundColor != "" && target.BackgroundColor == "" {
+		target.BackgroundColor = source.BackgroundColor
 	}
 }
 
@@ -420,31 +448,62 @@ func (sm *StyleMerger) ValidateMergedStyle(style *types.Style) error {
 		}
 	}
 
-	sm.logger.Info("样式验证通过", map[string]interface{}{
-		"style_id": style.ID,
-		"name":     style.Name,
-	})
+	sm.logger.Info("样式验证通过，样式ID: %s, 名称: %s", style.ID, style.Name)
 
 	return nil
 }
 
 func (sm *StyleMerger) validateStyleProperties(properties *types.StyleProperties) error {
 	// 验证字体属性
-	if properties.Font != nil {
-		if properties.Font.Size < 0 {
-			return fmt.Errorf("字体大小不能为负数")
-		}
+	if properties.FontSize < 0 {
+		return fmt.Errorf("字体大小不能为负数")
 	}
 
 	// 验证段落属性
-	if properties.Paragraph != nil {
-		if properties.Paragraph.Indent < 0 {
-			return fmt.Errorf("段落缩进不能为负数")
-		}
-		if properties.Paragraph.Spacing < 0 {
-			return fmt.Errorf("段落间距不能为负数")
-		}
+	if properties.FirstLineIndent < 0 {
+		return fmt.Errorf("首行缩进不能为负数")
+	}
+	if properties.LeftIndent < 0 {
+		return fmt.Errorf("左缩进不能为负数")
+	}
+	if properties.RightIndent < 0 {
+		return fmt.Errorf("右缩进不能为负数")
+	}
+	if properties.LineSpacing < 0 {
+		return fmt.Errorf("行距不能为负数")
+	}
+	if properties.SpaceBefore < 0 {
+		return fmt.Errorf("段前间距不能为负数")
+	}
+	if properties.SpaceAfter < 0 {
+		return fmt.Errorf("段后间距不能为负数")
 	}
 
 	return nil
+}
+
+// mergeIntProperty 合并整数属性
+func (sm *StyleMerger) mergeIntProperty(original, new int, propertyName string) int {
+	if original == new {
+		return original
+	}
+	
+	// 记录冲突
+	sm.logger.Warning("整数属性冲突，属性: %s, 原始: %d, 新: %d", propertyName, original, new)
+	
+	// 返回新值
+	return new
+}
+
+// mergeBoolProperty 合并布尔属性
+func (sm *StyleMerger) mergeBoolProperty(original, new bool, propertyName string) bool {
+	if original == new {
+		return original
+	}
+	
+	// 记录冲突
+	sm.logger.Warning("布尔属性冲突，属性: %s, 原始: %t, 新: %t", propertyName, original, new)
+	
+	// 返回新值
+	return new
 }

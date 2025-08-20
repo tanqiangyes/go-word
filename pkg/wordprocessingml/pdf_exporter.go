@@ -87,10 +87,7 @@ func (pe *PDFExporter) ExportToPDF(ctx context.Context, outputPath string) (*PDF
 		return result, err
 	}
 	
-	pe.logger.Info("开始PDF导出", map[string]interface{}{
-		"output_path": outputPath,
-		"config":      pe.config,
-	})
+	pe.logger.Info("开始PDF导出，输出路径: %s", outputPath)
 	
 	// 提取文档内容
 	content, err := pe.extractDocumentContent(ctx)
@@ -123,12 +120,7 @@ func (pe *PDFExporter) ExportToPDF(ctx context.Context, outputPath string) (*PDF
 	// 更新指标
 	pe.updateMetrics(exportTime, result.FileSize, true)
 	
-	pe.logger.Info("PDF导出完成", map[string]interface{}{
-		"output_path": outputPath,
-		"file_size":   result.FileSize,
-		"page_count":  result.PageCount,
-		"export_time": exportTime,
-	})
+	pe.logger.Info("PDF导出完成，输出路径: %s, 文件大小: %d, 页数: %d, 导出时间: %v", outputPath, result.FileSize, result.PageCount, exportTime)
 	
 	return result, nil
 }
@@ -376,10 +368,7 @@ func (pe *PDFExporter) addPDFTrailer(buffer *bytes.Buffer) {
 func (pe *PDFExporter) savePDFFile(outputPath string, data []byte) error {
 	// 这里应该实现文件保存逻辑
 	// 为了简化，我们只是模拟保存
-	pe.logger.Info("保存PDF文件", map[string]interface{}{
-		"path": outputPath,
-		"size": len(data),
-	})
+	pe.logger.Info("保存PDF文件，路径: %s, 大小: %d", outputPath, len(data))
 	return nil
 }
 
@@ -389,9 +378,7 @@ func (pe *PDFExporter) handleExportError(err error, result *PDFExportResult) {
 	result.Error = err
 	pe.metrics.ExportsFailed++
 	
-	pe.logger.Error("PDF导出失败", map[string]interface{}{
-		"error": err.Error(),
-	})
+	pe.logger.Error("PDF导出失败，错误: %s", err.Error())
 }
 
 // updateMetrics 更新指标

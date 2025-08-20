@@ -62,7 +62,6 @@ func (tfp *TextFormatterPlugin) Execute(ctx context.Context, args map[string]int
 	}
 	
 	var result string
-	var err error
 	
 	switch format {
 	case "uppercase":

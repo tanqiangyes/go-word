@@ -103,12 +103,10 @@ func demoAdvancedStyleSystem() {
 		QFormat:        true,
 		Locked:         false,
 		Properties: &wordprocessingml.CharacterStyleProperties{
-			Font: &wordprocessingml.Font{
-				Name: "Arial",
-				Size: 11,
-				Bold: false,
-				Italic: true,
-			},
+			FontName: "Arial",
+			FontSize: 11,
+			Bold: false,
+			Italic: true,
 			Hidden: false,
 			Vanish: false,
 			SpecVanish: false,
@@ -125,12 +123,10 @@ func demoAdvancedStyleSystem() {
 		QFormat:        true,
 		Locked:         false,
 		Properties: &wordprocessingml.CharacterStyleProperties{
-			Font: &wordprocessingml.Font{
-				Name: "Arial",
-				Size: 11,
-				Bold: true,
-				Italic: false,
-			},
+			FontName: "Arial",
+			FontSize: 11,
+			Bold: true,
+			Italic: false,
 			Hidden: false,
 			Vanish: false,
 			SpecVanish: false,

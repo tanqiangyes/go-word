@@ -209,10 +209,7 @@ func (fe *FileEmbedder) EmbedFile(ctx context.Context, filePath string, embedTyp
 	// 检查是否已存在相同文件
 	for _, existing := range fe.embeddedFiles {
 		if existing.Checksum == checksum {
-			fe.logger.Info("文件已存在，使用现有嵌入", map[string]interface{}{
-				"file_path": filePath,
-				"existing_id": existing.ID,
-			})
+			fe.logger.Info("文件已存在，使用现有嵌入，文件路径: %s, 现有ID: %s", filePath, existing.ID)
 			result.Success = true
 			result.FileID = existing.ID
 			result.OriginalSize = existing.Size
@@ -242,9 +239,7 @@ func (fe *FileEmbedder) EmbedFile(ctx context.Context, filePath string, embedTyp
 	if fe.config.CompressionLevel > 0 {
 		compressedData, err := fe.compressData(fileData)
 		if err != nil {
-			fe.logger.Warning("文件压缩失败，使用原始数据", map[string]interface{}{
-				"error": err.Error(),
-			})
+			fe.logger.Warning("文件压缩失败，使用原始数据，错误: %s", err.Error())
 		} else {
 			embeddedFile.Data = compressedData
 			embeddedFile.Properties["compressed"] = true
@@ -256,9 +251,7 @@ func (fe *FileEmbedder) EmbedFile(ctx context.Context, filePath string, embedTyp
 	if fe.config.EncryptionEnabled {
 		encryptedData, err := fe.encryptData(embeddedFile.Data)
 		if err != nil {
-			fe.logger.Warning("文件加密失败，使用原始数据", map[string]interface{}{
-				"error": err.Error(),
-			})
+			fe.logger.Warning("文件加密失败，使用原始数据，错误: %s", err.Error())
 		} else {
 			embeddedFile.Data = encryptedData
 			embeddedFile.Properties["encrypted"] = true
@@ -279,14 +272,7 @@ func (fe *FileEmbedder) EmbedFile(ctx context.Context, filePath string, embedTyp
 	result.CompressionRatio = float64(result.EmbeddedSize) / float64(result.OriginalSize)
 	result.ProcessTime = time.Since(startTime)
 	
-	fe.logger.Info("文件嵌入成功", map[string]interface{}{
-		"file_id":          result.FileID,
-		"file_path":        filePath,
-		"original_size":    result.OriginalSize,
-		"embedded_size":    result.EmbeddedSize,
-		"compression_ratio": result.CompressionRatio,
-		"process_time":     result.ProcessTime,
-	})
+	fe.logger.Info("文件嵌入成功，文件ID: %s, 文件路径: %s, 原始大小: %d, 嵌入大小: %d, 压缩比: %.2f, 处理时间: %v", result.FileID, filePath, result.OriginalSize, result.EmbeddedSize, result.CompressionRatio, result.ProcessTime)
 	
 	return result, nil
 }
@@ -346,13 +332,7 @@ func (fe *FileEmbedder) CreateLink(ctx context.Context, linkType LinkType, targe
 	result.Target = target
 	result.ProcessTime = time.Since(startTime)
 	
-	fe.logger.Info("链接创建成功", map[string]interface{}{
-		"link_id":      result.LinkID,
-		"link_type":    linkType,
-		"target":       target,
-		"display_text": displayText,
-		"process_time": result.ProcessTime,
-	})
+	fe.logger.Info("链接创建成功，链接ID: %s, 链接类型: %s, 目标: %s, 显示文本: %s, 处理时间: %v", result.LinkID, linkType, target, displayText, result.ProcessTime)
 	
 	return result, nil
 }
@@ -427,11 +407,7 @@ func (fe *FileEmbedder) ExtractFile(fileID, outputPath string) error {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 	
-	fe.logger.Info("文件提取成功", map[string]interface{}{
-		"file_id":     fileID,
-		"output_path": outputPath,
-		"size":        len(data),
-	})
+	fe.logger.Info("文件提取成功，文件ID: %s, 输出路径: %s, 大小: %d", fileID, outputPath, len(data))
 	
 	return nil
 }
@@ -453,10 +429,7 @@ func (fe *FileEmbedder) RemoveEmbeddedFile(fileID string) error {
 	// 删除文件
 	delete(fe.embeddedFiles, fileID)
 	
-	fe.logger.Info("嵌入文件已移除", map[string]interface{}{
-		"file_id": fileID,
-		"name":    file.Name,
-	})
+	fe.logger.Info("嵌入文件已移除，文件ID: %s, 名称: %s", fileID, file.Name)
 	
 	return nil
 }
@@ -477,10 +450,7 @@ func (fe *FileEmbedder) RemoveLink(linkID string) error {
 	// 删除链接
 	delete(fe.linkRegistry, linkID)
 	
-	fe.logger.Info("链接已移除", map[string]interface{}{
-		"link_id": linkID,
-		"target":  link.Target,
-	})
+	fe.logger.Info("链接已移除，链接ID: %s, 目标: %s", linkID, link.Target)
 	
 	return nil
 }

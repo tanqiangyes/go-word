@@ -252,12 +252,7 @@ func (ce *CollaborativeEditor) CreateSession(ctx context.Context, documentID str
 	// 存储会话
 	ce.sessions[session.ID] = session
 
-	ce.logger.Info("协作会话已创建", map[string]interface{}{
-		"session_id":   session.ID,
-		"document_id":  documentID,
-		"creator_id":   creator.ID,
-		"creator_name": creator.Name,
-	})
+	ce.logger.Info("协作会话已创建，会话ID: %s, 文档ID: %s, 创建者ID: %s, 创建者名称: %s", session.ID, documentID, creator.ID, creator.Name)
 
 	return session, nil
 }
@@ -286,12 +281,7 @@ func (ce *CollaborativeEditor) JoinSession(ctx context.Context, sessionID string
 	ce.users[user.ID] = user
 	session.UpdatedAt = time.Now()
 
-	ce.logger.Info("用户已加入会话", map[string]interface{}{
-		"session_id": sessionID,
-		"user_id":    user.ID,
-		"user_name":  user.Name,
-		"user_role":  user.Role,
-	})
+	ce.logger.Info("用户已加入会话，会话ID: %s, 用户ID: %s, 用户名称: %s, 用户角色: %s", sessionID, user.ID, user.Name, user.Role)
 
 	return nil
 }
@@ -320,11 +310,7 @@ func (ce *CollaborativeEditor) LeaveSession(ctx context.Context, sessionID strin
 		session.Status = CollaborativeEditorSessionStatusClosed
 	}
 
-	ce.logger.Info("用户已离开会话", map[string]interface{}{
-		"session_id": sessionID,
-		"user_id":    userID,
-		"user_name":  user.Name,
-	})
+	ce.logger.Info("用户已离开会话，会话ID: %s, 用户ID: %s, 用户名称: %s", sessionID, userID, user.Name)
 
 	return nil
 }
@@ -382,13 +368,7 @@ func (ce *CollaborativeEditor) ApplyOperation(ctx context.Context, sessionID str
 		ce.revisionTracker.TrackRevision(ctx, revision)
 	}
 
-	ce.logger.Info("操作已应用", map[string]interface{}{
-		"session_id":   sessionID,
-		"operation_id": operation.ID,
-		"user_id":      operation.UserID,
-		"type":         operation.Type,
-		"status":       operation.Status,
-	})
+	ce.logger.Info("操作已应用，会话ID: %s, 操作ID: %s, 用户ID: %s, 类型: %s, 状态: %s", sessionID, operation.ID, operation.UserID, operation.Type, operation.Status)
 
 	return nil
 }
@@ -469,12 +449,7 @@ func (ce *CollaborativeEditor) ResolveConflict(ctx context.Context, conflictID s
 		}
 	}
 
-	ce.logger.Info("冲突已解决", map[string]interface{}{
-		"conflict_id": conflictID,
-		"resolution_type": resolution.Type,
-		"resolution_strategy": resolution.Strategy,
-		"resolved_by": resolution.ResolvedBy,
-	})
+	ce.logger.Info("冲突已解决，冲突ID: %s, 解决类型: %s, 解决策略: %s, 解决者: %s", conflictID, resolution.Type, resolution.Strategy, resolution.ResolvedBy)
 
 	return nil
 }
@@ -526,12 +501,7 @@ func (ce *CollaborativeEditor) createConflict(sessionID string, operationID stri
 
 	ce.conflicts[conflict.ID] = conflict
 
-	ce.logger.Info("检测到冲突", map[string]interface{}{
-		"conflict_id": conflict.ID,
-		"session_id":  sessionID,
-		"operation_id": operationID,
-		"conflict_count": len(conflicts),
-	})
+	ce.logger.Info("检测到冲突，冲突ID: %s, 会话ID: %s, 操作ID: %s, 冲突数量: %d", conflict.ID, sessionID, operationID, len(conflicts))
 }
 
 // getOperationIDs 获取操作ID列表
@@ -582,9 +552,7 @@ func (ce *CollaborativeEditor) cleanup() {
 		}
 	}
 
-	ce.logger.Info("自动清理完成", map[string]interface{}{
-		"cutoff_time": cutoff,
-	})
+	ce.logger.Info("自动清理完成，截止时间: %v", cutoff)
 }
 
 // GetStats 获取统计信息

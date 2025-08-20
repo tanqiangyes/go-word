@@ -288,9 +288,7 @@ func (b *DocumentBuilder) setDocumentTitle(doc *Document, title string) error {
 	}
 	doc.metadata["title"] = title
 	
-	b.logger.Info("文档标题已设置", map[string]interface{}{
-		"title": title,
-	})
+	b.logger.Info("文档标题已设置: %s", title)
 	
 	return nil
 }
@@ -312,9 +310,7 @@ func (b *DocumentBuilder) setDocumentAuthor(doc *Document, author string) error 
 	doc.metadata["author"] = author
 	doc.metadata["creator"] = author
 	
-	b.logger.Info("文档作者已设置", map[string]interface{}{
-		"author": author,
-	})
+	b.logger.Info("文档作者已设置: %s", author)
 	
 	return nil
 }
@@ -333,10 +329,7 @@ func (b *DocumentBuilder) applyDocumentProtection(doc *Document, protection type
 			"enabled":  protection.Enabled,
 		}
 		
-		b.logger.Info("文档保护已应用", map[string]interface{}{
-			"protection_type": protection.Type,
-			"enabled":         protection.Enabled,
-		})
+		b.logger.Info("文档保护已应用，保护类型: %s, 启用: %t", protection.Type, protection.Enabled)
 	}
 	
 	return nil
@@ -359,11 +352,7 @@ func (b *DocumentBuilder) applyDocumentValidation(doc *Document, validation type
 			"strictMode":        validation.StrictMode,
 		}
 		
-		b.logger.Info("文档验证已应用", map[string]interface{}{
-			"validateStructure": validation.ValidateStructure,
-			"validateContent":   validation.ValidateContent,
-			"validateStyles":    validation.ValidateStyles,
-		})
+		b.logger.Info("文档验证已应用，验证结构: %t, 验证内容: %t, 验证样式: %t", validation.ValidateStructure, validation.ValidateContent, validation.ValidateStyles)
 	}
 	
 	return nil
@@ -426,11 +415,7 @@ func (b *ParagraphBuilder) WithComment(author, text string) *ParagraphBuilder {
 	b.paragraph.CommentID = fmt.Sprintf("comment_%d", time.Now().Unix())
 	
 	// 简化的评论处理
-	b.logger.Info("评论已添加", map[string]interface{}{
-		"comment_id": b.paragraph.CommentID,
-		"author":     author,
-		"text":       text,
-	})
+	b.logger.Info("评论已添加，评论ID: %s, 作者: %s, 文本: %s", b.paragraph.CommentID, author, text)
 	
 	return b
 }

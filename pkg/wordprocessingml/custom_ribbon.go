@@ -219,11 +219,7 @@ func (cr *CustomRibbon) AddTab(tab *RibbonTab) error {
 	cr.tabs[tab.ID] = tab
 	cr.metrics.TotalTabs++
 	
-	cr.logger.Info("选项卡添加成功", map[string]interface{}{
-		"tab_id": tab.ID,
-		"label":  tab.Label,
-		"position": tab.Position,
-	})
+	cr.logger.Info("选项卡添加成功，选项卡ID: %s, 标签: %s, 位置: %d", tab.ID, tab.Label, tab.Position)
 	
 	return nil
 }
@@ -269,12 +265,7 @@ func (cr *CustomRibbon) AddGroup(group *RibbonGroup) error {
 	tab.Groups = append(tab.Groups, group)
 	cr.metrics.TotalGroups++
 	
-	cr.logger.Info("组添加成功", map[string]interface{}{
-		"group_id": group.ID,
-		"label":    group.Label,
-		"tab_id":   group.TabID,
-		"position": group.Position,
-	})
+	cr.logger.Info("组添加成功，组ID: %s, 标签: %s, 选项卡ID: %s, 位置: %d", group.ID, group.Label, group.TabID, group.Position)
 	
 	return nil
 }
@@ -337,13 +328,7 @@ func (cr *CustomRibbon) AddControl(control *RibbonControl) error {
 		cr.metrics.ActiveControls++
 	}
 	
-	cr.logger.Info("控件添加成功", map[string]interface{}{
-		"control_id": control.ID,
-		"type":       control.Type,
-		"label":      control.Label,
-		"group_id":   control.GroupID,
-		"position":   control.Position,
-	})
+	cr.logger.Info("控件添加成功，控件ID: %s, 类型: %s, 标签: %s, 组ID: %s, 位置: %d", control.ID, control.Type, control.Label, control.GroupID, control.Position)
 	
 	return nil
 }
@@ -360,9 +345,7 @@ func (cr *CustomRibbon) RegisterCallback(controlID string, callback RibbonCallba
 	
 	cr.callbacks[controlID] = callback
 	
-	cr.logger.Info("回调函数注册成功", map[string]interface{}{
-		"control_id": controlID,
-	})
+	cr.logger.Info("回调函数注册成功，控件ID: %s", controlID)
 	
 	return nil
 }
@@ -409,18 +392,11 @@ func (cr *CustomRibbon) TriggerControl(ctx context.Context, controlID string, ar
 	cr.mu.Unlock()
 	
 	if err != nil {
-		cr.logger.Error("控件触发失败", map[string]interface{}{
-			"control_id": controlID,
-			"error":      err.Error(),
-			"process_time": processTime,
-		})
+		cr.logger.Error("控件触发失败，控件ID: %s, 错误: %s, 处理时间: %v", controlID, err.Error(), processTime)
 		return err
 	}
 	
-	cr.logger.Info("控件触发成功", map[string]interface{}{
-		"control_id": controlID,
-		"process_time": processTime,
-	})
+	cr.logger.Info("控件触发成功，控件ID: %s, 处理时间: %v", controlID, processTime)
 	
 	return nil
 }
@@ -477,10 +453,7 @@ func (cr *CustomRibbon) UpdateControl(controlID string, updates map[string]inter
 	
 	control.UpdatedAt = time.Now()
 	
-	cr.logger.Info("控件更新成功", map[string]interface{}{
-		"control_id": controlID,
-		"updates":    updates,
-	})
+	cr.logger.Info("控件更新成功，控件ID: %s, 更新数量: %d", controlID, len(updates))
 	
 	return nil
 }
@@ -514,10 +487,7 @@ func (cr *CustomRibbon) RemoveControl(controlID string) error {
 		cr.metrics.ActiveControls--
 	}
 	
-	cr.logger.Info("控件移除成功", map[string]interface{}{
-		"control_id": controlID,
-		"label":      control.Label,
-	})
+	cr.logger.Info("控件移除成功，控件ID: %s, 标签: %s", controlID, control.Label)
 	
 	return nil
 }
@@ -645,11 +615,7 @@ func (cr *CustomRibbon) ImportRibbon(data []byte) error {
 	// 重新计算指标
 	cr.recalculateMetrics()
 	
-	cr.logger.Info("功能区导入成功", map[string]interface{}{
-		"tabs":     len(cr.tabs),
-		"groups":   len(cr.groups),
-		"controls": len(cr.controls),
-	})
+	cr.logger.Info("功能区导入成功，选项卡数: %d, 组数: %d, 控件数: %d", len(cr.tabs), len(cr.groups), len(cr.controls))
 	
 	return nil
 }
@@ -670,7 +636,7 @@ func (cr *CustomRibbon) Enable() {
 	cr.isEnabled = true
 	cr.config.Enabled = true
 	
-	cr.logger.Info("功能区已启用", nil)
+	cr.logger.Info("功能区已启用")
 }
 
 // Disable 禁用功能区
@@ -681,7 +647,7 @@ func (cr *CustomRibbon) Disable() {
 	cr.isEnabled = false
 	cr.config.Enabled = false
 	
-	cr.logger.Info("功能区已禁用", nil)
+	cr.logger.Info("功能区已禁用")
 }
 
 // 辅助方法

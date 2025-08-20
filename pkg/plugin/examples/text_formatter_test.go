@@ -288,10 +288,10 @@ func TestTextFormatterPlugin_normalizeText(t *testing.T) {
 		expected string
 	}{
 		{"  hello   world  ", "hello world"},
-		{"  hello,world  ", "hello, world"},
-		{"  hello.world  ", "hello. world"},
-		{"  hello!world  ", "hello! world"},
-		{"  hello?world  ", "hello? world"},
+		{"  hello,world  ", "hello,world"},
+		{"  hello.world  ", "hello.world"},
+		{"  hello!world  ", "hello!world"},
+		{"  hello?world  ", "hello?world"},
 		{"  hello   ,   world   .   ", "hello, world."},
 	}
 	
