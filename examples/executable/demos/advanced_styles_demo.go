@@ -302,3 +302,7 @@ func demoAdvancedStyleSystem() {
 
 	fmt.Println("高级样式系统演示完成！")
 }
+
+func main() {
+	DemoAdvancedStyles()
+}

@@ -312,3 +312,7 @@ func demoDocumentParts() {
 
 	fmt.Println("文档部分演示完成！")
 }
+
+func main() {
+	DemoDocumentParts()
+}

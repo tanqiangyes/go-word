@@ -202,3 +202,7 @@ func demoAdvancedTables() {
 
 	fmt.Println("高级表格功能演示完成！")
 }
+
+func main() {
+	DemoAdvancedTables()
+}

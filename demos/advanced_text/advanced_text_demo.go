@@ -253,3 +253,7 @@ func demoAdvancedText() {
 
 	fmt.Println("高级文本功能演示完成！")
 }
+
+func main() {
+	DemoAdvancedText()
+}
