@@ -317,6 +317,4 @@ func batchProcessDocuments(filenames []string) error {
 	return nil
 }
 
-func main() {
-	DemoPerformance()
-}
+

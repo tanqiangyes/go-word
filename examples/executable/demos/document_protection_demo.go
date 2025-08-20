@@ -175,6 +175,4 @@ func demoDocumentProtection() {
 	fmt.Println("文档保护功能演示完成！")
 }
 
-func main() {
-	DemoDocumentProtection()
-}
+

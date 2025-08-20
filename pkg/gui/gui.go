@@ -21,7 +21,7 @@ type GUI struct {
 	mainWindow   fyne.Window
 	document     *word.Document
 	documentPath string
-	textArea     *widget.TextArea
+	textArea     *widget.Entry
 	statusBar    *widget.Label
 }
 
@@ -46,7 +46,7 @@ func (gui *GUI) setupMainWindow() {
 	toolbar := gui.createToolbar()
 
 	// 创建文本区域
-	gui.textArea = widget.NewTextArea()
+	gui.textArea = widget.NewMultiLineEntry()
 	gui.textArea.SetPlaceHolder("在这里输入或编辑文档内容...")
 
 	// 创建状态栏
