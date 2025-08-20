@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/tanqiangyes/go-word/pkg/utils"
 	"github.com/tanqiangyes/go-word/pkg/word"
 )
 
@@ -22,7 +23,8 @@ func TestImageProcessor(t *testing.T) {
 		TempDirectory:    "/tmp",
 	}
 
-	ip := word.NewImageProcessor(config)
+	logger := *utils.NewLogger(utils.LogLevelInfo, nil)
+	ip := word.NewImageProcessor(logger, config)
 
 	// 创建测试图片文件
 	testImagePath := "/tmp/test_image.jpg"
@@ -130,7 +132,8 @@ func TestImageProcessor(t *testing.T) {
 
 // TestImageProcessorErrorHandling 测试图片处理器错误处理
 func TestImageProcessorErrorHandling(t *testing.T) {
-	ip := word.NewImageProcessor(nil)
+	logger := *utils.NewLogger(utils.LogLevelInfo, nil)
+	ip := word.NewImageProcessor(logger, nil)
 
 	// 测试加载不存在的文件
 	_, err := ip.LoadImage(context.Background(), "/nonexistent/image.jpg")

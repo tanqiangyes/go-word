@@ -14,15 +14,15 @@ import (
 
 // DocumentWriter provides functionality to modify and create Word documents
 type DocumentWriter struct {
-	container      *opc.Container
-	document       *word.Document
-	commentManager *word.CommentManager // 使用新的批注管理器
+	Container      *opc.Container
+	Document       *word.Document
+	CommentManager *word.CommentManager // 使用新的批注管理器
 }
 
 // NewDocumentWriter creates a new document writer
 func NewDocumentWriter() *DocumentWriter {
 	return &DocumentWriter{
-		commentManager: word.NewCommentManager(),
+		CommentManager: word.NewCommentManager(),
 	}
 }
 
@@ -33,18 +33,18 @@ func (w *DocumentWriter) OpenForModification(filename string) error {
 		return fmt.Errorf("failed to open document for modification: %w", err)
 	}
 
-	w.document = doc
-	w.container = doc.GetContainer()
+	w.Document = doc
+	w.Container = doc.GetContainer()
 	return nil
 }
 
 // CreateNewDocument creates a new empty Word document
 func (w *DocumentWriter) CreateNewDocument() error {
 	// Create a new OPC container
-	w.container = &opc.Container{}
+	w.Container = &opc.Container{}
 
 	// Create basic document structure
-	w.document = &word.Document{}
+	w.Document = &word.Document{}
 
 	// Initialize with empty content
 	mainPart := &word.MainDocumentPart{
@@ -54,14 +54,14 @@ func (w *DocumentWriter) CreateNewDocument() error {
 			Text:       "",
 		},
 	}
-	w.document.SetMainPart(mainPart)
+	w.Document.SetMainPart(mainPart)
 
 	return nil
 }
 
 // AddParagraph adds a new paragraph to the document
 func (w *DocumentWriter) AddParagraph(text string, style string) error {
-	if w.document == nil || w.document.GetMainPart() == nil {
+	if w.Document == nil || w.Document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
@@ -75,7 +75,7 @@ func (w *DocumentWriter) AddParagraph(text string, style string) error {
 		},
 	}
 
-	mainPart := w.document.GetMainPart()
+	mainPart := w.Document.GetMainPart()
 	mainPart.Content.Paragraphs = append(
 		mainPart.Content.Paragraphs, paragraph)
 
@@ -87,7 +87,7 @@ func (w *DocumentWriter) AddParagraph(text string, style string) error {
 
 // AddFormattedParagraph adds a paragraph with specific formatting
 func (w *DocumentWriter) AddFormattedParagraph(text string, style string, runs []types.Run) error {
-	if w.document == nil || w.document.GetMainPart() == nil {
+	if w.Document == nil || w.Document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
@@ -97,7 +97,7 @@ func (w *DocumentWriter) AddFormattedParagraph(text string, style string, runs [
 		Runs:  runs,
 	}
 
-	mainPart := w.document.GetMainPart()
+	mainPart := w.Document.GetMainPart()
 	mainPart.Content.Paragraphs = append(
 		mainPart.Content.Paragraphs, paragraph)
 
@@ -109,7 +109,7 @@ func (w *DocumentWriter) AddFormattedParagraph(text string, style string, runs [
 
 // AddTable adds a new table to the document
 func (w *DocumentWriter) AddTable(rows [][]string) error {
-	if w.document == nil || w.document.GetMainPart() == nil {
+	if w.Document == nil || w.Document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
@@ -135,7 +135,7 @@ func (w *DocumentWriter) AddTable(rows [][]string) error {
 		table.Columns = len(rows[0])
 	}
 
-	mainPart := w.document.GetMainPart()
+	mainPart := w.Document.GetMainPart()
 	mainPart.Content.Tables = append(
 		mainPart.Content.Tables, table)
 
@@ -144,11 +144,11 @@ func (w *DocumentWriter) AddTable(rows [][]string) error {
 
 // ReplaceText replaces all occurrences of old text with new text
 func (w *DocumentWriter) ReplaceText(oldText, newText string) error {
-	if w.document == nil || w.document.GetMainPart() == nil {
+	if w.Document == nil || w.Document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
-	mainPart := w.document.GetMainPart()
+	mainPart := w.Document.GetMainPart()
 
 	// Replace in document text
 	mainPart.Content.Text = strings.ReplaceAll(
@@ -183,11 +183,11 @@ func (w *DocumentWriter) ReplaceText(oldText, newText string) error {
 
 // SetParagraphStyle sets the style of a specific paragraph
 func (w *DocumentWriter) SetParagraphStyle(index int, style string) error {
-	if w.document == nil || w.document.GetMainPart() == nil {
+	if w.Document == nil || w.Document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
-	mainPart := w.document.GetMainPart()
+	mainPart := w.Document.GetMainPart()
 	if index < 0 || index >= len(mainPart.Content.Paragraphs) {
 		return fmt.Errorf("paragraph index out of range")
 	}
@@ -198,11 +198,11 @@ func (w *DocumentWriter) SetParagraphStyle(index int, style string) error {
 
 // SetRunFormatting sets formatting for a specific run in a paragraph
 func (w *DocumentWriter) SetRunFormatting(paragraphIndex, runIndex int, formatting types.Run) error {
-	if w.document == nil || w.document.GetMainPart() == nil {
+	if w.Document == nil || w.Document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
-	mainPart := w.document.GetMainPart()
+	mainPart := w.Document.GetMainPart()
 	if paragraphIndex < 0 || paragraphIndex >= len(mainPart.Content.Paragraphs) {
 		return fmt.Errorf("paragraph index out of range")
 	}
@@ -219,12 +219,12 @@ func (w *DocumentWriter) SetRunFormatting(paragraphIndex, runIndex int, formatti
 // AddComment adds a comment to the document
 // Based on Open-XML-SDK AddComment method
 func (w *DocumentWriter) AddComment(author, text, paragraphText string) error {
-	if w.document == nil {
+	if w.Document == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
 	// 使用新的批注管理器添加批注
-	comment, err := w.commentManager.AddComment(author, text, "para_1", "run_1", 0, len(paragraphText))
+	comment, err := w.CommentManager.AddComment(author, text, "para_1", "run_1", 0, len(paragraphText))
 	if err != nil {
 		return fmt.Errorf("failed to add comment: %w", err)
 	}
@@ -235,11 +235,11 @@ func (w *DocumentWriter) AddComment(author, text, paragraphText string) error {
 
 // addCommentReferenceToDocument 在文档中添加批注引用
 func (w *DocumentWriter) addCommentReferenceToDocument(commentID, paragraphText string) error {
-	if w.document == nil || w.document.GetMainPart() == nil {
+	if w.Document == nil || w.Document.GetMainPart() == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
-	mainPart := w.document.GetMainPart()
+	mainPart := w.Document.GetMainPart()
 
 	// 查找匹配的段落并添加批注引用
 	for i, paragraph := range mainPart.Content.Paragraphs {
@@ -256,7 +256,7 @@ func (w *DocumentWriter) addCommentReferenceToDocument(commentID, paragraphText 
 
 // Save saves the document to a file
 func (w *DocumentWriter) Save(filename string) error {
-	if w.document == nil {
+	if w.Document == nil {
 		return fmt.Errorf("document not initialized")
 	}
 
@@ -277,7 +277,7 @@ func (w *DocumentWriter) Save(filename string) error {
 	)
 
 	// Add comments part if there are comments
-	if len(w.commentManager.Comments) > 0 {
+	if len(w.CommentManager.Comments) > 0 {
 		commentsXML := w.generateCommentsXML()
 		container.AddPart(
 			"word/comments.xml",
@@ -311,7 +311,7 @@ func (w *DocumentWriter) Save(filename string) error {
 	)
 
 	// Add settings.xml if there are comments (for WPS compatibility)
-	if len(w.commentManager.Comments) > 0 {
+	if len(w.CommentManager.Comments) > 0 {
 		settingsXML := w.generateSettingsXML()
 		container.AddPart(
 			"word/settings.xml",
@@ -326,16 +326,16 @@ func (w *DocumentWriter) Save(filename string) error {
 
 // generateCommentsXML generates the comments XML content
 func (w *DocumentWriter) generateCommentsXML() []byte {
-	return []byte(w.commentManager.GenerateCommentsXML())
+	return []byte(w.CommentManager.GenerateCommentsXML())
 }
 
 // generateDocumentXML generates the XML content for the main document part
 func (w *DocumentWriter) generateDocumentXML() ([]byte, error) {
-	if w.document == nil || w.document.GetMainPart() == nil {
+	if w.Document == nil || w.Document.GetMainPart() == nil {
 		return nil, fmt.Errorf("document not initialized")
 	}
 
-	mainPart := w.document.GetMainPart()
+	mainPart := w.Document.GetMainPart()
 
 	// Create the XML structure
 	doc := &DocumentXML{
@@ -508,7 +508,7 @@ func (w *DocumentWriter) generateContentTypesXML() []byte {
   <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.word.document.main+xml"/>`
 
 	// Add comments content type if there are comments
-	if len(w.commentManager.Comments) > 0 {
+	if len(w.CommentManager.Comments) > 0 {
 		contentTypesXML += `
   <Override PartName="/word/comments.xml" ContentType="application/vnd.openxmlformats-officedocument.word.comments+xml"/>
   <Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.word.settings+xml"/>`
@@ -535,7 +535,7 @@ func (w *DocumentWriter) generateDocumentRelsXML() []byte {
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`
 
 	// Add comments relationship if there are comments
-	if len(w.commentManager.Comments) > 0 {
+	if len(w.CommentManager.Comments) > 0 {
 		documentRelsXML += `
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="comments.xml"/>`
 	}

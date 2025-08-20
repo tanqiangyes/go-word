@@ -12,9 +12,9 @@ import (
 
 // ConfigManager provides configuration management functionality
 type ConfigManager struct {
-	config     *LibraryConfig
-	configPath string
-	overrides  map[string]interface{}
+	Config     *LibraryConfig
+	ConfigPath string
+	Overrides  map[string]interface{}
 }
 
 // LibraryConfig holds the library configuration
@@ -71,7 +71,7 @@ type LibraryConfig struct {
 // NewConfigManager creates a new configuration manager
 func NewConfigManager() *ConfigManager {
 	return &ConfigManager{
-		config: &LibraryConfig{
+		Config: &LibraryConfig{
 			Language:        "zh-CN",
 			DefaultEncoding: "UTF-8",
 			LogLevel:        "info",
@@ -100,13 +100,13 @@ func NewConfigManager() *ConfigManager {
 			VerboseLogging:   false,
 			PerformanceProfiling: false,
 		},
-		overrides: make(map[string]interface{}),
+		Overrides: make(map[string]interface{}),
 	}
 }
 
 // LoadConfig loads configuration from a file
 func (cm *ConfigManager) LoadConfig(configPath string) error {
-	cm.configPath = configPath
+	cm.ConfigPath = configPath
 	
 	// Check if config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
@@ -121,7 +121,7 @@ func (cm *ConfigManager) LoadConfig(configPath string) error {
 	}
 	
 	// Parse JSON
-	if err := json.Unmarshal(data, cm.config); err != nil {
+	if err := json.Unmarshal(data, cm.Config); err != nil {
 		return fmt.Errorf("failed to parse config file: %w", err)
 	}
 	
@@ -130,24 +130,24 @@ func (cm *ConfigManager) LoadConfig(configPath string) error {
 
 // SaveConfig saves configuration to a file
 func (cm *ConfigManager) SaveConfig() error {
-	if cm.configPath == "" {
-		cm.configPath = "go-word-config.json"
+	if cm.ConfigPath == "" {
+		cm.ConfigPath = "go-word-config.json"
 	}
 	
 	// Create directory if it doesn't exist
-	dir := filepath.Dir(cm.configPath)
+	dir := filepath.Dir(cm.ConfigPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 	
 	// Marshal to JSON
-	data, err := json.MarshalIndent(cm.config, "", "  ")
+	data, err := json.MarshalIndent(cm.Config, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 	
 	// Write to file
-	if err := os.WriteFile(cm.configPath, data, 0644); err != nil {
+	if err := os.WriteFile(cm.ConfigPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 	
@@ -156,18 +156,18 @@ func (cm *ConfigManager) SaveConfig() error {
 
 // GetConfig returns the current configuration
 func (cm *ConfigManager) GetConfig() *LibraryConfig {
-	return cm.config
+	return cm.Config
 }
 
 // SetConfig sets a configuration value
 func (cm *ConfigManager) SetConfig(key string, value interface{}) {
-	cm.overrides[key] = value
+	cm.Overrides[key] = value
 }
 
 // GetString gets a string configuration value
 func (cm *ConfigManager) GetString(key string) string {
 	// Check overrides first
-	if override, exists := cm.overrides[key]; exists {
+	if override, exists := cm.Overrides[key]; exists {
 		if str, ok := override.(string); ok {
 			return str
 		}
@@ -176,17 +176,17 @@ func (cm *ConfigManager) GetString(key string) string {
 	// Check config struct
 	switch key {
 	case "language":
-		return cm.config.Language
+		return cm.Config.Language
 	case "default_encoding":
-		return cm.config.DefaultEncoding
+		return cm.Config.DefaultEncoding
 	case "log_level":
-		return cm.config.LogLevel
+		return cm.Config.LogLevel
 	case "default_font":
-		return cm.config.DefaultFont
+		return cm.Config.DefaultFont
 	case "default_style":
-		return cm.config.DefaultStyle
+		return cm.Config.DefaultStyle
 	case "default_password":
-		return cm.config.DefaultPassword
+		return cm.Config.DefaultPassword
 	}
 	
 	return ""
@@ -195,7 +195,7 @@ func (cm *ConfigManager) GetString(key string) string {
 // GetInt gets an integer configuration value
 func (cm *ConfigManager) GetInt(key string) int {
 	// Check overrides first
-	if override, exists := cm.overrides[key]; exists {
+	if override, exists := cm.Overrides[key]; exists {
 		if i, ok := override.(int); ok {
 			return i
 		}
@@ -209,11 +209,11 @@ func (cm *ConfigManager) GetInt(key string) int {
 	// Check config struct
 	switch key {
 	case "timeout":
-		return cm.config.Timeout
+		return cm.Config.Timeout
 	case "buffer_size":
-		return cm.config.BufferSize
+		return cm.Config.BufferSize
 	case "default_font_size":
-		return cm.config.DefaultFontSize
+		return cm.Config.DefaultFontSize
 	}
 	
 	return 0
@@ -222,7 +222,7 @@ func (cm *ConfigManager) GetInt(key string) int {
 // GetInt64 gets an int64 configuration value
 func (cm *ConfigManager) GetInt64(key string) int64 {
 	// Check overrides first
-	if override, exists := cm.overrides[key]; exists {
+	if override, exists := cm.Overrides[key]; exists {
 		if i, ok := override.(int64); ok {
 			return i
 		}
@@ -236,9 +236,9 @@ func (cm *ConfigManager) GetInt64(key string) int64 {
 	// Check config struct
 	switch key {
 	case "max_file_size":
-		return cm.config.MaxFileSize
+		return cm.Config.MaxFileSize
 	case "memory_limit":
-		return cm.config.MemoryLimit
+		return cm.Config.MemoryLimit
 	}
 	
 	return 0
@@ -247,7 +247,7 @@ func (cm *ConfigManager) GetInt64(key string) int64 {
 // GetBool gets a boolean configuration value
 func (cm *ConfigManager) GetBool(key string) bool {
 	// Check overrides first
-	if override, exists := cm.overrides[key]; exists {
+	if override, exists := cm.Overrides[key]; exists {
 		if b, ok := override.(bool); ok {
 			return b
 		}
@@ -259,35 +259,35 @@ func (cm *ConfigManager) GetBool(key string) bool {
 	// Check config struct
 	switch key {
 	case "auto_format":
-		return cm.config.AutoFormat
+		return cm.Config.AutoFormat
 	case "enable_protection":
-		return cm.config.EnableProtection
+		return cm.Config.EnableProtection
 	case "enable_validation":
-		return cm.config.EnableValidation
+		return cm.Config.EnableValidation
 	case "auto_fix":
-		return cm.config.AutoFix
+		return cm.Config.AutoFix
 	case "error_recovery":
-		return cm.config.ErrorRecovery
+		return cm.Config.ErrorRecovery
 	case "error_logging":
-		return cm.config.ErrorLogging
+		return cm.Config.ErrorLogging
 	case "error_metrics":
-		return cm.config.ErrorMetrics
+		return cm.Config.ErrorMetrics
 	case "enable_caching":
-		return cm.config.EnableCaching
+		return cm.Config.EnableCaching
 	case "enable_compression":
-		return cm.config.EnableCompression
+		return cm.Config.EnableCompression
 	case "enable_encryption":
-		return cm.config.EnableEncryption
+		return cm.Config.EnableEncryption
 	case "wps_compatibility":
-		return cm.config.WPSCompatibility
+		return cm.Config.WPSCompatibility
 	case "office_compatibility":
-		return cm.config.OfficeCompatibility
+		return cm.Config.OfficeCompatibility
 	case "debug_mode":
-		return cm.config.DebugMode
+		return cm.Config.DebugMode
 	case "verbose_logging":
-		return cm.config.VerboseLogging
+		return cm.Config.VerboseLogging
 	case "performance_profiling":
-		return cm.config.PerformanceProfiling
+		return cm.Config.PerformanceProfiling
 	}
 	
 	return false
@@ -296,7 +296,7 @@ func (cm *ConfigManager) GetBool(key string) bool {
 // GetStringSlice gets a string slice configuration value
 func (cm *ConfigManager) GetStringSlice(key string) []string {
 	// Check overrides first
-	if override, exists := cm.overrides[key]; exists {
+	if override, exists := cm.Overrides[key]; exists {
 		if slice, ok := override.([]string); ok {
 			return slice
 		}
@@ -305,9 +305,9 @@ func (cm *ConfigManager) GetStringSlice(key string) []string {
 	// Check config struct
 	switch key {
 	case "supported_formats":
-		return cm.config.SupportedFormats
+		return cm.Config.SupportedFormats
 	case "validation_rules":
-		return cm.config.ValidationRules
+		return cm.Config.ValidationRules
 	}
 	
 	return []string{}

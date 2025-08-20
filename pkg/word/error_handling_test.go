@@ -48,7 +48,7 @@ func TestLoggerInitialization(t *testing.T) {
     t.Run("PDFExporterLogger", func(t *testing.T) {
         doc := &Document{}
         exporter := NewPDFExporter(doc, nil)
-        if exporter.logger == nil {
+        if exporter.Logger == nil {
             t.Error("PDFExporter logger should not be nil")
         }
     })
@@ -57,7 +57,7 @@ func TestLoggerInitialization(t *testing.T) {
         doc := &Document{}
         config := &PluginConfig{Enabled: true}
         ps := NewPluginSystem(doc, config)
-        if ps.logger == nil {
+        if ps.Logger == nil {
             t.Error("PluginSystem logger should not be nil")
         }
     })

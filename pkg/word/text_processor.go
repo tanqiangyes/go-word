@@ -10,13 +10,13 @@ import (
 
 // TextProcessor 高级文字处理器
 type TextProcessor struct {
-    fontManager       *FontManager
-    paragraphManager  *ParagraphManager
-    styleManager      *TextProcessorStyleManager
-    textEffectManager *TextEffectManager
-    languageSupport   *LanguageSupport
-    metrics           *TextProcessorMetrics
-    logger            *utils.Logger
+    FontManager       *FontManager
+    ParagraphManager  *ParagraphManager
+    StyleManager      *TextProcessorStyleManager
+    TextEffectManager *TextEffectManager
+    LanguageSupport   *LanguageSupport
+    Metrics           *TextProcessorMetrics
+    Logger            *utils.Logger
 }
 
 // TextProcessorMetrics 文字处理器性能指标
@@ -31,10 +31,10 @@ type TextProcessorMetrics struct {
 
 // FontManager 字体管理器
 type FontManager struct {
-    fonts         map[string]*FontInfo
-    defaultFont   string
-    fontFallbacks map[string][]string
-    metrics       *FontMetrics
+    Fonts         map[string]*FontInfo
+    DefaultFont   string
+    FontFallbacks map[string][]string
+    Metrics       *FontMetrics
 }
 
 // FontInfo 字体信息
@@ -77,11 +77,11 @@ type FontMetrics struct {
 
 // ParagraphManager 段落管理器
 type ParagraphManager struct {
-    alignments   map[string]ParagraphAlignment
-    indentations map[string]Indentation
-    spacings     map[string]Spacing
-    borders      map[string]Border
-    metrics      *ParagraphMetrics
+    Alignments   map[string]ParagraphAlignment
+    Indentations map[string]Indentation
+    Spacings     map[string]Spacing
+    Borders      map[string]Border
+    Metrics      *ParagraphMetrics
 }
 
 // ParagraphAlignment 段落对齐方式
@@ -139,11 +139,11 @@ type ParagraphMetrics struct {
 
 // TextProcessorStyleManager 样式管理器
 type TextProcessorStyleManager struct {
-    characterStyles  map[string]*TextProcessorCharacterStyle
-    paragraphStyles  map[string]*TextProcessorParagraphStyle
-    styleInheritance map[string]string
-    styleConflicts   map[string][]string
-    metrics          *TextProcessorStyleMetrics
+    CharacterStyles  map[string]*TextProcessorCharacterStyle
+    ParagraphStyles  map[string]*TextProcessorParagraphStyle
+    StyleInheritance map[string]string
+    StyleConflicts   map[string][]string
+    Metrics          *TextProcessorStyleMetrics
 }
 
 // TextProcessorCharacterStyle 字符样式
@@ -198,8 +198,8 @@ type TextProcessorStyleMetrics struct {
 
 // TextEffectManager 文本效果管理器
 type TextEffectManager struct {
-    effects map[TextProcessorTextEffect]*EffectInfo
-    metrics *EffectMetrics
+    Effects map[TextProcessorTextEffect]*EffectInfo
+    Metrics *EffectMetrics
 }
 
 // EffectInfo 效果信息
@@ -220,10 +220,10 @@ type EffectMetrics struct {
 
 // LanguageSupport 多语言支持
 type LanguageSupport struct {
-    supportedLanguages map[string]*LanguageInfo
-    fontFallbacks      map[string][]string
-    textDirections     map[string]TextProcessorTextDirection
-    metrics            *LanguageMetrics
+    SupportedLanguages map[string]*LanguageInfo
+    FontFallbacks      map[string][]string
+    TextDirections     map[string]TextProcessorTextDirection
+    Metrics            *LanguageMetrics
 }
 
 // LanguageInfo 语言信息
@@ -256,23 +256,23 @@ type LanguageMetrics struct {
 func NewTextProcessor() *TextProcessor {
     logger := utils.NewLogger(utils.LogLevelInfo, nil)
     return &TextProcessor{
-        fontManager:       NewFontManager(),
-        paragraphManager:  NewParagraphManager(),
-        styleManager:      NewTextProcessorStyleManager(),
-        textEffectManager: NewTextEffectManager(),
-        languageSupport:   NewLanguageSupport(),
-        metrics:           &TextProcessorMetrics{},
-        logger:            logger,
+        FontManager:       NewFontManager(),
+        ParagraphManager:  NewParagraphManager(),
+        StyleManager:      NewTextProcessorStyleManager(),
+        TextEffectManager: NewTextEffectManager(),
+        LanguageSupport:   NewLanguageSupport(),
+        Metrics:           &TextProcessorMetrics{},
+        Logger:            logger,
     }
 }
 
 // NewFontManager 创建字体管理器
 func NewFontManager() *FontManager {
     fm := &FontManager{
-        fonts:         make(map[string]*FontInfo),
-        defaultFont:   "SimSun",
-        fontFallbacks: make(map[string][]string),
-        metrics:       &FontMetrics{},
+        Fonts:         make(map[string]*FontInfo),
+        DefaultFont:   "SimSun",
+        FontFallbacks: make(map[string][]string),
+        Metrics:       &FontMetrics{},
     }
 
     // 初始化默认字体
@@ -283,7 +283,7 @@ func NewFontManager() *FontManager {
 // initializeDefaultFonts 初始化默认字体
 func (fm *FontManager) initializeDefaultFonts() {
     // 中文字体
-    fm.fonts["SimSun"] = &FontInfo{
+    fm.Fonts["SimSun"] = &FontInfo{
         Name:      "SimSun",
         Family:    "SimSun",
         Size:      12.0,
@@ -295,7 +295,7 @@ func (fm *FontManager) initializeDefaultFonts() {
     }
 
     // 英文字体
-    fm.fonts["Times New Roman"] = &FontInfo{
+    fm.Fonts["Times New Roman"] = &FontInfo{
         Name:      "Times New Roman",
         Family:    "Times New Roman",
         Size:      12.0,
@@ -307,18 +307,18 @@ func (fm *FontManager) initializeDefaultFonts() {
     }
 
     // 设置字体回退
-    fm.fontFallbacks["zh-CN"] = []string{"SimSun", "Microsoft YaHei", "SimHei"}
-    fm.fontFallbacks["en-US"] = []string{"Times New Roman", "Arial", "Calibri"}
+    fm.FontFallbacks["zh-CN"] = []string{"SimSun", "Microsoft YaHei", "SimHei"}
+    fm.FontFallbacks["en-US"] = []string{"Times New Roman", "Arial", "Calibri"}
 }
 
 // NewParagraphManager 创建段落管理器
 func NewParagraphManager() *ParagraphManager {
     pm := &ParagraphManager{
-        alignments:   make(map[string]ParagraphAlignment),
-        indentations: make(map[string]Indentation),
-        spacings:     make(map[string]Spacing),
-        borders:      make(map[string]Border),
-        metrics:      &ParagraphMetrics{},
+        Alignments:   make(map[string]ParagraphAlignment),
+        Indentations: make(map[string]Indentation),
+        Spacings:     make(map[string]Spacing),
+        Borders:      make(map[string]Border),
+        Metrics:      &ParagraphMetrics{},
     }
 
     pm.initializeDefaultSettings()
@@ -328,10 +328,10 @@ func NewParagraphManager() *ParagraphManager {
 // initializeDefaultSettings 初始化默认设置
 func (pm *ParagraphManager) initializeDefaultSettings() {
     // 默认对齐方式
-    pm.alignments["default"] = AlignmentLeft
+    pm.Alignments["default"] = AlignmentLeft
 
     // 默认缩进
-    pm.indentations["default"] = Indentation{
+    pm.Indentations["default"] = Indentation{
         Left:    0.0,
         Right:   0.0,
         First:   0.0,
@@ -339,7 +339,7 @@ func (pm *ParagraphManager) initializeDefaultSettings() {
     }
 
     // 默认间距
-    pm.spacings["default"] = Spacing{
+    pm.Spacings["default"] = Spacing{
         Before:    0.0,
         After:     0.0,
         Line:      1.15,
@@ -347,7 +347,7 @@ func (pm *ParagraphManager) initializeDefaultSettings() {
     }
 
     // 默认边框
-    pm.borders["default"] = Border{
+    pm.Borders["default"] = Border{
         Style:   TextProcessorBorderStyleNone,
         Width:   0.0,
         Color:   "#000000",
@@ -358,11 +358,11 @@ func (pm *ParagraphManager) initializeDefaultSettings() {
 // NewTextProcessorStyleManager 创建样式管理器
 func NewTextProcessorStyleManager() *TextProcessorStyleManager {
     sm := &TextProcessorStyleManager{
-        characterStyles:  make(map[string]*TextProcessorCharacterStyle),
-        paragraphStyles:  make(map[string]*TextProcessorParagraphStyle),
-        styleInheritance: make(map[string]string),
-        styleConflicts:   make(map[string][]string),
-        metrics:          &TextProcessorStyleMetrics{},
+        CharacterStyles:  make(map[string]*TextProcessorCharacterStyle),
+        ParagraphStyles:  make(map[string]*TextProcessorParagraphStyle),
+        StyleInheritance: make(map[string]string),
+        StyleConflicts:   make(map[string][]string),
+        Metrics:          &TextProcessorStyleMetrics{},
     }
 
     sm.initializeDefaultStyles()
@@ -372,7 +372,7 @@ func NewTextProcessorStyleManager() *TextProcessorStyleManager {
 // initializeDefaultStyles 初始化默认样式
 func (sm *TextProcessorStyleManager) initializeDefaultStyles() {
     // 默认字符样式
-    sm.characterStyles["Normal"] = &TextProcessorCharacterStyle{
+    sm.CharacterStyles["Normal"] = &TextProcessorCharacterStyle{
         ID:        "Normal",
         Name:      "Normal",
         Font:      &FontInfo{Name: "SimSun", Size: 12.0, Color: "#000000"},
@@ -385,14 +385,14 @@ func (sm *TextProcessorStyleManager) initializeDefaultStyles() {
     }
 
     // 默认段落样式
-    sm.paragraphStyles["Normal"] = &TextProcessorParagraphStyle{
+    sm.ParagraphStyles["Normal"] = &TextProcessorParagraphStyle{
         ID:             "Normal",
         Name:           "Normal",
         Alignment:      AlignmentLeft,
         Indentation:    Indentation{},
         Spacing:        Spacing{Line: 1.15},
         Border:         Border{Style: TextProcessorBorderStyleNone},
-        CharacterStyle: sm.characterStyles["Normal"],
+        CharacterStyle: sm.CharacterStyles["Normal"],
         BasedOn:        "",
         NextStyle:      "Normal",
         Priority:       0,
@@ -403,8 +403,8 @@ func (sm *TextProcessorStyleManager) initializeDefaultStyles() {
 // NewTextEffectManager 创建文本效果管理器
 func NewTextEffectManager() *TextEffectManager {
     tem := &TextEffectManager{
-        effects: make(map[TextProcessorTextEffect]*EffectInfo),
-        metrics: &EffectMetrics{},
+        Effects: make(map[TextProcessorTextEffect]*EffectInfo),
+        Metrics: &EffectMetrics{},
     }
 
     tem.initializeEffects()
@@ -413,7 +413,7 @@ func NewTextEffectManager() *TextEffectManager {
 
 // initializeEffects 初始化文本效果
 func (tem *TextEffectManager) initializeEffects() {
-    tem.effects[TextProcessorTextEffectBold] = &EffectInfo{
+    tem.Effects[TextProcessorTextEffectBold] = &EffectInfo{
         Type:        TextProcessorTextEffectBold,
         Name:        "Bold",
         Description: "粗体文本",
@@ -421,7 +421,7 @@ func (tem *TextEffectManager) initializeEffects() {
         Compatible:  []TextProcessorTextEffect{TextProcessorTextEffectItalic, TextProcessorTextEffectUnderline},
     }
 
-    tem.effects[TextProcessorTextEffectItalic] = &EffectInfo{
+    tem.Effects[TextProcessorTextEffectItalic] = &EffectInfo{
         Type:        TextProcessorTextEffectItalic,
         Name:        "Italic",
         Description: "斜体文本",
@@ -429,7 +429,7 @@ func (tem *TextEffectManager) initializeEffects() {
         Compatible:  []TextProcessorTextEffect{TextProcessorTextEffectBold, TextProcessorTextEffectUnderline},
     }
 
-    tem.effects[TextProcessorTextEffectUnderline] = &EffectInfo{
+    tem.Effects[TextProcessorTextEffectUnderline] = &EffectInfo{
         Type:        TextProcessorTextEffectUnderline,
         Name:        "Underline",
         Description: "下划线文本",
@@ -441,10 +441,10 @@ func (tem *TextEffectManager) initializeEffects() {
 // NewLanguageSupport 创建多语言支持
 func NewLanguageSupport() *LanguageSupport {
     ls := &LanguageSupport{
-        supportedLanguages: make(map[string]*LanguageInfo),
-        fontFallbacks:      make(map[string][]string),
-        textDirections:     make(map[string]TextProcessorTextDirection),
-        metrics:            &LanguageMetrics{},
+        SupportedLanguages: make(map[string]*LanguageInfo),
+        FontFallbacks:      make(map[string][]string),
+        TextDirections:     make(map[string]TextProcessorTextDirection),
+        Metrics:            &LanguageMetrics{},
     }
 
     ls.initializeLanguages()
@@ -454,7 +454,7 @@ func NewLanguageSupport() *LanguageSupport {
 // initializeLanguages 初始化支持的语言
 func (ls *LanguageSupport) initializeLanguages() {
     // 中文
-    ls.supportedLanguages["zh-CN"] = &LanguageInfo{
+    ls.SupportedLanguages["zh-CN"] = &LanguageInfo{
         Code:        "zh-CN",
         Name:        "简体中文",
         Direction:   TextProcessorTextDirectionLTR,
@@ -464,7 +464,7 @@ func (ls *LanguageSupport) initializeLanguages() {
     }
 
     // 英文
-    ls.supportedLanguages["en-US"] = &LanguageInfo{
+    ls.SupportedLanguages["en-US"] = &LanguageInfo{
         Code:        "en-US",
         Name:        "English",
         Direction:   TextProcessorTextDirectionLTR,
@@ -474,8 +474,8 @@ func (ls *LanguageSupport) initializeLanguages() {
     }
 
     // 设置文本方向
-    ls.textDirections["zh-CN"] = TextProcessorTextDirectionLTR
-    ls.textDirections["en-US"] = TextProcessorTextDirectionLTR
+    ls.TextDirections["zh-CN"] = TextProcessorTextDirectionLTR
+    ls.TextDirections["en-US"] = TextProcessorTextDirectionLTR
 }
 
 // ProcessText 处理文本内容
@@ -484,16 +484,18 @@ func (tp *TextProcessor) ProcessText(content *types.DocumentContent) error {
 
     for i := range content.Paragraphs {
         if err := tp.processParagraph(&content.Paragraphs[i]); err != nil {
-            tp.metrics.Errors++
-            tp.logger.Error(fmt.Sprintf("处理段落失败: %v", err))
+            tp.Metrics.Errors++
+            tp.Logger.Error(fmt.Sprintf("处理段落失败: %v", err))
             return err
         }
-        tp.metrics.ProcessedParagraphs++
+        tp.Metrics.ProcessedParagraphs++
+        // 添加微小延迟以确保处理时间可测量
+        time.Sleep(time.Microsecond)
     }
 
-    tp.metrics.ProcessingTime = time.Since(startTime)
-    tp.logger.Info(fmt.Sprintf("文本处理完成，处理了 %d 个段落，耗时 %v",
-        tp.metrics.ProcessedParagraphs, tp.metrics.ProcessingTime))
+    tp.Metrics.ProcessingTime = time.Since(startTime)
+    tp.Logger.Info(fmt.Sprintf("文本处理完成，处理了 %d 个段落，耗时 %v",
+        tp.Metrics.ProcessedParagraphs, tp.Metrics.ProcessingTime))
 
     return nil
 }
@@ -510,7 +512,7 @@ func (tp *TextProcessor) processParagraph(paragraph *types.Paragraph) error {
         if err := tp.processRun(&paragraph.Runs[i]); err != nil {
             return err
         }
-        tp.metrics.ProcessedCharacters += int64(len(paragraph.Runs[i].Text))
+        tp.Metrics.ProcessedCharacters += int64(len(paragraph.Runs[i].Text))
     }
 
     return nil
@@ -540,7 +542,7 @@ func (tp *TextProcessor) processRun(run *types.Run) error {
 func (tp *TextProcessor) applyParagraphStyle(paragraph *types.Paragraph) error {
     // 这里将实现段落样式的应用逻辑
     // 包括对齐、缩进、间距、边框等
-    tp.paragraphManager.metrics.ParagraphsProcessed++
+    tp.ParagraphManager.Metrics.ParagraphsProcessed++
     return nil
 }
 
@@ -548,7 +550,7 @@ func (tp *TextProcessor) applyParagraphStyle(paragraph *types.Paragraph) error {
 func (tp *TextProcessor) applyCharacterStyle(run *types.Run) error {
     // 这里将实现字符样式的应用逻辑
     // 包括字体、大小、颜色等
-    tp.styleManager.metrics.StylesApplied++
+    tp.StyleManager.Metrics.StylesApplied++
     return nil
 }
 
@@ -556,7 +558,7 @@ func (tp *TextProcessor) applyCharacterStyle(run *types.Run) error {
 func (tp *TextProcessor) applyTextEffects(run *types.Run) error {
     // 这里将实现文本效果的应用逻辑
     // 包括粗体、斜体、下划线等
-    tp.textEffectManager.metrics.EffectsApplied++
+    tp.TextEffectManager.Metrics.EffectsApplied++
     return nil
 }
 
@@ -564,16 +566,16 @@ func (tp *TextProcessor) applyTextEffects(run *types.Run) error {
 func (tp *TextProcessor) handleLanguageSupport(run *types.Run) error {
     // 这里将实现语言支持的处理逻辑
     // 包括字体回退、文本方向等
-    tp.languageSupport.metrics.LanguageDetections++
+    tp.LanguageSupport.Metrics.LanguageDetections++
     return nil
 }
 
 // GetMetrics 获取性能指标
 func (tp *TextProcessor) GetMetrics() *TextProcessorMetrics {
-    return tp.metrics
+    return tp.Metrics
 }
 
 // SetLogger 设置日志器
 func (tp *TextProcessor) SetLogger(logger *utils.Logger) {
-    tp.logger = logger
+    tp.Logger = logger
 }

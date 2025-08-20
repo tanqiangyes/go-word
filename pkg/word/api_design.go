@@ -12,9 +12,9 @@ import (
 
 // DocumentBuilder provides a fluent interface for building documents
 type DocumentBuilder struct {
-	document *Document
-	config   *DocumentConfig
-	logger   *utils.Logger
+	Document *Document
+	Config   *DocumentConfig
+	Logger   *utils.Logger
 }
 
 // DocumentConfig holds configuration options for document creation
@@ -87,7 +87,7 @@ type ValidationConfig struct {
 // NewDocumentBuilder creates a new document builder with fluent interface
 func NewDocumentBuilder() *DocumentBuilder {
 	return &DocumentBuilder{
-		config: &DocumentConfig{
+		Config: &DocumentConfig{
 			Language: "zh-CN",
 			Formatting: &FormattingConfig{
 				DefaultFont:     "Microsoft YaHei",
@@ -113,50 +113,51 @@ func NewDocumentBuilder() *DocumentBuilder {
 				StrictMode:        false,
 			},
 		},
+		Logger: utils.NewLogger(utils.LogLevelInfo, os.Stdout),
 	}
 }
 
 // WithTitle sets the document title
 func (b *DocumentBuilder) WithTitle(title string) *DocumentBuilder {
-	b.config.Title = title
+	b.Config.Title = title
 	return b
 }
 
 // WithAuthor sets the document author
 func (b *DocumentBuilder) WithAuthor(author string) *DocumentBuilder {
-	b.config.Author = author
+	b.Config.Author = author
 	return b
 }
 
 // WithSubject sets the document subject
 func (b *DocumentBuilder) WithSubject(subject string) *DocumentBuilder {
-	b.config.Subject = subject
+	b.Config.Subject = subject
 	return b
 }
 
 // WithKeywords sets the document keywords
 func (b *DocumentBuilder) WithKeywords(keywords ...string) *DocumentBuilder {
-	b.config.Keywords = keywords
+	b.Config.Keywords = keywords
 	return b
 }
 
 // WithLanguage sets the document language
 func (b *DocumentBuilder) WithLanguage(language string) *DocumentBuilder {
-	b.config.Language = language
+	b.Config.Language = language
 	return b
 }
 
 // WithTemplate sets the document template
 func (b *DocumentBuilder) WithTemplate(template string) *DocumentBuilder {
-	b.config.Template = template
+	b.Config.Template = template
 	return b
 }
 
 // WithProtection enables document protection
 func (b *DocumentBuilder) WithProtection(protectionType types.ProtectionType, password string) *DocumentBuilder {
-	b.config.Protection.Enabled = true
-	b.config.Protection.Type = protectionType
-	b.config.Protection.Password = password
+	b.Config.Protection.Enabled = true
+	b.Config.Protection.Type = protectionType
+	b.Config.Protection.Password = password
 	return b
 }
 
@@ -169,13 +170,13 @@ func (b *DocumentBuilder) WithPermissions(permissions map[string]bool) *Document
 			permList = append(permList, perm)
 		}
 	}
-	b.config.Protection.Permissions = permList
+	b.Config.Protection.Permissions = permList
 	return b
 }
 
 // WithWatermark adds a watermark to the document
 func (b *DocumentBuilder) WithWatermark(text, font string, size int, color string) *DocumentBuilder {
-	b.config.Protection.Watermark = &types.WatermarkConfig{
+	b.Config.Protection.Watermark = &types.WatermarkConfig{
 		Text:         text,
 		Font:         font,
 		Size:         size,
@@ -188,39 +189,39 @@ func (b *DocumentBuilder) WithWatermark(text, font string, size int, color strin
 
 // WithDefaultFont sets the default font
 func (b *DocumentBuilder) WithDefaultFont(font string, size int) *DocumentBuilder {
-	b.config.Formatting.DefaultFont = font
-	b.config.Formatting.DefaultFontSize = size
+	b.Config.Formatting.DefaultFont = font
+	b.Config.Formatting.DefaultFontSize = size
 	return b
 }
 
 // WithMargins sets the page margins
 func (b *DocumentBuilder) WithMargins(top, bottom, left, right float64) *DocumentBuilder {
-	b.config.Formatting.Margins.Top = top
-	b.config.Formatting.Margins.Bottom = bottom
-	b.config.Formatting.Margins.Left = left
-	b.config.Formatting.Margins.Right = right
+	b.Config.Formatting.Margins.Top = top
+	b.Config.Formatting.Margins.Bottom = bottom
+	b.Config.Formatting.Margins.Left = left
+	b.Config.Formatting.Margins.Right = right
 	return b
 }
 
 // WithPageSize sets the page size
 func (b *DocumentBuilder) WithPageSize(width, height float64, orientation string) *DocumentBuilder {
-	b.config.Formatting.PageSize.Width = width
-	b.config.Formatting.PageSize.Height = height
-	b.config.Formatting.PageSize.Orientation = orientation
+	b.Config.Formatting.PageSize.Width = width
+	b.Config.Formatting.PageSize.Height = height
+	b.Config.Formatting.PageSize.Orientation = orientation
 	return b
 }
 
 // WithTheme sets the document theme
 func (b *DocumentBuilder) WithTheme(theme string) *DocumentBuilder {
-	b.config.Formatting.Theme = theme
+	b.Config.Formatting.Theme = theme
 	return b
 }
 
 // WithValidation enables document validation
 func (b *DocumentBuilder) WithValidation(enabled, autoFix, strictMode bool) *DocumentBuilder {
-	b.config.Validation.Enabled = enabled
-	b.config.Validation.AutoFix = autoFix
-	b.config.Validation.StrictMode = strictMode
+	b.Config.Validation.Enabled = enabled
+	b.Config.Validation.AutoFix = autoFix
+	b.Config.Validation.StrictMode = strictMode
 	return b
 }
 
@@ -237,35 +238,35 @@ func (b *DocumentBuilder) Build() (*Document, error) {
 		return nil, fmt.Errorf("failed to apply configuration: %w", err)
 	}
 
-	b.document = doc
+	b.Document = doc
 	return doc, nil
 }
 
 // applyConfiguration applies the builder configuration to the document
 func (b *DocumentBuilder) applyConfiguration(doc *Document) error {
 	// Set document properties
-	if b.config.Title != "" {
-		if err := b.setDocumentTitle(doc, b.config.Title); err != nil {
+	if b.Config.Title != "" {
+		if err := b.setDocumentTitle(doc, b.Config.Title); err != nil {
 			return fmt.Errorf("设置文档标题失败: %w", err)
 		}
 	}
 
-	if b.config.Author != "" {
-		if err := b.setDocumentAuthor(doc, b.config.Author); err != nil {
+	if b.Config.Author != "" {
+		if err := b.setDocumentAuthor(doc, b.Config.Author); err != nil {
 			return fmt.Errorf("设置文档作者失败: %w", err)
 		}
 	}
 
 	// Apply protection if enabled
-	if b.config.Protection.Type != types.ProtectionTypeNone {
-		if err := b.applyDocumentProtection(doc, *b.config.Protection); err != nil {
+	if b.Config.Protection.Type != types.ProtectionTypeNone {
+		if err := b.applyDocumentProtection(doc, *b.Config.Protection); err != nil {
 			return fmt.Errorf("应用文档保护失败: %w", err)
 		}
 	}
 
 	// Apply validation if enabled
-	if b.config.Validation.ValidateStructure || b.config.Validation.ValidateContent || b.config.Validation.ValidateStyles {
-		if err := b.applyDocumentValidation(doc, *b.config.Validation); err != nil {
+	if b.Config.Validation.ValidateStructure || b.Config.Validation.ValidateContent || b.Config.Validation.ValidateStyles {
+		if err := b.applyDocumentValidation(doc, *b.Config.Validation); err != nil {
 			return fmt.Errorf("应用文档验证失败: %w", err)
 		}
 	}
@@ -288,7 +289,7 @@ func (b *DocumentBuilder) setDocumentTitle(doc *Document, title string) error {
 	}
 	doc.metadata["title"] = title
 
-	b.logger.Info("文档标题已设置: %s", title)
+	b.Logger.Info("文档标题已设置: %s", title)
 
 	return nil
 }
@@ -310,7 +311,7 @@ func (b *DocumentBuilder) setDocumentAuthor(doc *Document, author string) error 
 	doc.metadata["author"] = author
 	doc.metadata["creator"] = author
 
-	b.logger.Info("文档作者已设置: %s", author)
+	b.Logger.Info("文档作者已设置: %s", author)
 
 	return nil
 }
@@ -329,7 +330,7 @@ func (b *DocumentBuilder) applyDocumentProtection(doc *Document, protection type
 			"enabled":  protection.Enabled,
 		}
 
-		b.logger.Info("文档保护已应用，保护类型: %s, 启用: %t", protection.Type, protection.Enabled)
+		b.Logger.Info("文档保护已应用，保护类型: %s, 启用: %t", protection.Type, protection.Enabled)
 	}
 
 	return nil
@@ -352,7 +353,7 @@ func (b *DocumentBuilder) applyDocumentValidation(doc *Document, validation type
 			"strictMode":        validation.StrictMode,
 		}
 
-		b.logger.Info("文档验证已应用，验证结构: %t, 验证内容: %t, 验证样式: %t", validation.ValidateStructure, validation.ValidateContent, validation.ValidateStyles)
+		b.Logger.Info("文档验证已应用，验证结构: %t, 验证内容: %t, 验证样式: %t", validation.ValidateStructure, validation.ValidateContent, validation.ValidateStyles)
 	}
 
 	return nil
@@ -360,25 +361,25 @@ func (b *DocumentBuilder) applyDocumentValidation(doc *Document, validation type
 
 // ParagraphBuilder provides a fluent interface for building paragraphs
 type ParagraphBuilder struct {
-	paragraph types.Paragraph
-	content   []types.Run
-	logger    *utils.Logger
+	Paragraph types.Paragraph
+	Content   []types.Run
+	Logger    *utils.Logger
 }
 
 // NewParagraphBuilder creates a new paragraph builder
 func NewParagraphBuilder() *ParagraphBuilder {
 	return &ParagraphBuilder{
-		paragraph: types.Paragraph{
+		Paragraph: types.Paragraph{
 			Runs: make([]types.Run, 0),
 		},
-		logger: utils.NewLogger(utils.LogLevelInfo, os.Stdout),
+		Logger: utils.NewLogger(utils.LogLevelInfo, os.Stdout),
 	}
 }
 
 // WithText adds plain text to the paragraph
 func (b *ParagraphBuilder) WithText(text string) *ParagraphBuilder {
-	b.paragraph.Text = text
-	b.paragraph.Runs = append(b.paragraph.Runs, types.Run{
+	b.Paragraph.Text = text
+	b.Paragraph.Runs = append(b.Paragraph.Runs, types.Run{
 		Text: text,
 	})
 	return b
@@ -399,30 +400,30 @@ func (b *ParagraphBuilder) WithFormattedText(text string, formatting *TextFormat
 		run.Color = formatting.Color
 	}
 
-	b.paragraph.Runs = append(b.paragraph.Runs, run)
+	b.Paragraph.Runs = append(b.Paragraph.Runs, run)
 	return b
 }
 
 // WithStyle sets the paragraph style
 func (b *ParagraphBuilder) WithStyle(style string) *ParagraphBuilder {
-	b.paragraph.Style = style
+	b.Paragraph.Style = style
 	return b
 }
 
 // WithComment adds a comment to the paragraph
 func (b *ParagraphBuilder) WithComment(author, text string) *ParagraphBuilder {
-	b.paragraph.HasComment = true
-	b.paragraph.CommentID = fmt.Sprintf("comment_%d", time.Now().Unix())
+	b.Paragraph.HasComment = true
+	b.Paragraph.CommentID = fmt.Sprintf("comment_%d", time.Now().Unix())
 
 	// 简化的评论处理
-	b.logger.Info("评论已添加，评论ID: %s, 作者: %s, 文本: %s", b.paragraph.CommentID, author, text)
+	b.Logger.Info("评论已添加，评论ID: %s, 作者: %s, 文本: %s", b.Paragraph.CommentID, author, text)
 
 	return b
 }
 
 // Build creates the paragraph
 func (b *ParagraphBuilder) Build() types.Paragraph {
-	return b.paragraph
+	return b.Paragraph
 }
 
 // TextFormatting holds text formatting options
@@ -437,16 +438,16 @@ type TextFormatting struct {
 
 // TableBuilder provides a fluent interface for building tables
 type TableBuilder struct {
-	table   types.Table
-	rows    [][]string
-	headers []string
-	style   string
+	Table   types.Table
+	Rows    [][]string
+	Headers []string
+	Style   string
 }
 
 // NewTableBuilder creates a new table builder
 func NewTableBuilder() *TableBuilder {
 	return &TableBuilder{
-		table: types.Table{
+		Table: types.Table{
 			Rows: make([]types.TableRow, 0),
 		},
 	}
@@ -454,40 +455,40 @@ func NewTableBuilder() *TableBuilder {
 
 // WithHeaders sets the table headers
 func (b *TableBuilder) WithHeaders(headers ...string) *TableBuilder {
-	b.headers = headers
-	b.table.Columns = len(headers)
+	b.Headers = headers
+	b.Table.Columns = len(headers)
 	return b
 }
 
 // WithRows adds rows to the table
 func (b *TableBuilder) WithRows(rows ...[]string) *TableBuilder {
-	b.rows = append(b.rows, rows...)
+	b.Rows = append(b.Rows, rows...)
 	return b
 }
 
 // WithStyle sets the table style
 func (b *TableBuilder) WithStyle(style string) *TableBuilder {
-	b.style = style
+	b.Style = style
 	return b
 }
 
 // Build creates the table
 func (b *TableBuilder) Build() types.Table {
 	// Add header row if headers are provided
-	if len(b.headers) > 0 {
+	if len(b.Headers) > 0 {
 		headerRow := types.TableRow{
-			Cells: make([]types.TableCell, len(b.headers)),
+			Cells: make([]types.TableCell, len(b.Headers)),
 		}
-		for i, header := range b.headers {
+		for i, header := range b.Headers {
 			headerRow.Cells[i] = types.TableCell{
 				Text: header,
 			}
 		}
-		b.table.Rows = append(b.table.Rows, headerRow)
+		b.Table.Rows = append(b.Table.Rows, headerRow)
 	}
 
 	// Add data rows
-	for _, rowData := range b.rows {
+	for _, rowData := range b.Rows {
 		row := types.TableRow{
 			Cells: make([]types.TableCell, len(rowData)),
 		}
@@ -496,21 +497,21 @@ func (b *TableBuilder) Build() types.Table {
 				Text: cellData,
 			}
 		}
-		b.table.Rows = append(b.table.Rows, row)
+		b.Table.Rows = append(b.Table.Rows, row)
 	}
 
-	return b.table
+	return b.Table
 }
 
 // DocumentOperations provides a fluent interface for document operations
 type DocumentOperations struct {
-	document *Document
+	Document *Document
 }
 
 // NewDocumentOperations creates document operations for a document
 func NewDocumentOperations(doc *Document) *DocumentOperations {
 	return &DocumentOperations{
-		document: doc,
+		Document: doc,
 	}
 }
 
@@ -536,15 +537,15 @@ func (ops *DocumentOperations) Save(filename string) error {
 
 // FluentDocument provides a fluent interface for document operations
 type FluentDocument struct {
-	document   *Document
-	operations *DocumentOperations
+	Document   *Document
+	Operations *DocumentOperations
 }
 
 // NewFluentDocument creates a new fluent document interface
 func NewFluentDocument(doc *Document) *FluentDocument {
 	return &FluentDocument{
-		document:   doc,
-		operations: NewDocumentOperations(doc),
+		Document:   doc,
+		Operations: NewDocumentOperations(doc),
 	}
 }
 
@@ -560,5 +561,5 @@ func (fd *FluentDocument) AddTable() *TableBuilder {
 
 // Save saves the document
 func (fd *FluentDocument) Save(filename string) error {
-	return fd.operations.Save(filename)
+	return fd.Operations.Save(filename)
 }

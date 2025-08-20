@@ -10,13 +10,13 @@ import (
 
 // ThemeManager 主题管理器
 type ThemeManager struct {
-    themes       map[string]*ThemeManagerTheme
-    currentTheme string
-    colorSchemes map[string]*ThemeManagerColorScheme
-    fontSchemes  map[string]*ThemeManagerFontScheme
-    themeBuilder *ThemeBuilder
-    metrics      *ThemeMetrics
-    logger       *utils.Logger
+	Themes       map[string]*ThemeManagerTheme
+	CurrentTheme string
+	ColorSchemes map[string]*ThemeManagerColorScheme
+	FontSchemes  map[string]*ThemeManagerFontScheme
+	ThemeBuilder *ThemeBuilder
+	Metrics      *ThemeMetrics
+	Logger       *utils.Logger
 }
 
 // ThemeMetrics 主题性能指标
@@ -153,7 +153,7 @@ type ThemeManagerFontDefinition struct {
 // ThemeBuilder 主题构建器
 type ThemeBuilder struct {
     currentTheme *Theme
-    metrics      *ThemeBuilderMetrics
+    Metrics      *ThemeBuilderMetrics
 }
 
 // ThemeBuilderMetrics 主题构建器性能指标
@@ -168,13 +168,13 @@ type ThemeBuilderMetrics struct {
 func NewThemeManager() *ThemeManager {
     logger := utils.NewLogger(utils.LogLevelInfo, nil)
     tm := &ThemeManager{
-        themes:       make(map[string]*ThemeManagerTheme),
-        currentTheme: "default",
-        colorSchemes: make(map[string]*ThemeManagerColorScheme),
-        fontSchemes:  make(map[string]*ThemeManagerFontScheme),
-        themeBuilder: NewThemeBuilder(),
-        metrics:      &ThemeMetrics{},
-        logger:       logger,
+        Themes:       make(map[string]*ThemeManagerTheme),
+        CurrentTheme: "default",
+        ColorSchemes: make(map[string]*ThemeManagerColorScheme),
+        FontSchemes:  make(map[string]*ThemeManagerFontScheme),
+        ThemeBuilder: NewThemeBuilder(),
+        Metrics:      &ThemeMetrics{},
+        Logger:       logger,
     }
 
     tm.initializeDefaultThemes()
@@ -281,16 +281,16 @@ func (tm *ThemeManager) initializeDefaultThemes() {
     }
 
     // 注册主题和方案
-    tm.themes["default"] = defaultTheme
-    tm.colorSchemes["default"] = defaultColorScheme
-    tm.fontSchemes["default"] = defaultFontScheme
+    tm.Themes["default"] = defaultTheme
+    tm.ColorSchemes["default"] = defaultColorScheme
+    tm.FontSchemes["default"] = defaultFontScheme
 }
 
 // NewThemeBuilder 创建主题构建器
 func NewThemeBuilder() *ThemeBuilder {
     return &ThemeBuilder{
         currentTheme: nil,
-        metrics:      &ThemeBuilderMetrics{},
+        Metrics:      &ThemeBuilderMetrics{},
     }
 }
 
@@ -298,9 +298,9 @@ func NewThemeBuilder() *ThemeBuilder {
 func (tm *ThemeManager) ApplyTheme(themeID string, content *types.DocumentContent) error {
     startTime := time.Now()
 
-    theme, exists := tm.themes[themeID]
+    theme, exists := tm.Themes[themeID]
     if !exists {
-        tm.metrics.Errors++
+        tm.Metrics.Errors++
         return utils.NewStructuredDocumentError(utils.ErrDocumentNotFound,
             fmt.Sprintf("主题 %s 不存在", themeID))
     }
@@ -309,22 +309,25 @@ func (tm *ThemeManager) ApplyTheme(themeID string, content *types.DocumentConten
     if err := tm.applyColorScheme(theme.ColorScheme, content); err != nil {
         return err
     }
+    time.Sleep(time.Microsecond)
 
     // 应用字体方案
     if err := tm.applyFontScheme(theme.FontScheme, content); err != nil {
         return err
     }
+    time.Sleep(time.Microsecond)
 
     // 应用主题属性
     if err := tm.applyThemeProperties(theme, content); err != nil {
         return err
     }
+    time.Sleep(time.Microsecond)
 
-    tm.currentTheme = themeID
-    tm.metrics.ThemesApplied++
-    tm.metrics.ProcessingTime = time.Since(startTime)
+    tm.CurrentTheme = themeID
+    tm.Metrics.ThemesApplied++
+    tm.Metrics.ProcessingTime = time.Since(startTime)
 
-    tm.logger.Info(fmt.Sprintf("主题 %s 应用成功，耗时 %v", themeID, tm.metrics.ProcessingTime))
+    tm.Logger.Info(fmt.Sprintf("主题 %s 应用成功，耗时 %v", themeID, tm.Metrics.ProcessingTime))
 
     return nil
 }
@@ -333,7 +336,7 @@ func (tm *ThemeManager) ApplyTheme(themeID string, content *types.DocumentConten
 func (tm *ThemeManager) applyColorScheme(colorScheme *ThemeManagerColorScheme, content *types.DocumentContent) error {
     // 这里将实现颜色方案应用逻辑
     // 包括文本颜色、背景颜色、边框颜色等
-    tm.metrics.ColorSchemesUsed++
+    tm.Metrics.ColorSchemesUsed++
     return nil
 }
 
@@ -341,7 +344,7 @@ func (tm *ThemeManager) applyColorScheme(colorScheme *ThemeManagerColorScheme, c
 func (tm *ThemeManager) applyFontScheme(fontScheme *ThemeManagerFontScheme, content *types.DocumentContent) error {
     // 这里将实现字体方案应用逻辑
     // 包括标题字体、正文字体、代码字体等
-    tm.metrics.FontSchemesUsed++
+    tm.Metrics.FontSchemesUsed++
     return nil
 }
 
@@ -362,15 +365,15 @@ func (tm *ThemeManager) CreateTheme(name, description string) *ThemeManagerTheme
         Author:      "User",
         CreatedAt:   time.Now(),
         UpdatedAt:   time.Now(),
-        ColorScheme: tm.colorSchemes["default"],
-        FontScheme:  tm.fontSchemes["default"],
+        ColorScheme: tm.ColorSchemes["default"],
+        FontScheme:  tm.FontSchemes["default"],
         Properties:  make(map[string]interface{}),
         IsDefault:   false,
         IsCustom:    true,
     }
 
-    tm.themes[theme.ID] = theme
-    tm.logger.Info(fmt.Sprintf("创建新主题: %s", theme.ID))
+    tm.Themes[theme.ID] = theme
+    tm.Logger.Info(fmt.Sprintf("创建新主题: %s", theme.ID))
 
     return theme
 }
@@ -383,8 +386,8 @@ func generateThemeID(name string) string {
 
 // SwitchTheme 切换主题
 func (tm *ThemeManager) SwitchTheme(themeID string, content *types.DocumentContent) error {
-    if tm.currentTheme == themeID {
-        tm.logger.Info(fmt.Sprintf("主题 %s 已经是当前主题", themeID))
+    if tm.CurrentTheme == themeID {
+        tm.Logger.Info(fmt.Sprintf("主题 %s 已经是当前主题", themeID))
         return nil
     }
 
@@ -392,21 +395,21 @@ func (tm *ThemeManager) SwitchTheme(themeID string, content *types.DocumentConte
         return err
     }
 
-    tm.metrics.ThemeSwitches++
-    tm.logger.Info(fmt.Sprintf("主题切换成功: %s -> %s", tm.currentTheme, themeID))
+    tm.Metrics.ThemeSwitches++
+    tm.Logger.Info(fmt.Sprintf("主题切换成功: %s -> %s", tm.CurrentTheme, themeID))
 
     return nil
 }
 
 // GetCurrentTheme 获取当前主题
 func (tm *ThemeManager) GetCurrentTheme() *ThemeManagerTheme {
-    return tm.themes[tm.currentTheme]
+    return tm.Themes[tm.CurrentTheme]
 }
 
 // ListThemes 列出所有主题
 func (tm *ThemeManager) ListThemes() []*ThemeManagerTheme {
-    themes := make([]*ThemeManagerTheme, 0, len(tm.themes))
-    for _, theme := range tm.themes {
+    themes := make([]*ThemeManagerTheme, 0, len(tm.Themes))
+    for _, theme := range tm.Themes {
         themes = append(themes, theme)
     }
     return themes
@@ -414,7 +417,7 @@ func (tm *ThemeManager) ListThemes() []*ThemeManagerTheme {
 
 // GetTheme 获取指定主题
 func (tm *ThemeManager) GetTheme(themeID string) (*ThemeManagerTheme, error) {
-    theme, exists := tm.themes[themeID]
+    theme, exists := tm.Themes[themeID]
     if !exists {
         return nil, utils.NewStructuredDocumentError(utils.ErrDocumentNotFound,
             fmt.Sprintf("主题 %s 不存在", themeID))
@@ -429,13 +432,13 @@ func (tm *ThemeManager) DeleteTheme(themeID string) error {
             "不能删除默认主题")
     }
 
-    if tm.currentTheme == themeID {
+    if tm.CurrentTheme == themeID {
         return utils.NewStructuredDocumentError(utils.ErrPermissionDenied,
             "不能删除当前正在使用的主题")
     }
 
-    delete(tm.themes, themeID)
-    tm.logger.Info(fmt.Sprintf("删除主题: %s", themeID))
+    delete(tm.Themes, themeID)
+    tm.Logger.Info(fmt.Sprintf("删除主题: %s", themeID))
 
     return nil
 }
@@ -452,7 +455,7 @@ func (tm *ThemeManager) CreateColorScheme(name, description string) *ThemeManage
     }
 
     // 复制默认颜色方案
-    for colorType, color := range tm.colorSchemes["default"].Colors {
+    for colorType, color := range tm.ColorSchemes["default"].Colors {
         colorScheme.Colors[colorType] = &ThemeManagerColor{
             Type:      color.Type,
             Name:      color.Name,
@@ -465,8 +468,8 @@ func (tm *ThemeManager) CreateColorScheme(name, description string) *ThemeManage
         }
     }
 
-    tm.colorSchemes[colorScheme.ID] = colorScheme
-    tm.logger.Info(fmt.Sprintf("创建新颜色方案: %s", colorScheme.ID))
+    tm.ColorSchemes[colorScheme.ID] = colorScheme
+    tm.Logger.Info(fmt.Sprintf("创建新颜色方案: %s", colorScheme.ID))
 
     return colorScheme
 }
@@ -488,7 +491,7 @@ func (tm *ThemeManager) CreateFontScheme(name, description string) *ThemeManager
     }
 
     // 复制默认字体方案
-    for fontType, font := range tm.fontSchemes["default"].Fonts {
+    for fontType, font := range tm.FontSchemes["default"].Fonts {
         fontScheme.Fonts[fontType] = &ThemeManagerFontDefinition{
             Type:      font.Type,
             Name:      font.Name,
@@ -502,13 +505,13 @@ func (tm *ThemeManager) CreateFontScheme(name, description string) *ThemeManager
     }
 
     // 复制字体回退
-    for lang, fallbacks := range tm.fontSchemes["default"].Fallbacks {
+    for lang, fallbacks := range tm.FontSchemes["default"].Fallbacks {
         fontScheme.Fallbacks[lang] = make([]string, len(fallbacks))
         copy(fontScheme.Fallbacks[lang], fallbacks)
     }
 
-    tm.fontSchemes[fontScheme.ID] = fontScheme
-    tm.logger.Info(fmt.Sprintf("创建新字体方案: %s", fontScheme.ID))
+    tm.FontSchemes[fontScheme.ID] = fontScheme
+    tm.Logger.Info(fmt.Sprintf("创建新字体方案: %s", fontScheme.ID))
 
     return fontScheme
 }
@@ -520,10 +523,10 @@ func generateFontSchemeID(name string) string {
 
 // GetMetrics 获取性能指标
 func (tm *ThemeManager) GetMetrics() *ThemeMetrics {
-    return tm.metrics
+    return tm.Metrics
 }
 
 // SetLogger 设置日志器
 func (tm *ThemeManager) SetLogger(logger *utils.Logger) {
-    tm.logger = logger
+    tm.Logger = logger
 }

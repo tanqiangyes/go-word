@@ -17,16 +17,16 @@ import (
 
 // PluginSystem 插件系统
 type PluginSystem struct {
-    document    *Document
-    plugins     map[string]*Plugin
-    hooks       map[string][]PluginHook
-    registry    *PluginRegistry
-    config      *PluginConfig
-    logger      *utils.Logger
-    mu          sync.RWMutex
-    metrics     *PluginMetrics
-    isEnabled   bool
-    loadedPaths map[string]bool
+    Document    *Document
+    Plugins     map[string]*Plugin
+    Hooks       map[string][]PluginHook
+    Registry    *PluginRegistry
+    Config      *PluginConfig
+    Logger      *utils.Logger
+    Mu          sync.RWMutex
+    Metrics     *PluginMetrics
+    IsEnabled   bool
+    LoadedPaths map[string]bool
 }
 
 // Plugin 插件
@@ -108,10 +108,10 @@ type PluginInfo struct {
 
 // PluginRegistry 插件注册表
 type PluginRegistry struct {
-    plugins      map[string]*Plugin
-    categories   map[PluginType][]*Plugin
-    dependencies map[string][]string
-    mu           sync.RWMutex
+    Plugins      map[string]*Plugin
+    Categories   map[PluginType][]*Plugin
+    Dependencies map[string][]string
+    Mu           sync.RWMutex
 }
 
 // PluginConfig 插件配置
@@ -171,44 +171,44 @@ func NewPluginSystem(document *Document, config *PluginConfig) *PluginSystem {
     }
 
     return &PluginSystem{
-        document:    document,
-        plugins:     make(map[string]*Plugin),
-        hooks:       make(map[string][]PluginHook),
-        registry:    NewPluginRegistry(),
-        config:      config,
-        logger:      utils.NewLogger(utils.LogLevelInfo, os.Stdout),
-        metrics:     &PluginMetrics{},
-        isEnabled:   config.Enabled,
-        loadedPaths: make(map[string]bool),
+        Document:    document,
+        Plugins:     make(map[string]*Plugin),
+        Hooks:       make(map[string][]PluginHook),
+        Registry:    NewPluginRegistry(),
+        Config:      config,
+        Logger:      utils.NewLogger(utils.LogLevelInfo, os.Stdout),
+        Metrics:     &PluginMetrics{},
+        IsEnabled:   config.Enabled,
+        LoadedPaths: make(map[string]bool),
     }
 }
 
 // NewPluginRegistry 创建插件注册表
 func NewPluginRegistry() *PluginRegistry {
     return &PluginRegistry{
-        plugins:      make(map[string]*Plugin),
-        categories:   make(map[PluginType][]*Plugin),
-        dependencies: make(map[string][]string),
+        Plugins:      make(map[string]*Plugin),
+        Categories:   make(map[PluginType][]*Plugin),
+        Dependencies: make(map[string][]string),
     }
 }
 
 // LoadPlugin 加载插件
 func (ps *PluginSystem) LoadPlugin(ctx context.Context, pluginPath string) (*Plugin, error) {
-    ps.mu.Lock()
-    defer ps.mu.Unlock()
+    ps.Mu.Lock()
+    defer ps.Mu.Unlock()
 
-    if !ps.isEnabled {
+    if !ps.IsEnabled {
         return nil, fmt.Errorf("plugin system is disabled")
     }
 
     // 检查是否已加载
-    if ps.loadedPaths[pluginPath] {
+    if ps.LoadedPaths[pluginPath] {
         return nil, fmt.Errorf("plugin already loaded: %s", pluginPath)
     }
 
     // 检查插件数量限制
-    if len(ps.plugins) >= ps.config.MaxPlugins {
-        return nil, fmt.Errorf("maximum number of plugins (%d) exceeded", ps.config.MaxPlugins)
+    if len(ps.Plugins) >= ps.Config.MaxPlugins {
+        return nil, fmt.Errorf("maximum number of plugins (%d) exceeded", ps.Config.MaxPlugins)
     }
 
     startTime := time.Now()
@@ -216,28 +216,28 @@ func (ps *PluginSystem) LoadPlugin(ctx context.Context, pluginPath string) (*Plu
     // 加载插件文件
     p, err := plugin.Open(pluginPath)
     if err != nil {
-        ps.metrics.FailedPlugins++
+        ps.Metrics.FailedPlugins++
         return nil, fmt.Errorf("failed to open plugin: %w", err)
     }
 
     // 查找插件符号
     symbol, err := p.Lookup("Plugin")
     if err != nil {
-        ps.metrics.FailedPlugins++
+        ps.Metrics.FailedPlugins++
         return nil, fmt.Errorf("plugin symbol not found: %w", err)
     }
 
     // 类型断言
     pluginInterface, ok := symbol.(PluginInterface)
     if !ok {
-        ps.metrics.FailedPlugins++
+        ps.Metrics.FailedPlugins++
         return nil, fmt.Errorf("invalid plugin interface")
     }
 
     // 获取插件信息
     info := pluginInterface.GetInfo()
     if info == nil {
-        ps.metrics.FailedPlugins++
+        ps.Metrics.FailedPlugins++
         return nil, fmt.Errorf("plugin info is nil")
     }
 
@@ -247,7 +247,7 @@ func (ps *PluginSystem) LoadPlugin(ctx context.Context, pluginPath string) (*Plu
     }
 
     // 检查白名单
-    if len(ps.config.Whitelist) > 0 && !ps.isWhitelisted(info.ID) {
+    if len(ps.Config.Whitelist) > 0 && !ps.isWhitelisted(info.ID) {
         return nil, fmt.Errorf("plugin %s is not whitelisted", info.ID)
     }
 
@@ -272,14 +272,14 @@ func (ps *PluginSystem) LoadPlugin(ctx context.Context, pluginPath string) (*Plu
     // 初始化插件
     err = pluginInterface.Initialize(ctx, plugin.Config)
     if err != nil {
-        ps.metrics.FailedPlugins++
+        ps.Metrics.FailedPlugins++
         return nil, fmt.Errorf("failed to initialize plugin: %w", err)
     }
 
     // 注册插件
-    ps.plugins[plugin.ID] = plugin
-    ps.loadedPaths[pluginPath] = true
-    ps.registry.RegisterPlugin(plugin)
+    ps.Plugins[plugin.ID] = plugin
+    ps.LoadedPaths[pluginPath] = true
+    ps.Registry.RegisterPlugin(plugin)
 
     // 注册钩子
     for _, hookName := range plugin.Hooks {
@@ -292,17 +292,17 @@ func (ps *PluginSystem) LoadPlugin(ctx context.Context, pluginPath string) (*Plu
 
     plugin.Status = PluginStatusActive
 
-    ps.logger.Info("插件加载成功，插件ID: %s, 插件名称: %s, 版本: %s, 加载时间: %v, 钩子数: %d", plugin.ID, plugin.Name, plugin.Version, loadTime, len(plugin.Hooks))
+    ps.Logger.Info("插件加载成功，插件ID: %s, 插件名称: %s, 版本: %s, 加载时间: %v, 钩子数: %d", plugin.ID, plugin.Name, plugin.Version, loadTime, len(plugin.Hooks))
 
     return plugin, nil
 }
 
 // UnloadPlugin 卸载插件
 func (ps *PluginSystem) UnloadPlugin(ctx context.Context, pluginID string) error {
-    ps.mu.Lock()
-    defer ps.mu.Unlock()
+    ps.Mu.Lock()
+    defer ps.Mu.Unlock()
 
-    plugin, exists := ps.plugins[pluginID]
+    plugin, exists := ps.Plugins[pluginID]
     if !exists {
         return fmt.Errorf("plugin not found: %s", pluginID)
     }
@@ -311,7 +311,7 @@ func (ps *PluginSystem) UnloadPlugin(ctx context.Context, pluginID string) error
     if pluginInterface, ok := plugin.Instance.(PluginInterface); ok {
         err := pluginInterface.Cleanup(ctx)
         if err != nil {
-            ps.logger.Warning("插件清理失败，插件ID: %s, 错误: %s", pluginID, err.Error())
+            ps.Logger.Warning("插件清理失败，插件ID: %s, 错误: %s", pluginID, err.Error())
         }
     }
 
@@ -321,28 +321,28 @@ func (ps *PluginSystem) UnloadPlugin(ctx context.Context, pluginID string) error
     }
 
     // 从注册表移除
-    ps.registry.UnregisterPlugin(pluginID)
+    ps.Registry.UnregisterPlugin(pluginID)
 
     // 移除插件
-    delete(ps.plugins, pluginID)
-    delete(ps.loadedPaths, plugin.Path)
+    delete(ps.Plugins, pluginID)
+    delete(ps.LoadedPaths, plugin.Path)
 
     // 更新指标
-    ps.metrics.LoadedPlugins--
+    ps.Metrics.LoadedPlugins--
     if plugin.Status == PluginStatusActive {
-        ps.metrics.ActivePlugins--
+        ps.Metrics.ActivePlugins--
     }
 
-    ps.logger.Info("插件卸载成功，插件ID: %s, 插件名称: %s", pluginID, plugin.Name)
+    ps.Logger.Info("插件卸载成功，插件ID: %s, 插件名称: %s", pluginID, plugin.Name)
 
     return nil
 }
 
 // ExecuteHook 执行钩子
 func (ps *PluginSystem) ExecuteHook(ctx context.Context, hookName string, args map[string]interface{}) ([]*PluginResult, error) {
-    ps.mu.RLock()
-    hooks, exists := ps.hooks[hookName]
-    ps.mu.RUnlock()
+    ps.Mu.RLock()
+    hooks, exists := ps.Hooks[hookName]
+    ps.Mu.RUnlock()
 
     if !exists || len(hooks) == 0 {
         return nil, fmt.Errorf("no hooks registered for: %s", hookName)
@@ -367,8 +367,8 @@ func (ps *PluginSystem) ExecuteHook(ctx context.Context, hookName string, args m
 
         if err != nil {
             result.Error = err
-            ps.metrics.ErrorCount++
-            ps.logger.Error("钩子执行失败，钩子: %s, 错误: %s, 执行时间: %v", hookName, err.Error(), duration)
+            ps.Metrics.ErrorCount++
+            ps.Logger.Error("钩子执行失败，钩子: %s, 错误: %s, 执行时间: %v", hookName, err.Error(), duration)
         } else {
             result.Success = true
         }
@@ -376,11 +376,11 @@ func (ps *PluginSystem) ExecuteHook(ctx context.Context, hookName string, args m
         results = append(results, result)
 
         // 更新指标
-        ps.mu.Lock()
-        ps.metrics.HookExecutions++
-        ps.metrics.LastActivity = time.Now()
+        ps.Mu.Lock()
+        ps.Metrics.HookExecutions++
+        ps.Metrics.LastActivity = time.Now()
         ps.updateExecMetrics(duration)
-        ps.mu.Unlock()
+        ps.Mu.Unlock()
     }
 
     return results, nil
@@ -388,10 +388,10 @@ func (ps *PluginSystem) ExecuteHook(ctx context.Context, hookName string, args m
 
 // GetPlugin 获取插件
 func (ps *PluginSystem) GetPlugin(pluginID string) (*Plugin, error) {
-    ps.mu.RLock()
-    defer ps.mu.RUnlock()
+    ps.Mu.RLock()
+    defer ps.Mu.RUnlock()
 
-    plugin, exists := ps.plugins[pluginID]
+    plugin, exists := ps.Plugins[pluginID]
     if !exists {
         return nil, fmt.Errorf("plugin not found: %s", pluginID)
     }
@@ -401,11 +401,11 @@ func (ps *PluginSystem) GetPlugin(pluginID string) (*Plugin, error) {
 
 // ListPlugins 列出所有插件
 func (ps *PluginSystem) ListPlugins() []*Plugin {
-    ps.mu.RLock()
-    defer ps.mu.RUnlock()
+    ps.Mu.RLock()
+    defer ps.Mu.RUnlock()
 
-    plugins := make([]*Plugin, 0, len(ps.plugins))
-    for _, plugin := range ps.plugins {
+    plugins := make([]*Plugin, 0, len(ps.Plugins))
+    for _, plugin := range ps.Plugins {
         plugins = append(plugins, plugin)
     }
 
@@ -414,18 +414,18 @@ func (ps *PluginSystem) ListPlugins() []*Plugin {
 
 // ListPluginsByType 按类型列出插件
 func (ps *PluginSystem) ListPluginsByType(pluginType PluginType) []*Plugin {
-    ps.mu.RLock()
-    defer ps.mu.RUnlock()
+    ps.Mu.RLock()
+    defer ps.Mu.RUnlock()
 
-    return ps.registry.GetPluginsByType(pluginType)
+    return ps.Registry.GetPluginsByType(pluginType)
 }
 
 // EnablePlugin 启用插件
 func (ps *PluginSystem) EnablePlugin(pluginID string) error {
-    ps.mu.Lock()
-    defer ps.mu.Unlock()
+    ps.Mu.Lock()
+    defer ps.Mu.Unlock()
 
-    plugin, exists := ps.plugins[pluginID]
+    plugin, exists := ps.Plugins[pluginID]
     if !exists {
         return fmt.Errorf("plugin not found: %s", pluginID)
     }
@@ -438,20 +438,20 @@ func (ps *PluginSystem) EnablePlugin(pluginID string) error {
     plugin.Status = PluginStatusActive
 
     if oldStatus != PluginStatusActive {
-        ps.metrics.ActivePlugins++
+        ps.Metrics.ActivePlugins++
     }
 
-    ps.logger.Info("插件已启用，插件ID: %s, 旧状态: %s", pluginID, oldStatus)
+    ps.Logger.Info("插件已启用，插件ID: %s, 旧状态: %s", pluginID, oldStatus)
 
     return nil
 }
 
 // DisablePlugin 禁用插件
 func (ps *PluginSystem) DisablePlugin(pluginID string) error {
-    ps.mu.Lock()
-    defer ps.mu.Unlock()
+    ps.Mu.Lock()
+    defer ps.Mu.Unlock()
 
-    plugin, exists := ps.plugins[pluginID]
+    plugin, exists := ps.Plugins[pluginID]
     if !exists {
         return fmt.Errorf("plugin not found: %s", pluginID)
     }
@@ -464,17 +464,17 @@ func (ps *PluginSystem) DisablePlugin(pluginID string) error {
     plugin.Status = PluginStatusDisabled
 
     if oldStatus == PluginStatusActive {
-        ps.metrics.ActivePlugins--
+        ps.Metrics.ActivePlugins--
     }
 
-    ps.logger.Info("插件已禁用，插件ID: %s, 旧状态: %s", pluginID, oldStatus)
+    ps.Logger.Info("插件已禁用，插件ID: %s, 旧状态: %s", pluginID, oldStatus)
 
     return nil
 }
 
 // LoadPluginsFromDir 从目录加载插件
 func (ps *PluginSystem) LoadPluginsFromDir(ctx context.Context, dir string) error {
-    if !ps.config.AutoLoad {
+    if !ps.Config.AutoLoad {
         return fmt.Errorf("auto load is disabled")
     }
 
@@ -488,7 +488,7 @@ func (ps *PluginSystem) LoadPluginsFromDir(ctx context.Context, dir string) erro
         if !info.IsDir() && (strings.HasSuffix(path, ".so") || strings.HasSuffix(path, ".dll")) {
             _, err := ps.LoadPlugin(ctx, path)
             if err != nil {
-                ps.logger.Warning("插件加载失败，路径: %s, 错误: %s", path, err.Error())
+                ps.Logger.Warning("插件加载失败，路径: %s, 错误: %s", path, err.Error())
             }
         }
 
@@ -499,23 +499,23 @@ func (ps *PluginSystem) LoadPluginsFromDir(ctx context.Context, dir string) erro
         return fmt.Errorf("failed to load plugins from directory: %w", err)
     }
 
-    ps.logger.Info("目录插件加载完成，目录: %s, 已加载: %d", dir, len(ps.plugins))
+    ps.Logger.Info("目录插件加载完成，目录: %s, 已加载: %d", dir, len(ps.Plugins))
 
     return nil
 }
 
 // GetMetrics 获取指标
 func (ps *PluginSystem) GetMetrics() *PluginMetrics {
-    ps.mu.RLock()
-    defer ps.mu.RUnlock()
+    ps.Mu.RLock()
+    defer ps.Mu.RUnlock()
 
-    return ps.metrics
+    return ps.Metrics
 }
 
 // ExportPluginConfig 导出插件配置
 func (ps *PluginSystem) ExportPluginConfig() ([]byte, error) {
-    ps.mu.RLock()
-    defer ps.mu.RUnlock()
+    ps.Mu.RLock()
+    defer ps.Mu.RUnlock()
 
     type PluginExport struct {
         Plugins []*Plugin      `json:"plugins"`
@@ -525,8 +525,8 @@ func (ps *PluginSystem) ExportPluginConfig() ([]byte, error) {
 
     export := &PluginExport{
         Plugins: ps.ListPlugins(),
-        Config:  ps.config,
-        Metrics: ps.metrics,
+        Config:  ps.Config,
+        Metrics: ps.Metrics,
     }
 
     data, err := json.MarshalIndent(export, "", "  ")
@@ -541,51 +541,51 @@ func (ps *PluginSystem) ExportPluginConfig() ([]byte, error) {
 
 // RegisterPlugin 注册插件
 func (pr *PluginRegistry) RegisterPlugin(plugin *Plugin) {
-    pr.mu.Lock()
-    defer pr.mu.Unlock()
+    pr.Mu.Lock()
+    defer pr.Mu.Unlock()
 
-    pr.plugins[plugin.ID] = plugin
+    pr.Plugins[plugin.ID] = plugin
 
     // 按类型分类
-    if pr.categories[plugin.Type] == nil {
-        pr.categories[plugin.Type] = make([]*Plugin, 0)
+    if pr.Categories[plugin.Type] == nil {
+        pr.Categories[plugin.Type] = make([]*Plugin, 0)
     }
-    pr.categories[plugin.Type] = append(pr.categories[plugin.Type], plugin)
+    pr.Categories[plugin.Type] = append(pr.Categories[plugin.Type], plugin)
 
     // 记录依赖关系
-    pr.dependencies[plugin.ID] = plugin.Dependencies
+    pr.Dependencies[plugin.ID] = plugin.Dependencies
 }
 
 // UnregisterPlugin 注销插件
 func (pr *PluginRegistry) UnregisterPlugin(pluginID string) {
-    pr.mu.Lock()
-    defer pr.mu.Unlock()
+    pr.Mu.Lock()
+    defer pr.Mu.Unlock()
 
-    plugin, exists := pr.plugins[pluginID]
+    plugin, exists := pr.Plugins[pluginID]
     if !exists {
         return
     }
 
     // 从分类中移除
-    category := pr.categories[plugin.Type]
+    category := pr.Categories[plugin.Type]
     for i, p := range category {
         if p.ID == pluginID {
-            pr.categories[plugin.Type] = append(category[:i], category[i+1:]...)
+            pr.Categories[plugin.Type] = append(category[:i], category[i+1:]...)
             break
         }
     }
 
     // 移除插件和依赖
-    delete(pr.plugins, pluginID)
-    delete(pr.dependencies, pluginID)
+    delete(pr.Plugins, pluginID)
+    delete(pr.Dependencies, pluginID)
 }
 
 // GetPluginsByType 按类型获取插件
 func (pr *PluginRegistry) GetPluginsByType(pluginType PluginType) []*Plugin {
-    pr.mu.RLock()
-    defer pr.mu.RUnlock()
+    pr.Mu.RLock()
+    defer pr.Mu.RUnlock()
 
-    return pr.categories[pluginType]
+    return pr.Categories[pluginType]
 }
 
 // 辅助方法
@@ -593,19 +593,19 @@ func (pr *PluginRegistry) GetPluginsByType(pluginType PluginType) []*Plugin {
 // registerHook 注册钩子
 func (ps *PluginSystem) registerHook(hookName string, pluginInterface interface{}) {
     if hook, ok := pluginInterface.(PluginHook); ok {
-        if ps.hooks[hookName] == nil {
-            ps.hooks[hookName] = make([]PluginHook, 0)
+        if ps.Hooks[hookName] == nil {
+            ps.Hooks[hookName] = make([]PluginHook, 0)
         }
-        ps.hooks[hookName] = append(ps.hooks[hookName], hook)
+        ps.Hooks[hookName] = append(ps.Hooks[hookName], hook)
     }
 }
 
 // unregisterHook 注销钩子
 func (ps *PluginSystem) unregisterHook(hookName string, pluginInterface interface{}) {
-    hooks := ps.hooks[hookName]
+    hooks := ps.Hooks[hookName]
     for i, hook := range hooks {
         if reflect.DeepEqual(hook, pluginInterface) {
-            ps.hooks[hookName] = append(hooks[:i], hooks[i+1:]...)
+            ps.Hooks[hookName] = append(hooks[:i], hooks[i+1:]...)
             break
         }
     }
@@ -637,7 +637,7 @@ func (ps *PluginSystem) detectPluginType(info *PluginInfo) PluginType {
 
 // isBlacklisted 检查是否在黑名单中
 func (ps *PluginSystem) isBlacklisted(pluginID string) bool {
-    for _, blacklisted := range ps.config.Blacklist {
+    for _, blacklisted := range ps.Config.Blacklist {
         if pluginID == blacklisted {
             return true
         }
@@ -647,7 +647,7 @@ func (ps *PluginSystem) isBlacklisted(pluginID string) bool {
 
 // isWhitelisted 检查是否在白名单中
 func (ps *PluginSystem) isWhitelisted(pluginID string) bool {
-    for _, whitelisted := range ps.config.Whitelist {
+    for _, whitelisted := range ps.Config.Whitelist {
         if pluginID == whitelisted {
             return true
         }
@@ -657,27 +657,27 @@ func (ps *PluginSystem) isWhitelisted(pluginID string) bool {
 
 // updateLoadMetrics 更新加载指标
 func (ps *PluginSystem) updateLoadMetrics(loadTime time.Duration) {
-    ps.metrics.TotalPlugins++
-    ps.metrics.LoadedPlugins++
-    ps.metrics.ActivePlugins++
+    ps.Metrics.TotalPlugins++
+    ps.Metrics.LoadedPlugins++
+    ps.Metrics.ActivePlugins++
 
-    if ps.metrics.TotalPlugins > 0 {
-        ps.metrics.AverageLoadTime = time.Duration(
-            (int64(ps.metrics.AverageLoadTime)*int64(ps.metrics.TotalPlugins-1) + int64(loadTime)) / int64(ps.metrics.TotalPlugins),
+    if ps.Metrics.TotalPlugins > 0 {
+        ps.Metrics.AverageLoadTime = time.Duration(
+            (int64(ps.Metrics.AverageLoadTime)*int64(ps.Metrics.TotalPlugins-1) + int64(loadTime)) / int64(ps.Metrics.TotalPlugins),
         )
     } else {
-        ps.metrics.AverageLoadTime = loadTime
+        ps.Metrics.AverageLoadTime = loadTime
     }
 }
 
 // updateExecMetrics 更新执行指标
 func (ps *PluginSystem) updateExecMetrics(execTime time.Duration) {
-    if ps.metrics.HookExecutions > 0 {
-        ps.metrics.AverageExecTime = time.Duration(
-            (int64(ps.metrics.AverageExecTime)*int64(ps.metrics.HookExecutions-1) + int64(execTime)) / int64(ps.metrics.HookExecutions),
+    if ps.Metrics.HookExecutions > 0 {
+        ps.Metrics.AverageExecTime = time.Duration(
+            (int64(ps.Metrics.AverageExecTime)*int64(ps.Metrics.HookExecutions-1) + int64(execTime)) / int64(ps.Metrics.HookExecutions),
         )
     } else {
-        ps.metrics.AverageExecTime = execTime
+        ps.Metrics.AverageExecTime = execTime
     }
 }
 

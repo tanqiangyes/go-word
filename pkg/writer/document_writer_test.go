@@ -31,7 +31,7 @@ func TestDocumentWriterAddParagraph(t *testing.T) {
 	}
 
 	// 验证段落已添加
-	mainPart := writer.document.GetMainPart()
+	mainPart := writer.Document.GetMainPart()
 	if len(mainPart.Content.Paragraphs) != 1 {
 		t.Errorf("Expected 1 paragraph, got %d", len(mainPart.Content.Paragraphs))
 	}
@@ -67,7 +67,7 @@ func TestDocumentWriterAddTable(t *testing.T) {
 	}
 
 	// 验证表格已添加
-	mainPart := writer.document.GetMainPart()
+	mainPart := writer.Document.GetMainPart()
 	if len(mainPart.Content.Tables) != 1 {
 		t.Errorf("Expected 1 table, got %d", len(mainPart.Content.Tables))
 	}
@@ -108,7 +108,7 @@ func TestDocumentWriterAddFormattedParagraph(t *testing.T) {
 	}
 
 	// 验证格式化段落已添加
-	mainPart := writer.document.GetMainPart()
+	mainPart := writer.Document.GetMainPart()
 	if len(mainPart.Content.Paragraphs) != 1 {
 		t.Errorf("Expected 1 paragraph, got %d", len(mainPart.Content.Paragraphs))
 	}
@@ -153,7 +153,7 @@ func TestDocumentWriterReplaceText(t *testing.T) {
 	}
 
 	// 验证文本已替换
-	mainPart := writer.document.GetMainPart()
+	mainPart := writer.Document.GetMainPart()
 	if mainPart.Content.Paragraphs[0].Text != "Modified text" {
 		t.Errorf("Expected 'Modified text', got '%s'", mainPart.Content.Paragraphs[0].Text)
 	}
@@ -208,7 +208,7 @@ func TestDocumentWriterSetParagraphStyle(t *testing.T) {
 	}
 
 	// 验证样式已设置
-	mainPart := writer.document.GetMainPart()
+	mainPart := writer.Document.GetMainPart()
 	if mainPart.Content.Paragraphs[0].Style != "Heading1" {
 		t.Errorf("Expected style 'Heading1', got '%s'", mainPart.Content.Paragraphs[0].Style)
 	}
@@ -257,7 +257,7 @@ func TestDocumentWriterSetRunFormatting(t *testing.T) {
 	}
 
 	// 验证格式已设置
-	mainPart := writer.document.GetMainPart()
+	mainPart := writer.Document.GetMainPart()
 	run := mainPart.Content.Paragraphs[0].Runs[0]
 	if !run.Bold {
 		t.Error("Expected Bold to be true")
@@ -328,7 +328,7 @@ func TestDocumentWriterMultipleParagraphs(t *testing.T) {
 	writer.AddParagraph("Third paragraph", "Normal")
 
 	// 验证所有段落都已添加
-	mainPart := writer.document.GetMainPart()
+	mainPart := writer.Document.GetMainPart()
 	if len(mainPart.Content.Paragraphs) != 3 {
 		t.Errorf("Expected 3 paragraphs, got %d", len(mainPart.Content.Paragraphs))
 	}
@@ -354,7 +354,7 @@ func TestDocumentWriterMultipleTables(t *testing.T) {
 	writer.AddTable(table2)
 
 	// 验证所有表格都已添加
-	mainPart := writer.document.GetMainPart()
+	mainPart := writer.Document.GetMainPart()
 	if len(mainPart.Content.Tables) != 2 {
 		t.Errorf("Expected 2 tables, got %d", len(mainPart.Content.Tables))
 	}
@@ -419,4 +419,4 @@ func TestDocumentWriterGenerateDocumentRels(t *testing.T) {
 	if len(documentRelsXML) == 0 {
 		t.Error("Expected Document Rels XML to not be empty")
 	}
-} 
+}

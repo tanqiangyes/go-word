@@ -3,6 +3,7 @@ package tests
 import (
 	"testing"
 
+	"github.com/tanqiangyes/go-word/pkg/types"
 	"github.com/tanqiangyes/go-word/pkg/utils"
 	"github.com/tanqiangyes/go-word/pkg/word"
 )
@@ -18,7 +19,7 @@ func TestDocumentBuilder(t *testing.T) {
 		WithDefaultFont("Microsoft YaHei", 12).
 		WithMargins(72, 72, 72, 72).
 		WithPageSize(595, 842, "portrait").
-		WithProtection(word.ReadOnlyProtection, "password123").
+		WithProtection(types.ProtectionTypeReadOnly, "password123").
 		WithValidation(true, false, false).
 		Build()
 

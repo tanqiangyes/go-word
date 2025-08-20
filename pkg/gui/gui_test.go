@@ -11,19 +11,19 @@ func TestNewGUI(t *testing.T) {
 		t.Fatal("GUI实例创建失败")
 	}
 	
-	if gui.app == nil {
+	if gui.App == nil {
 		t.Error("GUI应用未初始化")
 	}
 	
-	if gui.mainWindow == nil {
+	if gui.MainWindow == nil {
 		t.Error("主窗口未初始化")
 	}
 	
-	if gui.textArea == nil {
+	if gui.TextArea == nil {
 		t.Error("文本区域未初始化")
 	}
 	
-	if gui.statusBar == nil {
+	if gui.StatusBar == nil {
 		t.Error("状态栏未初始化")
 	}
 }
@@ -34,22 +34,22 @@ func TestGUIMethods(t *testing.T) {
 	
 	// 测试新建文档
 	gui.newDocument()
-	if gui.document != nil {
-		t.Error("新建文档后，document应该为nil")
+	if gui.Document != nil {
+		t.Error("新建文档后，Document应该为nil")
 	}
 	
-	if gui.documentPath != "" {
-		t.Error("新建文档后，documentPath应该为空")
+	if gui.DocumentPath != "" {
+		t.Error("新建文档后，DocumentPath应该为空")
 	}
 	
-	if gui.textArea.Text != "" {
+	if gui.TextArea.Text != "" {
 		t.Error("新建文档后，文本区域应该为空")
 	}
 	
 	// 测试状态栏更新
 	expectedStatus := "新建文档"
-	if gui.statusBar.Text != expectedStatus {
-		t.Errorf("状态栏文本不匹配，期望: %s, 实际: %s", expectedStatus, gui.statusBar.Text)
+	if gui.StatusBar.Text != expectedStatus {
+		t.Errorf("状态栏文本不匹配，期望: %s, 实际: %s", expectedStatus, gui.StatusBar.Text)
 	}
 }
 

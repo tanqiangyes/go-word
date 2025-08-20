@@ -11,12 +11,12 @@ import (
 
 // ImageProcessor 图片处理器
 type ImageProcessor struct {
-    images  map[string]*ImageProcessorImage
-    effects map[string]*ImageProcessorEffect
-    formats map[string]*ImageProcessorFormat
-    mu      sync.RWMutex
-    logger  *utils.Logger
-    config  *ImageProcessorConfig
+    Images  map[string]*ImageProcessorImage // 图片集合
+    Effects map[string]*ImageProcessorEffect // 效果集合
+    Formats map[string]*ImageProcessorFormat // 格式集合
+    Mu      sync.RWMutex                     // 读写锁
+    Logger  utils.Logger                     // 日志记录器
+    Config  *ImageProcessorConfig            // 配置
 }
 
 // ImageProcessorImage 图片
@@ -129,26 +129,13 @@ type ImageProcessorWrapping string
 type ImageProcessorEffectType string
 
 // NewImageProcessor 创建新的图片处理器
-func NewImageProcessor(config *ImageProcessorConfig) *ImageProcessor {
-    if config == nil {
-        config = &ImageProcessorConfig{
-            MaxImages:        1000,
-            MaxImageSize:     50 * 1024 * 1024, // 50MB
-            SupportedFormats: []string{"jpeg", "png", "gif", "bmp", "tiff", "webp"},
-            DefaultQuality:   85,
-            AutoCompression:  true,
-            CacheEnabled:     true,
-            CacheSize:        100,
-            TempDirectory:    "/tmp",
-        }
-    }
-
+func NewImageProcessor(logger utils.Logger, config *ImageProcessorConfig) *ImageProcessor {
     ip := &ImageProcessor{
-        images:  make(map[string]*ImageProcessorImage),
-        effects: make(map[string]*ImageProcessorEffect),
-        formats: make(map[string]*ImageProcessorFormat),
-        config:  config,
-        logger:  utils.NewLogger(utils.LogLevelInfo, nil),
+        Images:  make(map[string]*ImageProcessorImage),
+        Effects: make(map[string]*ImageProcessorEffect),
+        Formats: make(map[string]*ImageProcessorFormat),
+        Logger:  logger,
+        Config:  config,
     }
 
     // 初始化支持的格式
@@ -159,8 +146,8 @@ func NewImageProcessor(config *ImageProcessorConfig) *ImageProcessor {
 
 // LoadImage 加载图片
 func (ip *ImageProcessor) LoadImage(ctx context.Context, path string) (*ImageProcessorImage, error) {
-    ip.mu.Lock()
-    defer ip.mu.Unlock()
+	ip.Mu.Lock()
+	defer ip.Mu.Unlock()
 
     // 检查文件是否存在
     if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -173,7 +160,7 @@ func (ip *ImageProcessor) LoadImage(ctx context.Context, path string) (*ImagePro
         return nil, utils.NewStructuredDocumentError(utils.ErrFilePermission, fmt.Sprintf("无法访问文件: %s", path))
     }
 
-    if fileInfo.Size() > ip.config.MaxImageSize {
+    if fileInfo.Size() > ip.Config.MaxImageSize {
         return nil, utils.NewStructuredDocumentError(utils.ErrFileTooLarge, fmt.Sprintf("图片文件过大: %d bytes", fileInfo.Size()))
     }
 
@@ -216,19 +203,19 @@ func (ip *ImageProcessor) LoadImage(ctx context.Context, path string) (*ImagePro
     }
 
     // 存储图片
-    ip.images[image.ID] = image
+    ip.Images[image.ID] = image
 
-    ip.logger.Info("图片已加载，图片ID: %s, 路径: %s, 格式: %s, 尺寸: %v", image.ID, path, format, size)
+	ip.Logger.Info("图片已加载，图片ID: %s, 路径: %s, 格式: %s, 尺寸: %v", image.ID, path, format, size)
 
     return image, nil
 }
 
 // InsertImage 插入图片
 func (ip *ImageProcessor) InsertImage(ctx context.Context, imageID string, position *ImageProcessorPosition) error {
-    ip.mu.Lock()
-    defer ip.mu.Unlock()
+	ip.Mu.Lock()
+	defer ip.Mu.Unlock()
 
-    image, exists := ip.images[imageID]
+	image, exists := ip.Images[imageID]
     if !exists {
         return utils.NewStructuredDocumentError(utils.ErrDocumentNotFound, "图片不存在")
     }
@@ -240,17 +227,17 @@ func (ip *ImageProcessor) InsertImage(ctx context.Context, imageID string, posit
 
     image.UpdatedAt = utils.GetCurrentTimestamp()
 
-    ip.logger.Info("图片已插入，图片ID: %s, 位置: %v", imageID, position)
+    ip.Logger.Info("图片已插入，图片ID: %s, 位置: %v", imageID, position)
 
     return nil
 }
 
-// ResizeImage 调整图片大小
+// ResizeImage 调整图片尺寸
 func (ip *ImageProcessor) ResizeImage(ctx context.Context, imageID string, size *ImageProcessorSize) error {
-    ip.mu.Lock()
-    defer ip.mu.Unlock()
+	ip.Mu.Lock()
+	defer ip.Mu.Unlock()
 
-    image, exists := ip.images[imageID]
+	image, exists := ip.Images[imageID]
     if !exists {
         return utils.NewStructuredDocumentError(utils.ErrDocumentNotFound, "图片不存在")
     }
@@ -262,17 +249,17 @@ func (ip *ImageProcessor) ResizeImage(ctx context.Context, imageID string, size 
 
     image.UpdatedAt = utils.GetCurrentTimestamp()
 
-    ip.logger.Info("图片尺寸已调整，图片ID: %s, 尺寸: %v", imageID, size)
+    ip.Logger.Info("图片尺寸已调整，图片ID: %s, 尺寸: %v", imageID, size)
 
     return nil
 }
 
 // MoveImage 移动图片
 func (ip *ImageProcessor) MoveImage(ctx context.Context, imageID string, x, y float64) error {
-    ip.mu.Lock()
-    defer ip.mu.Unlock()
+	ip.Mu.Lock()
+	defer ip.Mu.Unlock()
 
-    image, exists := ip.images[imageID]
+	image, exists := ip.Images[imageID]
     if !exists {
         return utils.NewStructuredDocumentError(utils.ErrDocumentNotFound, "图片不存在")
     }
@@ -282,17 +269,17 @@ func (ip *ImageProcessor) MoveImage(ctx context.Context, imageID string, x, y fl
     image.Position.Y = y
     image.UpdatedAt = utils.GetCurrentTimestamp()
 
-    ip.logger.Info("图片已移动，图片ID: %s, X: %f, Y: %f", imageID, x, y)
+    ip.Logger.Info("图片已移动，图片ID: %s, X: %f, Y: %f", imageID, x, y)
 
     return nil
 }
 
 // ApplyEffect 应用效果
 func (ip *ImageProcessor) ApplyEffect(ctx context.Context, imageID string, effect *ImageProcessorEffect) error {
-    ip.mu.Lock()
-    defer ip.mu.Unlock()
+    ip.Mu.Lock()
+    defer ip.Mu.Unlock()
 
-    image, exists := ip.images[imageID]
+    image, exists := ip.Images[imageID]
     if !exists {
         return utils.NewStructuredDocumentError(utils.ErrDocumentNotFound, "图片不存在")
     }
@@ -307,19 +294,19 @@ func (ip *ImageProcessor) ApplyEffect(ctx context.Context, imageID string, effec
     image.UpdatedAt = utils.GetCurrentTimestamp()
 
     // 存储效果
-    ip.effects[effect.ID] = effect
+    ip.Effects[effect.ID] = effect
 
-    ip.logger.Info("效果已应用，图片ID: %s, 效果ID: %s, 效果类型: %s, 强度: %f", imageID, effect.ID, effect.Type, effect.Intensity)
+    ip.Logger.Info("效果已应用，图片ID: %s, 效果ID: %s, 效果类型: %s, 强度: %f", imageID, effect.ID, effect.Type, effect.Intensity)
 
     return nil
 }
 
 // RemoveEffect 移除效果
 func (ip *ImageProcessor) RemoveEffect(ctx context.Context, imageID string, effectID string) error {
-    ip.mu.Lock()
-    defer ip.mu.Unlock()
+    ip.Mu.Lock()
+    defer ip.Mu.Unlock()
 
-    image, exists := ip.images[imageID]
+    image, exists := ip.Images[imageID]
     if !exists {
         return utils.NewStructuredDocumentError(utils.ErrDocumentNotFound, "图片不存在")
     }
@@ -328,10 +315,10 @@ func (ip *ImageProcessor) RemoveEffect(ctx context.Context, imageID string, effe
     for i, effect := range image.Effects {
         if effect.ID == effectID {
             image.Effects = append(image.Effects[:i], image.Effects[i+1:]...)
-            delete(ip.effects, effectID)
+            delete(ip.Effects, effectID)
             image.UpdatedAt = utils.GetCurrentTimestamp()
 
-            ip.logger.Info("效果已移除，图片ID: %s, 效果ID: %s", imageID, effectID)
+            ip.Logger.Info("效果已移除，图片ID: %s, 效果ID: %s", imageID, effectID)
 
             return nil
         }
@@ -342,10 +329,10 @@ func (ip *ImageProcessor) RemoveEffect(ctx context.Context, imageID string, effe
 
 // ConvertFormat 转换格式
 func (ip *ImageProcessor) ConvertFormat(ctx context.Context, imageID string, targetFormat ImageProcessorImageFormat, quality int) error {
-    ip.mu.Lock()
-    defer ip.mu.Unlock()
+    ip.Mu.Lock()
+    defer ip.Mu.Unlock()
 
-    image, exists := ip.images[imageID]
+    image, exists := ip.Images[imageID]
     if !exists {
         return utils.NewStructuredDocumentError(utils.ErrDocumentNotFound, "图片不存在")
     }
@@ -366,17 +353,17 @@ func (ip *ImageProcessor) ConvertFormat(ctx context.Context, imageID string, tar
     image.Format = targetFormat
     image.UpdatedAt = utils.GetCurrentTimestamp()
 
-    ip.logger.Info("图片格式已转换，图片ID: %s, 旧格式: %s, 新格式: %s, 质量: %d", imageID, image.Format, targetFormat, quality)
+    ip.Logger.Info("图片格式已转换，图片ID: %s, 旧格式: %s, 新格式: %s, 质量: %d", imageID, image.Format, targetFormat, quality)
 
     return nil
 }
 
 // GetImage 获取图片
 func (ip *ImageProcessor) GetImage(imageID string) (*ImageProcessorImage, error) {
-    ip.mu.RLock()
-    defer ip.mu.RUnlock()
+    ip.Mu.RLock()
+    defer ip.Mu.RUnlock()
 
-    image, exists := ip.images[imageID]
+    image, exists := ip.Images[imageID]
     if !exists {
         return nil, utils.NewStructuredDocumentError(utils.ErrDocumentNotFound, "图片不存在")
     }
@@ -402,48 +389,48 @@ func (ip *ImageProcessor) GetImageThumbnail(ctx context.Context, imageID string,
 
 // DeleteImage 删除图片
 func (ip *ImageProcessor) DeleteImage(ctx context.Context, imageID string) error {
-    ip.mu.Lock()
-    defer ip.mu.Unlock()
+    ip.Mu.Lock()
+    defer ip.Mu.Unlock()
 
-    image, exists := ip.images[imageID]
+    image, exists := ip.Images[imageID]
     if !exists {
         return utils.NewStructuredDocumentError(utils.ErrDocumentNotFound, "图片不存在")
     }
 
     // 删除图片
-    delete(ip.images, imageID)
+    delete(ip.Images, imageID)
 
     // 删除相关效果
     for _, effect := range image.Effects {
-        delete(ip.effects, effect.ID)
+        delete(ip.Effects, effect.ID)
     }
 
-    ip.logger.Info("图片已删除，图片ID: %s, 路径: %s", imageID, image.Path)
+    ip.Logger.Info("图片已删除，图片ID: %s, 路径: %s", imageID, image.Path)
 
     return nil
 }
 
 // GetStats 获取统计信息
 func (ip *ImageProcessor) GetStats() map[string]interface{} {
-    ip.mu.RLock()
-    defer ip.mu.RUnlock()
+    ip.Mu.RLock()
+    defer ip.Mu.RUnlock()
 
     stats := map[string]interface{}{
-        "total_images":      len(ip.images),
-        "total_effects":     len(ip.effects),
-        "supported_formats": ip.config.SupportedFormats,
+        "total_images":      len(ip.Images),
+        "total_effects":     len(ip.Effects),
+        "supported_formats": ip.Config.SupportedFormats,
     }
 
     // 按格式统计
     formatCount := make(map[ImageProcessorImageFormat]int)
-    for _, image := range ip.images {
+    for _, image := range ip.Images {
         formatCount[image.Format]++
     }
     stats["format_count"] = formatCount
 
     // 按效果类型统计
     effectTypeCount := make(map[ImageProcessorEffectType]int)
-    for _, effect := range ip.effects {
+    for _, effect := range ip.Effects {
         effectTypeCount[effect.Type]++
     }
     stats["effect_type_count"] = effectTypeCount
@@ -465,7 +452,7 @@ func (ip *ImageProcessor) initializeFormats() {
     }
 
     for key, format := range formats {
-        ip.formats[key] = format
+        ip.Formats[key] = format
     }
 }
 
@@ -514,7 +501,7 @@ func (ip *ImageProcessor) getImageSize(data []byte, format ImageProcessorImageFo
 
 // isFormatSupported 检查格式是否支持
 func (ip *ImageProcessor) isFormatSupported(format string) bool {
-    for _, supported := range ip.config.SupportedFormats {
+    for _, supported := range ip.Config.SupportedFormats {
         if supported == format {
             return true
         }

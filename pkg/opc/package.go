@@ -14,10 +14,10 @@ import (
 
 // Container represents an OPC container (ZIP-based package)
 type Container struct {
-	reader *zip.ReadCloser
-	writer *zip.Writer
-	buffer *bytes.Buffer
-	parts  map[string]*Part
+	Reader *zip.ReadCloser
+	Writer *zip.Writer
+	Buffer *bytes.Buffer
+	Parts  map[string]*Part
 }
 
 // Part represents a part within the OPC container
@@ -37,7 +37,7 @@ type Relationship struct {
 // New creates a new empty OPC container
 func New() (*Container, error) {
 	return &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}, nil
 }
 
@@ -49,8 +49,8 @@ func Open(filename string) (*Container, error) {
 	}
 	
 	return &Container{
-		reader: reader,
-		parts:  make(map[string]*Part),
+		Reader: reader,
+		Parts:  make(map[string]*Part),
 	}, nil
 }
 
@@ -67,28 +67,28 @@ func OpenFromReader(r io.Reader) (*Container, error) {
 	}
 	
 	return &Container{
-		reader: &zip.ReadCloser{
+		Reader: &zip.ReadCloser{
 			Reader: *reader,
 		},
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}, nil
 }
 
 // Close closes the container and releases resources
 func (c *Container) Close() error {
-	if c.reader != nil {
-		return c.reader.Close()
+	if c.Reader != nil {
+		return c.Reader.Close()
 	}
 	return nil
 }
 
 // GetPart retrieves a part by name
 func (c *Container) GetPart(name string) (*Part, error) {
-	if c.reader == nil {
+	if c.Reader == nil {
 		return nil, fmt.Errorf("container not opened for reading")
 	}
 	
-	for _, file := range c.reader.File {
+	for _, file := range c.Reader.File {
 		if file.Name == name {
 			rc, err := file.Open()
 			if err != nil {
@@ -114,12 +114,12 @@ func (c *Container) GetPart(name string) (*Part, error) {
 
 // ListParts returns all parts in the container
 func (c *Container) ListParts() ([]string, error) {
-	if c.reader == nil {
+	if c.Reader == nil {
 		return nil, fmt.Errorf("container not opened for reading")
 	}
 	
 	var parts []string
-	for _, file := range c.reader.File {
+	for _, file := range c.Reader.File {
 		parts = append(parts, file.Name)
 	}
 	
@@ -174,11 +174,11 @@ func parseRelationships(content []byte) ([]Relationship, error) {
 
 // AddPart adds a part to the container
 func (c *Container) AddPart(name string, content []byte, contentType string) {
-	if c.parts == nil {
-		c.parts = make(map[string]*Part)
+	if c.Parts == nil {
+		c.Parts = make(map[string]*Part)
 	}
 	
-	c.parts[name] = &Part{
+	c.Parts[name] = &Part{
 		Name:        name,
 		Content:     content,
 		ContentType: contentType,
@@ -187,7 +187,7 @@ func (c *Container) AddPart(name string, content []byte, contentType string) {
 
 // SaveToFile saves the container to a file
 func (c *Container) SaveToFile(filename string) error {
-	if c.parts == nil || len(c.parts) == 0 {
+	if c.Parts == nil || len(c.Parts) == 0 {
 		return fmt.Errorf("no parts to save")
 	}
 
@@ -200,7 +200,7 @@ func (c *Container) SaveToFile(filename string) error {
 	writer := zip.NewWriter(file)
 	defer writer.Close()
 
-	for name, part := range c.parts {
+	for name, part := range c.Parts {
 		zipFile, err := writer.Create(name)
 		if err != nil {
 			return fmt.Errorf("failed to create zip entry %s: %w", name, err)
@@ -213,4 +213,4 @@ func (c *Container) SaveToFile(filename string) error {
 	}
 
 	return nil
-} 
+}

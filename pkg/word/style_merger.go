@@ -10,21 +10,21 @@ import (
 
 // StyleMerger represents a style merger
 type StyleMerger struct {
-    logger *utils.Logger
-    styles map[string]*types.Style
+    Logger *utils.Logger
+    Styles map[string]*types.Style
 }
 
 // NewStyleMerger creates a new style merger
 func NewStyleMerger() *StyleMerger {
     return &StyleMerger{
-        logger: utils.NewLogger(utils.LogLevelInfo, nil),
-        styles: make(map[string]*types.Style),
+        Logger: utils.NewLogger(utils.LogLevelInfo, nil),
+        Styles: make(map[string]*types.Style),
     }
 }
 
 // MergeStyles 合并样式
 func (sm *StyleMerger) MergeStyles(conflict *types.StyleConflict) error {
-    sm.logger.Info("开始合并样式，样式ID: %s, 冲突类型: %s, 优先级: %d", conflict.StyleID, conflict.Type, conflict.Priority)
+    sm.Logger.Info("开始合并样式，样式ID: %s, 冲突类型: %s, 优先级: %d", conflict.StyleID, conflict.Type, conflict.Priority)
 
     // 获取冲突的样式
     originalStyle := conflict.OriginalStyle
@@ -54,7 +54,7 @@ func (sm *StyleMerger) MergeStyles(conflict *types.StyleConflict) error {
 
 // mergePropertyConflicts 合并属性冲突
 func (sm *StyleMerger) mergePropertyConflicts(original, new *types.Style, conflict *types.StyleConflict) error {
-    sm.logger.Info("合并属性冲突，样式ID: %s, 冲突数量: %d", original.ID, len(conflict.ConflictingProperties))
+    sm.Logger.Info("合并属性冲突，样式ID: %s, 冲突数量: %d", original.ID, len(conflict.ConflictingProperties))
 
     // 创建合并后的样式
     mergedStyle := &types.Style{
@@ -87,14 +87,14 @@ func (sm *StyleMerger) mergePropertyConflicts(original, new *types.Style, confli
     conflict.ResolvedAt = &time.Time{}
     conflict.Status = types.StyleConflictStatusResolved
 
-    sm.logger.Info("属性冲突合并完成，样式ID: %s, 合并属性数: %d", mergedStyle.ID, len(conflict.ConflictingProperties))
+    sm.Logger.Info("属性冲突合并完成，样式ID: %s, 合并属性数: %d", mergedStyle.ID, len(conflict.ConflictingProperties))
 
     return nil
 }
 
 // mergeInheritanceConflicts 合并继承冲突
 func (sm *StyleMerger) mergeInheritanceConflicts(original, new *types.Style, conflict *types.StyleConflict) error {
-    sm.logger.Info("合并继承冲突，样式ID: %s, 原始继承: %s, 新继承: %s", original.ID, original.BasedOn, new.BasedOn)
+    sm.Logger.Info("合并继承冲突，样式ID: %s, 原始继承: %s, 新继承: %s", original.ID, original.BasedOn, new.BasedOn)
 
     // 分析继承链
     originalChain := sm.getInheritanceChain(original)
@@ -113,23 +113,23 @@ func (sm *StyleMerger) mergeInheritanceConflicts(original, new *types.Style, con
     conflict.ResolvedAt = &time.Time{}
     conflict.Status = types.StyleConflictStatusResolved
 
-    sm.logger.Info("继承冲突合并完成，样式ID: %s, 新继承: %s, 链长度: %d", mergedStyle.ID, mergedStyle.BasedOn, len(optimalChain))
+    sm.Logger.Info("继承冲突合并完成，样式ID: %s, 新继承: %s, 链长度: %d", mergedStyle.ID, mergedStyle.BasedOn, len(optimalChain))
 
     return nil
 }
 
 // mergePriorityConflicts 合并优先级冲突
 func (sm *StyleMerger) mergePriorityConflicts(original, new *types.Style, conflict *types.StyleConflict) error {
-    sm.logger.Info("合并优先级冲突，样式ID: %s, 原始优先级: %d, 新优先级: %d", original.ID, conflict.OriginalPriority, conflict.NewPriority)
+    sm.Logger.Info("合并优先级冲突，样式ID: %s, 原始优先级: %d, 新优先级: %d", original.ID, conflict.OriginalPriority, conflict.NewPriority)
 
     // 根据优先级选择样式
     var selectedStyle *types.Style
     if conflict.NewPriority > conflict.OriginalPriority {
         selectedStyle = new
-        sm.logger.Info("选择新样式（更高优先级），样式ID: %s", new.ID)
+        sm.Logger.Info("选择新样式（更高优先级），样式ID: %s", new.ID)
     } else {
         selectedStyle = original
-        sm.logger.Info("保留原始样式（更高或相等优先级），样式ID: %s", original.ID)
+        sm.Logger.Info("保留原始样式（更高或相等优先级），样式ID: %s", original.ID)
     }
 
     // 更新冲突结果
@@ -142,7 +142,7 @@ func (sm *StyleMerger) mergePriorityConflicts(original, new *types.Style, confli
 
 // mergeFormatConflicts 合并格式冲突
 func (sm *StyleMerger) mergeFormatConflicts(original, new *types.Style, conflict *types.StyleConflict) error {
-    sm.logger.Info("合并格式冲突，样式ID: %s, 冲突数量: %d", original.ID, len(conflict.ConflictingProperties))
+    sm.Logger.Info("合并格式冲突，样式ID: %s, 冲突数量: %d", original.ID, len(conflict.ConflictingProperties))
 
     // 创建合并后的样式
     mergedStyle := original.Clone()
@@ -158,14 +158,14 @@ func (sm *StyleMerger) mergeFormatConflicts(original, new *types.Style, conflict
     conflict.ResolvedAt = &time.Time{}
     conflict.Status = types.StyleConflictStatusResolved
 
-    sm.logger.Info("格式冲突合并完成，样式ID: %s, 合并格式数: %d", mergedStyle.ID, len(conflict.ConflictingProperties))
+    sm.Logger.Info("格式冲突合并完成，样式ID: %s, 合并格式数: %d", mergedStyle.ID, len(conflict.ConflictingProperties))
 
     return nil
 }
 
 // mergeDefaultStrategy 默认合并策略
 func (sm *StyleMerger) mergeDefaultStrategy(original, new *types.Style, conflict *types.StyleConflict) error {
-    sm.logger.Info("使用默认合并策略，样式ID: %s, 策略: %s", original.ID, "conservative")
+    sm.Logger.Info("使用默认合并策略，样式ID: %s, 策略: %s", original.ID, "conservative")
 
     // 保守策略：保留原始样式，只添加新样式中不冲突的属性
     mergedStyle := original.Clone()
@@ -192,7 +192,7 @@ func (sm *StyleMerger) mergeDefaultStrategy(original, new *types.Style, conflict
 // 辅助方法
 func (sm *StyleMerger) mergeStringProperty(original, new, propertyName string) string {
     if new != "" && new != original {
-        sm.logger.Debug("合并字符串属性，属性: %s, 原始: %s, 新: %s", propertyName, original, new)
+        sm.Logger.Debug("合并字符串属性，属性: %s, 原始: %s, 新: %s", propertyName, original, new)
         return new
     }
     return original
@@ -448,7 +448,7 @@ func (sm *StyleMerger) ValidateMergedStyle(style *types.Style) error {
         }
     }
 
-    sm.logger.Info("样式验证通过，样式ID: %s, 名称: %s", style.ID, style.Name)
+    sm.Logger.Info("样式验证通过，样式ID: %s, 名称: %s", style.ID, style.Name)
 
     return nil
 }
@@ -489,7 +489,7 @@ func (sm *StyleMerger) mergeIntProperty(original, new int, propertyName string) 
     }
 
     // 记录冲突
-    sm.logger.Warning("整数属性冲突，属性: %s, 原始: %d, 新: %d", propertyName, original, new)
+    sm.Logger.Warning("整数属性冲突，属性: %s, 原始: %d, 新: %d", propertyName, original, new)
 
     // 返回新值
     return new
@@ -502,7 +502,7 @@ func (sm *StyleMerger) mergeBoolProperty(original, new bool, propertyName string
     }
 
     // 记录冲突
-    sm.logger.Warning("布尔属性冲突，属性: %s, 原始: %t, 新: %t", propertyName, original, new)
+    sm.Logger.Warning("布尔属性冲突，属性: %s, 原始: %t, 新: %t", propertyName, original, new)
 
     // 返回新值
     return new

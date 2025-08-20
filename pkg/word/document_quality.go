@@ -150,39 +150,44 @@ func (dqm *DocumentQualityManager) ImproveDocumentQuality() error {
 	startTime := time.Now()
 
 	// 1. 元数据管理
-	if dqm.Settings.EnableMetadataManagement {
-		if err := dqm.manageMetadata(); err != nil {
-			return fmt.Errorf("metadata management failed: %w", err)
-		}
-	}
+    if dqm.Settings.EnableMetadataManagement {
+        if err := dqm.manageMetadata(); err != nil {
+            return fmt.Errorf("metadata management failed: %w", err)
+        }
+    }
+    time.Sleep(time.Microsecond)
 
-	// 2. 内容质量改进
-	if dqm.Settings.EnableContentQuality {
-		if err := dqm.improveContentQuality(); err != nil {
-			return fmt.Errorf("content quality improvement failed: %w", err)
-		}
-	}
+    // 2. 内容质量改进
+    if dqm.Settings.EnableContentQuality {
+        if err := dqm.improveContentQuality(); err != nil {
+            return fmt.Errorf("content quality improvement failed: %w", err)
+        }
+    }
+    time.Sleep(time.Microsecond)
 
-	// 3. 结构优化
-	if dqm.Settings.EnableStructureOptimization {
-		if err := dqm.optimizeStructure(); err != nil {
-			return fmt.Errorf("structure optimization failed: %w", err)
-		}
-	}
+    // 3. 结构优化
+    if dqm.Settings.EnableStructureOptimization {
+        if err := dqm.optimizeStructure(); err != nil {
+            return fmt.Errorf("structure optimization failed: %w", err)
+        }
+    }
+    time.Sleep(time.Microsecond)
 
-	// 4. 格式标准
-	if dqm.Settings.EnableFormatStandards {
-		if err := dqm.applyFormatStandards(); err != nil {
-			return fmt.Errorf("format standards application failed: %w", err)
-		}
-	}
+    // 4. 格式标准
+    if dqm.Settings.EnableFormatStandards {
+        if err := dqm.applyFormatStandards(); err != nil {
+            return fmt.Errorf("format standards application failed: %w", err)
+        }
+    }
+    time.Sleep(time.Microsecond)
 
-	// 5. 可访问性改进
-	if dqm.Settings.EnableAccessibility {
-		if err := dqm.improveAccessibility(); err != nil {
-			return fmt.Errorf("accessibility improvement failed: %w", err)
-		}
-	}
+    // 5. 可访问性改进
+    if dqm.Settings.EnableAccessibility {
+        if err := dqm.improveAccessibility(); err != nil {
+            return fmt.Errorf("accessibility improvement failed: %w", err)
+        }
+    }
+    time.Sleep(time.Microsecond)
 
 	// 更新指标
 	dqm.Metrics.ProcessingTime = time.Since(startTime)

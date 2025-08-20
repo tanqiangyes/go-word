@@ -7,19 +7,19 @@ import (
 
 func TestContainerAddPart(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 添加一个测试部分
 	testContent := []byte("test content")
 	container.AddPart("test.xml", testContent, "application/xml")
 	
-	// 验证部分已添加（通过直接访问parts）
-	if len(container.parts) != 1 {
-		t.Errorf("Expected 1 part, got %d", len(container.parts))
+	// 验证部分已添加（通过直接访问Parts）
+	if len(container.Parts) != 1 {
+		t.Errorf("Expected 1 part, got %d", len(container.Parts))
 	}
 	
-	part, exists := container.parts["test.xml"]
+	part, exists := container.Parts["test.xml"]
 	if !exists {
 		t.Fatal("Expected part to exist")
 	}
@@ -35,15 +35,15 @@ func TestContainerAddPart(t *testing.T) {
 
 func TestContainerGetPart(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 添加一个测试部分
 	testContent := []byte("test content")
 	container.AddPart("test.xml", testContent, "application/xml")
 	
-	// 获取部分（通过直接访问parts）
-	part, exists := container.parts["test.xml"]
+	// 获取部分（通过直接访问Parts）
+	part, exists := container.Parts["test.xml"]
 	if !exists {
 		t.Fatal("Expected part to exist")
 	}
@@ -55,11 +55,11 @@ func TestContainerGetPart(t *testing.T) {
 
 func TestContainerGetPartNotFound(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 尝试获取不存在的部分
-	_, exists := container.parts["nonexistent.xml"]
+	_, exists := container.Parts["nonexistent.xml"]
 	if exists {
 		t.Error("Expected part to not exist")
 	}
@@ -67,7 +67,7 @@ func TestContainerGetPartNotFound(t *testing.T) {
 
 func TestContainerSaveToFile(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 添加一些测试部分
@@ -87,7 +87,7 @@ func TestContainerSaveToFile(t *testing.T) {
 
 func TestContainerSaveToFileWithNoParts(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 测试保存没有部分的容器
@@ -99,7 +99,7 @@ func TestContainerSaveToFileWithNoParts(t *testing.T) {
 
 func TestContainerListParts(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 添加多个部分
@@ -108,14 +108,14 @@ func TestContainerListParts(t *testing.T) {
 	container.AddPart("part3.xml", []byte("content3"), "application/xml")
 	
 	// 验证部分数量
-	if len(container.parts) != 3 {
-		t.Errorf("Expected 3 parts, got %d", len(container.parts))
+	if len(container.Parts) != 3 {
+		t.Errorf("Expected 3 parts, got %d", len(container.Parts))
 	}
 	
 	// 验证所有部分都存在
 	expectedParts := []string{"part1.xml", "part2.xml", "part3.xml"}
 	for _, expectedPart := range expectedParts {
-		if _, exists := container.parts[expectedPart]; !exists {
+		if _, exists := container.Parts[expectedPart]; !exists {
 			t.Errorf("Expected part '%s' to exist", expectedPart)
 		}
 	}
@@ -123,13 +123,13 @@ func TestContainerListParts(t *testing.T) {
 
 func TestContainerPartContentType(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 添加具有特定内容类型的部分
 	container.AddPart("image.png", []byte("image data"), "image/png")
 	
-	part, exists := container.parts["image.png"]
+	part, exists := container.Parts["image.png"]
 	if !exists {
 		t.Fatal("Expected part to exist")
 	}
@@ -160,7 +160,7 @@ func TestContainerOpenFromReader(t *testing.T) {
 
 func TestContainerClose(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 测试关闭容器
@@ -193,8 +193,8 @@ func TestPartCreation(t *testing.T) {
 func TestContainerWithReader(t *testing.T) {
 	// 测试从reader打开的容器
 	container := &Container{
-		reader: nil, // 模拟未打开的容器
-		parts:  make(map[string]*Part),
+		Reader: nil, // 模拟未打开的容器
+		Parts:  make(map[string]*Part),
 	}
 	
 	// 尝试获取部分应该失败
@@ -229,11 +229,11 @@ func TestGetContentType(t *testing.T) {
 	for _, tc := range testCases {
 		// 通过AddPart来测试getContentType的行为
 		container := &Container{
-			parts: make(map[string]*Part),
+			Parts: make(map[string]*Part),
 		}
 		// 使用空字符串作为contentType，这样AddPart会使用默认值
 		container.AddPart(tc.filename, []byte("content"), "")
-		part := container.parts[tc.filename]
+		part := container.Parts[tc.filename]
 		
 		// 验证内容类型是否正确设置
 		if part.ContentType != "" {
@@ -245,7 +245,7 @@ func TestGetContentType(t *testing.T) {
 func TestGetRelationshipsPath(t *testing.T) {
 	// 测试getRelationshipsPath函数（通过GetRelationships间接测试）
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 添加关系文件
@@ -275,7 +275,7 @@ func TestGetRelationshipsPath(t *testing.T) {
 func TestParseRelationships(t *testing.T) {
 	// 测试parseRelationships函数（通过GetRelationships间接测试）
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 添加一个关系文件
@@ -324,18 +324,18 @@ func TestRelationshipCreation(t *testing.T) {
 
 func TestContainerAddPartWithNilParts(t *testing.T) {
 	container := &Container{
-		parts: nil, // 测试nil parts的情况
+		Parts: nil, // 测试nil parts的情况
 	}
 	
 	// AddPart应该初始化parts map
 	container.AddPart("test.xml", []byte("content"), "application/xml")
 	
-	if container.parts == nil {
+	if container.Parts == nil {
 		t.Error("Expected parts to be initialized")
 	}
 	
-	if len(container.parts) != 1 {
-		t.Errorf("Expected 1 part, got %d", len(container.parts))
+	if len(container.Parts) != 1 {
+		t.Errorf("Expected 1 part, got %d", len(container.Parts))
 	}
 }
 
@@ -358,10 +358,10 @@ func TestGetContentTypeDirectly(t *testing.T) {
 	for _, tc := range testCases {
 		// 通过AddPart来测试getContentType的行为
 		container := &Container{
-			parts: make(map[string]*Part),
+			Parts: make(map[string]*Part),
 		}
 		container.AddPart(tc.filename, []byte("content"), "")
-		part := container.parts[tc.filename]
+		part := container.Parts[tc.filename]
 		
 		// 验证内容类型是否正确设置
 		if part.ContentType != "" {
@@ -373,7 +373,7 @@ func TestGetContentTypeDirectly(t *testing.T) {
 // 新增的测试用例
 func TestContainerAddMultipleParts(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 添加多个不同类型的部分
@@ -392,13 +392,13 @@ func TestContainerAddMultipleParts(t *testing.T) {
 		container.AddPart(part.name, part.content, part.contentType)
 	}
 	
-	if len(container.parts) != 4 {
-		t.Errorf("Expected 4 parts, got %d", len(container.parts))
+	if len(container.Parts) != 4 {
+		t.Errorf("Expected 4 parts, got %d", len(container.Parts))
 	}
 	
 	// 验证每个部分
 	for _, expectedPart := range parts {
-		part, exists := container.parts[expectedPart.name]
+		part, exists := container.Parts[expectedPart.name]
 		if !exists {
 			t.Errorf("Expected part '%s' to exist", expectedPart.name)
 		}
@@ -415,13 +415,13 @@ func TestContainerAddMultipleParts(t *testing.T) {
 
 func TestContainerAddPartWithEmptyContent(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 测试添加空内容的部分
 	container.AddPart("empty.xml", []byte{}, "application/xml")
 	
-	part, exists := container.parts["empty.xml"]
+	part, exists := container.Parts["empty.xml"]
 	if !exists {
 		t.Fatal("Expected part to exist")
 	}
@@ -433,13 +433,13 @@ func TestContainerAddPartWithEmptyContent(t *testing.T) {
 
 func TestContainerAddPartWithNilContent(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 测试添加nil内容的部分
 	container.AddPart("nil.xml", nil, "application/xml")
 	
-	part, exists := container.parts["nil.xml"]
+	part, exists := container.Parts["nil.xml"]
 	if !exists {
 		t.Fatal("Expected part to exist")
 	}
@@ -451,13 +451,13 @@ func TestContainerAddPartWithNilContent(t *testing.T) {
 
 func TestContainerAddPartWithEmptyName(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 测试添加空名称的部分
 	container.AddPart("", []byte("content"), "application/xml")
 	
-	part, exists := container.parts[""]
+	part, exists := container.Parts[""]
 	if !exists {
 		t.Fatal("Expected part to exist")
 	}
@@ -469,13 +469,13 @@ func TestContainerAddPartWithEmptyName(t *testing.T) {
 
 func TestContainerAddPartWithEmptyContentType(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 测试添加空内容类型的部分
 	container.AddPart("test.xml", []byte("content"), "")
 	
-	part, exists := container.parts["test.xml"]
+	part, exists := container.Parts["test.xml"]
 	if !exists {
 		t.Fatal("Expected part to exist")
 	}
@@ -487,7 +487,7 @@ func TestContainerAddPartWithEmptyContentType(t *testing.T) {
 
 func TestContainerAddPartOverwrite(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 添加第一个部分
@@ -496,11 +496,11 @@ func TestContainerAddPartOverwrite(t *testing.T) {
 	// 覆盖同一个部分
 	container.AddPart("test.xml", []byte("second content"), "application/xml")
 	
-	if len(container.parts) != 1 {
-		t.Errorf("Expected 1 part, got %d", len(container.parts))
+	if len(container.Parts) != 1 {
+		t.Errorf("Expected 1 part, got %d", len(container.Parts))
 	}
 	
-	part := container.parts["test.xml"]
+	part := container.Parts["test.xml"]
 	if string(part.Content) != "second content" {
 		t.Errorf("Expected content 'second content', got '%s'", string(part.Content))
 	}
@@ -508,7 +508,7 @@ func TestContainerAddPartOverwrite(t *testing.T) {
 
 func TestContainerSaveToFileWithLargeContent(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 创建大内容
@@ -528,7 +528,7 @@ func TestContainerSaveToFileWithLargeContent(t *testing.T) {
 
 func TestContainerSaveToFileWithSpecialCharacters(t *testing.T) {
 	container := &Container{
-		parts: make(map[string]*Part),
+		Parts: make(map[string]*Part),
 	}
 	
 	// 测试包含特殊字符的文件名
@@ -571,8 +571,8 @@ func TestContainerOpenFromReaderWithNilReader(t *testing.T) {
 
 func TestContainerCloseWithNilReader(t *testing.T) {
 	container := &Container{
-		reader: nil,
-		parts:  make(map[string]*Part),
+		Reader: nil,
+		Parts:  make(map[string]*Part),
 	}
 	
 	// 测试关闭没有reader的容器
@@ -664,4 +664,4 @@ func TestRelationshipWithEmptyFields(t *testing.T) {
 	if rel.Target != "" {
 		t.Errorf("Expected empty Target, got '%s'", rel.Target)
 	}
-} 
+}

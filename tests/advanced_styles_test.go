@@ -68,9 +68,7 @@ func TestAddCharacterStyle(t *testing.T) {
 		Name:    "Strong",
 		BasedOn: "DefaultParagraphFont",
 		Properties: &word.CharacterStyleProperties{
-			Font: &word.Font{
-				Name: "Arial",
-			},
+			FontName: "Arial",
 		},
 	}
 

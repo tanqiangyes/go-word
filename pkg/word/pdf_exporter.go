@@ -16,11 +16,11 @@ import (
 
 // PDFExporter PDF导出器
 type PDFExporter struct {
-    document *Document
-    config   *types.PDFExportConfig
-    logger   *utils.Logger
-    mu       sync.RWMutex
-    metrics  *PDFExportMetrics
+    Document *Document
+    Config   *types.PDFExportConfig
+    Logger   *utils.Logger
+    Mu       sync.RWMutex
+    Metrics  *PDFExportMetrics
 }
 
 // PDFExportMetrics PDF导出指标
@@ -52,20 +52,20 @@ func NewPDFExporter(document *Document, config *types.PDFExportConfig) *PDFExpor
     }
 
     return &PDFExporter{
-        document: document,
-        config:   config,
-        logger:   utils.NewLogger(utils.LogLevelInfo, os.Stdout),
-        metrics:  &PDFExportMetrics{},
+        Document: document,
+        Config:   config,
+        Logger:   utils.NewLogger(utils.LogLevelInfo, os.Stdout),
+        Metrics:  &PDFExportMetrics{},
     }
 }
 
 // ExportToPDF 导出为PDF
 func (pe *PDFExporter) ExportToPDF(ctx context.Context, outputPath string) (*PDFExportResult, error) {
-    pe.mu.Lock()
-    defer pe.mu.Unlock()
+    pe.Mu.Lock()
+    defer pe.Mu.Unlock()
 
     startTime := time.Now()
-    pe.metrics.ExportsTotal++
+    pe.Metrics.ExportsTotal++
 
     result := &PDFExportResult{
         FilePath: outputPath,
@@ -73,7 +73,7 @@ func (pe *PDFExporter) ExportToPDF(ctx context.Context, outputPath string) (*PDF
     }
 
     // 验证输入
-    if pe.document == nil {
+    if pe.Document == nil {
         err := fmt.Errorf("document is nil")
         pe.handleExportError(err, result)
         return result, err
@@ -85,7 +85,7 @@ func (pe *PDFExporter) ExportToPDF(ctx context.Context, outputPath string) (*PDF
         return result, err
     }
 
-    pe.logger.Info("开始PDF导出，输出路径: %s", outputPath)
+    pe.Logger.Info("开始PDF导出，输出路径: %s", outputPath)
 
     // 提取文档内容
     content, err := pe.extractDocumentContent(ctx)
@@ -118,25 +118,25 @@ func (pe *PDFExporter) ExportToPDF(ctx context.Context, outputPath string) (*PDF
     // 更新指标
     pe.updateMetrics(exportTime, result.FileSize, true)
 
-    pe.logger.Info("PDF导出完成，输出路径: %s, 文件大小: %d, 页数: %d, 导出时间: %v", outputPath, result.FileSize, result.PageCount, exportTime)
+    pe.Logger.Info("PDF导出完成，输出路径: %s, 文件大小: %d, 页数: %d, 导出时间: %v", outputPath, result.FileSize, result.PageCount, exportTime)
 
     return result, nil
 }
 
 // ExportToPDFStream 导出为PDF流
 func (pe *PDFExporter) ExportToPDFStream(ctx context.Context, writer io.Writer) (*PDFExportResult, error) {
-    pe.mu.Lock()
-    defer pe.mu.Unlock()
+    pe.Mu.Lock()
+    defer pe.Mu.Unlock()
 
     startTime := time.Now()
-    pe.metrics.ExportsTotal++
+    pe.Metrics.ExportsTotal++
 
     result := &PDFExportResult{
         Metadata: make(map[string]interface{}),
     }
 
     // 验证输入
-    if pe.document == nil {
+    if pe.Document == nil {
         err := fmt.Errorf("document is nil")
         pe.handleExportError(err, result)
         return result, err
@@ -189,14 +189,14 @@ func (pe *PDFExporter) extractDocumentContent(ctx context.Context) (*PDFDocument
     }
 
     // 提取文本内容
-    text, err := pe.document.GetText()
+    text, err := pe.Document.GetText()
     if err != nil {
         return nil, fmt.Errorf("failed to get text: %w", err)
     }
     content.Text = text
 
     // 提取段落
-    if paragraphs, err := pe.document.GetParagraphs(); err == nil {
+    if paragraphs, err := pe.Document.GetParagraphs(); err == nil {
         // 转换为指针切片
         for i := range paragraphs {
             content.Paragraphs = append(content.Paragraphs, &paragraphs[i])
@@ -204,8 +204,8 @@ func (pe *PDFExporter) extractDocumentContent(ctx context.Context) (*PDFDocument
     }
 
     // 提取表格
-    if pe.config.IncludeTables {
-        if tables, err := pe.document.GetTables(); err == nil {
+    if pe.Config.IncludeTables {
+        if tables, err := pe.Document.GetTables(); err == nil {
             // 转换为指针切片
             for i := range tables {
                 content.Tables = append(content.Tables, &tables[i])
@@ -214,7 +214,7 @@ func (pe *PDFExporter) extractDocumentContent(ctx context.Context) (*PDFDocument
     }
 
     // 提取图片信息（如果支持）
-    if pe.config.IncludeImages {
+    if pe.Config.IncludeImages {
         // 这里可以添加图片提取逻辑
         content.Images = []types.PDFImageInfo{}
     }
@@ -366,7 +366,7 @@ func (pe *PDFExporter) addPDFTrailer(buffer *bytes.Buffer) {
 func (pe *PDFExporter) savePDFFile(outputPath string, data []byte) error {
     // 这里应该实现文件保存逻辑
     // 为了简化，我们只是模拟保存
-    pe.logger.Info("保存PDF文件，路径: %s, 大小: %d", outputPath, len(data))
+    pe.Logger.Info("保存PDF文件，路径: %s, 大小: %d", outputPath, len(data))
     return nil
 }
 
@@ -374,48 +374,48 @@ func (pe *PDFExporter) savePDFFile(outputPath string, data []byte) error {
 func (pe *PDFExporter) handleExportError(err error, result *PDFExportResult) {
     result.Success = false
     result.Error = err
-    pe.metrics.ExportsFailed++
+    pe.Metrics.ExportsFailed++
 
-    pe.logger.Error("PDF导出失败，错误: %s", err.Error())
+    pe.Logger.Error("PDF导出失败，错误: %s", err.Error())
 }
 
 // updateMetrics 更新指标
 func (pe *PDFExporter) updateMetrics(exportTime time.Duration, fileSize int64, success bool) {
     if success {
-        pe.metrics.ExportsSuccess++
+        pe.Metrics.ExportsSuccess++
     }
 
-    pe.metrics.TotalTime += exportTime
-    pe.metrics.AverageTime = pe.metrics.TotalTime / time.Duration(pe.metrics.ExportsTotal)
-    pe.metrics.LastExportTime = time.Now()
+    pe.Metrics.TotalTime += exportTime
+    pe.Metrics.AverageTime = pe.Metrics.TotalTime / time.Duration(pe.Metrics.ExportsTotal)
+    pe.Metrics.LastExportTime = time.Now()
 
     if fileSize > 0 {
-        pe.metrics.AverageFileSize = (pe.metrics.AverageFileSize + fileSize) / 2
+        pe.Metrics.AverageFileSize = (pe.Metrics.AverageFileSize + fileSize) / 2
     }
 }
 
 // GetMetrics 获取导出指标
 func (pe *PDFExporter) GetMetrics() *PDFExportMetrics {
-    pe.mu.RLock()
-    defer pe.mu.RUnlock()
+    pe.Mu.RLock()
+    defer pe.Mu.RUnlock()
 
-    return pe.metrics
+    return pe.Metrics
 }
 
 // UpdateConfig 更新配置
 func (pe *PDFExporter) UpdateConfig(config *types.PDFExportConfig) {
-    pe.mu.Lock()
-    defer pe.mu.Unlock()
+    pe.Mu.Lock()
+    defer pe.Mu.Unlock()
 
-    pe.config = config
+    pe.Config = config
 }
 
 // GetConfig 获取配置
 func (pe *PDFExporter) GetConfig() *types.PDFExportConfig {
-    pe.mu.RLock()
-    defer pe.mu.RUnlock()
+    pe.Mu.RLock()
+    defer pe.Mu.RUnlock()
 
-    return pe.config
+    return pe.Config
 }
 
 // PDFDocumentContent PDF文档内容

@@ -3,6 +3,7 @@ package plugin
 import (
 	"context"
 	"testing"
+	"time"
 )
 
 // MockPlugin 模拟插件
@@ -21,6 +22,9 @@ func (mp *MockPlugin) Initialize(config map[string]interface{}) error {
 }
 
 func (mp *MockPlugin) Execute(ctx context.Context, args map[string]interface{}) (*PluginResult, error) {
+	// 模拟一些执行时间
+	time.Sleep(time.Microsecond * 100)
+	
 	return &PluginResult{
 		Success: true,
 		Data: map[string]interface{}{
@@ -42,15 +46,15 @@ func TestNewPluginManager(t *testing.T) {
 		t.Fatal("插件管理器创建失败")
 	}
 	
-	if pm.plugins == nil {
+	if pm.Plugins == nil {
 		t.Error("插件映射未初始化")
 	}
 	
-	if pm.pluginInfos == nil {
+	if pm.PluginInfos == nil {
 		t.Error("插件信息映射未初始化")
 	}
 	
-	if pm.metrics == nil {
+	if pm.Metrics == nil {
 		t.Error("插件指标未初始化")
 	}
 }
@@ -77,11 +81,11 @@ func TestRegisterPlugin(t *testing.T) {
 	}
 	
 	// 验证插件已注册
-	if len(pm.plugins) != 1 {
+	if len(pm.Plugins) != 1 {
 		t.Error("插件数量不匹配")
 	}
 	
-	if pm.metrics.TotalPlugins != 1 {
+	if pm.Metrics.TotalPlugins != 1 {
 		t.Error("插件总数指标不匹配")
 	}
 }
@@ -141,11 +145,11 @@ func TestUnregisterPlugin(t *testing.T) {
 	}
 	
 	// 验证插件已注销
-	if len(pm.plugins) != 0 {
+	if len(pm.Plugins) != 0 {
 		t.Error("插件数量应该为0")
 	}
 	
-	if pm.metrics.TotalPlugins != 0 {
+	if pm.Metrics.TotalPlugins != 0 {
 		t.Error("插件总数指标应该为0")
 	}
 }
@@ -182,7 +186,7 @@ func TestConfigurePlugin(t *testing.T) {
 	}
 	
 	// 验证配置已保存
-	if pm.metrics.ActivePlugins != 1 {
+	if pm.Metrics.ActivePlugins != 1 {
 		t.Error("活跃插件数量不匹配")
 	}
 }
@@ -238,11 +242,11 @@ func TestExecutePlugin(t *testing.T) {
 	}
 	
 	// 验证指标
-	if pm.metrics.TotalExecutions != 1 {
+	if pm.Metrics.TotalExecutions != 1 {
 		t.Error("总执行次数不匹配")
 	}
 	
-	if pm.metrics.SuccessCount != 1 {
+	if pm.Metrics.SuccessCount != 1 {
 		t.Error("成功次数不匹配")
 	}
 }
