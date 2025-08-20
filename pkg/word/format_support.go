@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tanqiangyes/go-word/pkg/opc"
 	"github.com/tanqiangyes/go-word/pkg/types"
 	"github.com/tanqiangyes/go-word/pkg/utils"
 )
@@ -26,6 +27,7 @@ type FormatSupport struct {
 	macroContainer   *MacroContainer
 	progressCallback ProgressCallback
 	sourcePath       string
+	opcContainer     *opc.Container
 }
 
 // RichTextContent represents rich text content
@@ -802,20 +804,44 @@ func (fs *FormatSupport) serializeDocStructure() ([]byte, error) {
 
 func (fs *FormatSupport) createMacroEnabledContainer() error {
 	// 创建包含宏的OPC容器
-	// 这里需要实现OPC容器的创建逻辑
-	// 为了简化，我们创建一个基本的宏容器结构
+	if fs.macroContainer == nil {
+		return fmt.Errorf("宏容器未初始化")
+	}
 
-	fs.logger.Info("创建宏启用容器，宏数量: %d", len(fs.macroContainer.Modules))
+	// 创建OPC容器结构
+	container, err := opc.New()
+	if err != nil {
+		return fmt.Errorf("创建OPC容器失败: %w", err)
+	}
 
+	// 添加主文档部分
+	container.AddPart("/word/document.xml", []byte{}, "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")
+
+	// 添加VBA项目部分
+	container.AddPart("/word/vbaProject.bin", fs.generateVBAProjectBinary(), "application/vnd.ms-office.vbaProject")
+
+	// 添加VBA数据部分
+	container.AddPart("/word/vbaData.xml", fs.generateVBADataXML(), "application/vnd.ms-word.vbaData+xml")
+
+	// 保存容器引用
+	fs.opcContainer = container
+
+	fs.logger.Info("创建宏启用容器成功，宏数量: %d", len(fs.macroContainer.Modules))
 	return nil
 }
 
 func (fs *FormatSupport) saveMacroEnabledDocument(outputPath string) error {
 	// 保存包含宏的文档
-	// 这里需要实现.docm格式的保存逻辑
+	if fs.opcContainer == nil {
+		return fmt.Errorf("OPC容器未初始化")
+	}
 
-	fs.logger.Info("保存宏启用文档，输出路径: %s", outputPath)
+	// 保存为.docm文件
+	if err := fs.opcContainer.SaveToFile(outputPath); err != nil {
+		return fmt.Errorf("保存.docm文件失败: %w", err)
+	}
 
+	fs.logger.Info("保存宏启用文档成功，输出路径: %s", outputPath)
 	return nil
 }
 
@@ -1270,6 +1296,51 @@ func (fs *FormatSupport) ApplyRichTextFormatting(paragraph *types.Paragraph, for
 
 	// 应用段落格式
 	paragraph.Style = getParagraphStyle(formatting.Paragraph)
+}
+
+// generateVBAProjectBinary 生成VBA项目的二进制数据
+func (fs *FormatSupport) generateVBAProjectBinary() []byte {
+	// 创建基本的VBA项目二进制结构
+	// 这是一个简化的实现，实际的VBA项目格式更复杂
+	var buffer bytes.Buffer
+
+	// VBA项目头部
+	buffer.WriteString("VBA Project Binary Data")
+
+	// 添加模块信息
+	for _, module := range fs.macroContainer.Modules {
+		buffer.WriteString(fmt.Sprintf("Module: %s\n", module.Name))
+		buffer.WriteString(fmt.Sprintf("Type: %s\n", module.Type))
+		buffer.WriteString(fmt.Sprintf("Code: %s\n", module.Code))
+	}
+
+	return buffer.Bytes()
+}
+
+// generateVBADataXML 生成VBA数据的XML内容
+func (fs *FormatSupport) generateVBADataXML() []byte {
+	// 创建VBA数据XML
+	var xml strings.Builder
+
+	xml.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n")
+	xml.WriteString("<wne:vbaSuppData xmlns:wne=\"http://schemas.microsoft.com/office/word/2006/wordml\">\n")
+
+	// 添加VBA项目信息
+	xml.WriteString("  <wne:docEvents>\n")
+	xml.WriteString("    <wne:eventDocNew>true</wne:eventDocNew>\n")
+	xml.WriteString("    <wne:eventDocOpen>true</wne:eventDocOpen>\n")
+	xml.WriteString("  </wne:docEvents>\n")
+
+	// 添加模块引用
+	for _, module := range fs.macroContainer.Modules {
+		xml.WriteString(fmt.Sprintf("  <wne:mcds>\n"))
+		xml.WriteString(fmt.Sprintf("    <wne:mcd wne:macroName=\"%s\" wne:name=\"%s\" wne:bEncrypt=\"0\" wne:cmg=\"56\"/>\n", module.Name, module.Name))
+		xml.WriteString("  </wne:mcds>\n")
+	}
+
+	xml.WriteString("</wne:vbaSuppData>\n")
+
+	return []byte(xml.String())
 }
 
 // getParagraphStyle returns the paragraph style based on formatting

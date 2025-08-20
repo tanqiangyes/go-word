@@ -5,6 +5,7 @@ package opc
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"os"
@@ -165,11 +166,38 @@ func getRelationshipsPath(partName string) string {
 	return path.Join(dir, "_rels", path.Base(partName)+".rels")
 }
 
+// RelationshipsXML represents the XML structure for relationships
+type RelationshipsXML struct {
+	XMLName       xml.Name           `xml:"Relationships"`
+	Namespace     string             `xml:"xmlns,attr"`
+	Relationships []RelationshipXML  `xml:"Relationship"`
+}
+
+// RelationshipXML represents a single relationship in XML
+type RelationshipXML struct {
+	ID     string `xml:"Id,attr"`
+	Type   string `xml:"Type,attr"`
+	Target string `xml:"Target,attr"`
+}
+
 // parseRelationships parses the relationships XML content
 func parseRelationships(content []byte) ([]Relationship, error) {
-	// TODO: Implement XML parsing for relationships
-	// For now, return empty slice
-	return []Relationship{}, nil
+	var relsXML RelationshipsXML
+	err := xml.Unmarshal(content, &relsXML)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse relationships XML: %w", err)
+	}
+	
+	var relationships []Relationship
+	for _, rel := range relsXML.Relationships {
+		relationships = append(relationships, Relationship{
+			ID:     rel.ID,
+			Type:   rel.Type,
+			Target: rel.Target,
+		})
+	}
+	
+	return relationships, nil
 }
 
 // AddPart adds a part to the container
