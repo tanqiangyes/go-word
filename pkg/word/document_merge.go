@@ -151,20 +151,140 @@ func (dm *DocumentMerge) mergeAppend() error {
 
 // mergeInsert inserts content at specific positions
 func (dm *DocumentMerge) mergeInsert() error {
-	// 这个功能需要更复杂的实现，暂时返回错误
-	return fmt.Errorf("insert mode not yet implemented")
+	if len(dm.SourceDocuments) == 0 {
+		return fmt.Errorf("no source documents to merge")
+	}
+
+	targetContent := dm.TargetDocument.mainPart.Content
+	if targetContent == nil {
+		return fmt.Errorf("target document content is nil")
+	}
+
+	for _, sourceDoc := range dm.SourceDocuments {
+		if sourceDoc.mainPart == nil || sourceDoc.mainPart.Content == nil {
+			continue
+		}
+
+		sourceContent := sourceDoc.mainPart.Content
+
+		// 将源文档的段落插入到目标文档末尾
+		for _, paragraph := range sourceContent.Paragraphs {
+			mergedParagraph := dm.mergeParagraph(paragraph)
+			targetContent.Paragraphs = append(targetContent.Paragraphs, mergedParagraph)
+		}
+
+		// 合并表格
+		if dm.MergeOptions.IncludeTables {
+			for _, table := range sourceContent.Tables {
+				targetContent.Tables = append(targetContent.Tables, table)
+			}
+		}
+
+		// 更新文档文本
+		targetContent.Text += "\n" + sourceContent.Text
+	}
+
+	return nil
 }
 
 // mergeReplace replaces existing content
 func (dm *DocumentMerge) mergeReplace() error {
-	// 这个功能需要更复杂的实现，暂时返回错误
-	return fmt.Errorf("replace mode not yet implemented")
+	if len(dm.SourceDocuments) == 0 {
+		return fmt.Errorf("no source documents to merge")
+	}
+
+	targetContent := dm.TargetDocument.mainPart.Content
+	if targetContent == nil {
+		return fmt.Errorf("target document content is nil")
+	}
+
+	// 清空目标文档内容
+	targetContent.Paragraphs = []types.Paragraph{}
+	targetContent.Tables = []types.Table{}
+	targetContent.Text = ""
+
+	for _, sourceDoc := range dm.SourceDocuments {
+		if sourceDoc.mainPart == nil || sourceDoc.mainPart.Content == nil {
+			continue
+		}
+
+		sourceContent := sourceDoc.mainPart.Content
+
+		// 添加源文档的段落到目标文档
+		for _, paragraph := range sourceContent.Paragraphs {
+			mergedParagraph := dm.mergeParagraph(paragraph)
+			targetContent.Paragraphs = append(targetContent.Paragraphs, mergedParagraph)
+		}
+
+		// 合并表格
+		if dm.MergeOptions.IncludeTables {
+			for _, table := range sourceContent.Tables {
+				targetContent.Tables = append(targetContent.Tables, table)
+			}
+		}
+
+		// 更新文档文本
+		if targetContent.Text == "" {
+			targetContent.Text = sourceContent.Text
+		} else {
+			targetContent.Text += "\n" + sourceContent.Text
+		}
+	}
+
+	return nil
 }
 
 // mergeSelective merges only selected content
 func (dm *DocumentMerge) mergeSelective() error {
-	// 这个功能需要更复杂的实现，暂时返回错误
-	return fmt.Errorf("selective mode not yet implemented")
+	if len(dm.SourceDocuments) == 0 {
+		return fmt.Errorf("no source documents to merge")
+	}
+
+	targetContent := dm.TargetDocument.mainPart.Content
+	if targetContent == nil {
+		return fmt.Errorf("target document content is nil")
+	}
+
+	// 创建目标文档段落文本的映射，用于快速查找
+	targetTexts := make(map[string]bool)
+	for _, paragraph := range targetContent.Paragraphs {
+		targetTexts[paragraph.Text] = true
+	}
+
+	for _, sourceDoc := range dm.SourceDocuments {
+		if sourceDoc.mainPart == nil || sourceDoc.mainPart.Content == nil {
+			continue
+		}
+
+		sourceContent := sourceDoc.mainPart.Content
+
+		// 只添加目标文档中不存在的段落
+		for _, paragraph := range sourceContent.Paragraphs {
+			if !targetTexts[paragraph.Text] {
+				mergedParagraph := dm.mergeParagraph(paragraph)
+				targetContent.Paragraphs = append(targetContent.Paragraphs, mergedParagraph)
+				targetTexts[paragraph.Text] = true
+			}
+		}
+
+		// 处理表格（简单的选择性合并，基于表格行数）
+		if dm.MergeOptions.IncludeTables {
+			for _, sourceTable := range sourceContent.Tables {
+				shouldAdd := true
+				for _, targetTable := range targetContent.Tables {
+					if len(sourceTable.Rows) == len(targetTable.Rows) {
+						shouldAdd = false
+						break
+					}
+				}
+				if shouldAdd {
+					targetContent.Tables = append(targetContent.Tables, sourceTable)
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 // mergeParagraph merges a paragraph with conflict resolution

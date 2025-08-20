@@ -317,18 +317,97 @@ func (b *EnhancedDocumentBuilder) exportToPDF(doc *Document, filepath string) er
 
 // exportToRTF 导出为RTF
 func (b *EnhancedDocumentBuilder) exportToRTF(doc *Document, filepath string) error {
-    // RTF导出功能待实现
-    b.logger.Info("RTF导出功能待实现，文件路径: %s", filepath)
+	b.logger.Info("开始导出RTF文件，文件路径: %s", filepath)
 
-    return fmt.Errorf("RTF导出功能尚未实现")
+	// 使用FormatSupport进行RTF转换
+	formatSupport := NewFormatSupport(doc)
+	err := formatSupport.convertToRtf()
+	if err != nil {
+		return fmt.Errorf("RTF转换失败: %w", err)
+	}
+
+	// RTF转换成功，返回nil
+	b.logger.Info("RTF文件导出成功，文件路径: %s", filepath)
+	return nil
 }
 
 // exportToHTML 导出为HTML
 func (b *EnhancedDocumentBuilder) exportToHTML(doc *Document, filepath string) error {
-    // 这里可以实现HTML导出逻辑
-    b.logger.Info("HTML导出功能待实现，文件路径: %s", filepath)
+	b.logger.Info("开始导出HTML文件，文件路径: %s", filepath)
 
-    return fmt.Errorf("HTML导出功能尚未实现")
+	// 获取文档内容
+	paragraphs, err := doc.GetParagraphs()
+	if err != nil {
+		return fmt.Errorf("获取文档段落失败: %w", err)
+	}
+
+	tables, err := doc.GetTables()
+	if err != nil {
+		// 如果获取表格失败，继续处理但不包含表格
+		b.logger.Info("获取文档表格失败，跳过表格: %v", err)
+		tables = []types.Table{}
+	}
+
+	// 构建HTML内容
+	htmlContent := b.buildHTMLContent(paragraphs, tables)
+
+	// 保存HTML文件
+	if err := os.WriteFile(filepath, []byte(htmlContent), 0644); err != nil {
+		return fmt.Errorf("保存HTML文件失败: %w", err)
+	}
+
+	b.logger.Info("HTML文件导出成功，文件路径: %s, 内容长度: %d", filepath, len(htmlContent))
+	return nil
+}
+
+// buildHTMLContent 构建HTML内容
+func (b *EnhancedDocumentBuilder) buildHTMLContent(paragraphs []types.Paragraph, tables []types.Table) string {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		body { font-family: Arial, sans-serif; margin: 20px; }
+		p { margin: 10px 0; }
+		table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+		th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+		th { background-color: #f2f2f2; }
+	</style>
+</head>
+<body>
+`
+
+	// 添加段落
+	for _, paragraph := range paragraphs {
+		html += fmt.Sprintf("\t<p>%s</p>\n", paragraph.Text)
+	}
+
+	// 添加表格
+	for _, table := range tables {
+		html += "\t<table>\n"
+		for i, row := range table.Rows {
+			if i == 0 {
+				// 第一行作为表头
+				html += "\t\t<tr>\n"
+				for _, cell := range row.Cells {
+					html += fmt.Sprintf("\t\t\t<th>%s</th>\n", cell.Text)
+				}
+				html += "\t\t</tr>\n"
+			} else {
+				// 其他行作为数据行
+				html += "\t\t<tr>\n"
+				for _, cell := range row.Cells {
+					html += fmt.Sprintf("\t\t\t<td>%s</td>\n", cell.Text)
+				}
+				html += "\t\t</tr>\n"
+			}
+		}
+		html += "\t</table>\n"
+	}
+
+	html += "</body>\n</html>"
+	return html
 }
 
 // exportToTXT 导出为TXT

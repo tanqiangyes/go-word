@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/tanqiangyes/go-word/pkg/opc"
 	"github.com/tanqiangyes/go-word/pkg/types"
 	"github.com/tanqiangyes/go-word/pkg/utils"
 )
@@ -517,22 +518,108 @@ func NewDocumentOperations(doc *Document) *DocumentOperations {
 
 // AddParagraph adds a paragraph to the document
 func (ops *DocumentOperations) AddParagraph(builder *ParagraphBuilder) *DocumentOperations {
-	_ = builder.Build()
-	// TODO: Add paragraph to document
+	paragraph := builder.Build()
+	
+	// 确保文档主部分已初始化
+	if ops.Document.mainPart == nil {
+		ops.Document.mainPart = &MainDocumentPart{
+			Content: &types.DocumentContent{
+				Paragraphs: []types.Paragraph{},
+				Tables:     []types.Table{},
+			},
+		}
+	}
+	
+	// 确保文档内容已初始化
+	if ops.Document.mainPart.Content == nil {
+		ops.Document.mainPart.Content = &types.DocumentContent{
+			Paragraphs: make([]types.Paragraph, 0),
+			Tables:     make([]types.Table, 0),
+		}
+	}
+	
+	// 添加段落到文档
+	ops.Document.mainPart.Content.Paragraphs = append(ops.Document.mainPart.Content.Paragraphs, paragraph)
+	
 	return ops
 }
 
 // AddTable adds a table to the document
 func (ops *DocumentOperations) AddTable(builder *TableBuilder) *DocumentOperations {
-	_ = builder.Build()
-	// TODO: Add table to document
+	table := builder.Build()
+	
+	// 确保文档主部分已初始化
+	if ops.Document.mainPart == nil {
+		ops.Document.mainPart = &MainDocumentPart{
+			Content: &types.DocumentContent{
+				Paragraphs: []types.Paragraph{},
+				Tables:     []types.Table{},
+			},
+		}
+	}
+	
+	// 确保文档内容已初始化
+	if ops.Document.mainPart.Content == nil {
+		ops.Document.mainPart.Content = &types.DocumentContent{
+			Paragraphs: make([]types.Paragraph, 0),
+			Tables:     make([]types.Table, 0),
+		}
+	}
+	
+	// 添加表格到文档
+	ops.Document.mainPart.Content.Tables = append(ops.Document.mainPart.Content.Tables, table)
+	
 	return ops
 }
 
 // Save saves the document to a file
 func (ops *DocumentOperations) Save(filename string) error {
-	// TODO: Implement save functionality
-	return nil
+	// 创建OPC容器
+	container, err := opc.New()
+	if err != nil {
+		return fmt.Errorf("创建OPC容器失败: %w", err)
+	}
+	defer container.Close()
+
+	// 构建文档内容
+	content := ops.buildDocumentContent()
+
+	// 添加到容器
+	container.AddPart("word/document.xml", []byte(content), "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")
+
+	// 保存文件
+	return container.SaveToFile(filename)
+}
+
+// buildDocumentContent builds the document XML content
+func (ops *DocumentOperations) buildDocumentContent() string {
+	content := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>`
+	
+	// 检查文档主部分是否存在
+	if ops.Document.mainPart != nil && ops.Document.mainPart.Content != nil {
+		// 添加段落
+		for _, paragraph := range ops.Document.mainPart.Content.Paragraphs {
+			content += "<w:p><w:r><w:t>" + paragraph.Text + "</w:t></w:r></w:p>"
+		}
+		
+		// 添加表格
+		for _, table := range ops.Document.mainPart.Content.Tables {
+			content += "<w:tbl>"
+			for _, row := range table.Rows {
+				content += "<w:tr>"
+				for _, cell := range row.Cells {
+					content += "<w:tc><w:p><w:r><w:t>" + cell.Text + "</w:t></w:r></w:p></w:tc>"
+				}
+				content += "</w:tr>"
+			}
+			content += "</w:tbl>"
+		}
+	}
+	
+	content += "</w:body></w:document>"
+	return content
 }
 
 // FluentDocument provides a fluent interface for document operations
