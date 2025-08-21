@@ -518,9 +518,36 @@ func (w *DocumentWriter) generateDocumentXML() ([]byte, error) {
 			xmlParagraph.CommentRangeEnd = &CommentRangeEndXML{
 				ID: paragraph.CommentID,
 			}
-			xmlParagraph.CommentReference = &CommentReferenceXML{
+			
+			// 创建带样式的批注引用
+			commentRefRun := RunXML{
+				XMLName: xml.Name{Local: "w:r"},
+				Properties: &RunPropertiesXML{
+					XMLName: xml.Name{Local: "w:rPr"},
+				},
+			}
+			
+			// 添加批注引用样式
+			commentRefRun.Properties.Style = &CharacterStyleXML{
+				XMLName: xml.Name{Local: "w:rStyle"},
+				Val:     "CommentReference",
+			}
+			
+			// 将批注引用添加到段落的 Runs 中
+			xmlParagraph.Runs = append(xmlParagraph.Runs, commentRefRun)
+			
+			// 创建实际的批注引用标记
+			commentRefMarkRun := RunXML{
+				XMLName: xml.Name{Local: "w:r"},
+			}
+			
+			// 添加批注引用标记
+			commentRefMarkRun.CommentReference = &CommentReferenceXML{
 				ID: paragraph.CommentID,
 			}
+			
+			// 将批注引用标记添加到段落的 Runs 中
+			xmlParagraph.Runs = append(xmlParagraph.Runs, commentRefMarkRun)
 		}
 
 		doc.Body.Paragraphs = append(doc.Body.Paragraphs, xmlParagraph)
@@ -722,6 +749,7 @@ func (w *DocumentWriter) generateStylesXML() []byte {
     </w:rPrDefault>
     <w:pPrDefault>
       <w:pPr>
+        <w:widowControl w:val="0"/>
         <w:spacing w:after="160" w:line="259" w:lineRule="auto"/>
       </w:pPr>
     </w:pPrDefault>
@@ -761,6 +789,7 @@ func (w *DocumentWriter) generateStylesXML() []byte {
     <w:semiHidden/>
     <w:unhideWhenUsed/>
   </w:style>
+  <!-- WPS 兼容的批注样式 -->
   <w:style w:type="paragraph" w:styleId="CommentText">
     <w:name w:val="Comment Text"/>
     <w:basedOn w:val="Normal"/>
@@ -794,7 +823,7 @@ func (w *DocumentWriter) generateStylesXML() []byte {
     <w:link w:val="BalloonTextChar"/>
     <w:uiPriority w:val="99"/>
     <w:semiHidden/>
-    <w:unhideWhenUsed/>
+    <w:unhideWhenUsed"/>
     <w:pPr>
       <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
     </w:pPr>
@@ -809,10 +838,23 @@ func (w *DocumentWriter) generateStylesXML() []byte {
     <w:link w:val="BalloonText"/>
     <w:uiPriority w:val="99"/>
     <w:semiHidden/>
-    <w:unhideWhenUsed/>
+    <w:unhideWhenUsed"/>
     <w:rPr>
       <w:sz w:val="18"/>
       <w:szCs w:val="18"/>
+    </w:rPr>
+  </w:style>
+  <!-- WPS 兼容的批注引用样式 -->
+  <w:style w:type="character" w:styleId="CommentReference">
+    <w:name w:val="Comment Reference"/>
+    <w:basedOn w:val="DefaultParagraphFont"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed"/>
+    <w:rPr>
+      <w:sz w:val="16"/>
+      <w:szCs w:val="16"/>
+      <w:color w:val="0000FF"/>
     </w:rPr>
   </w:style>
 </w:styles>`
@@ -856,19 +898,26 @@ type StyleXML struct {
 	Val     string   `xml:"w:val,attr"`
 }
 
+type CharacterStyleXML struct {
+	XMLName xml.Name `xml:"w:rStyle"`
+	Val     string   `xml:"w:val,attr"`
+}
+
 type RunXML struct {
 	XMLName    xml.Name          `xml:"w:r"`
 	Properties *RunPropertiesXML `xml:"w:rPr,omitempty"`
 	Text       *TextXML          `xml:"w:t,omitempty"`
+	CommentReference *CommentReferenceXML `xml:"w:commentReference,omitempty"`
 }
 
 type RunPropertiesXML struct {
-	XMLName   xml.Name      `xml:"w:rPr"`
-	Bold      *BoldXML      `xml:"w:b,omitempty"`
-	Italic    *ItalicXML    `xml:"w:i,omitempty"`
-	Underline *UnderlineXML `xml:"w:u,omitempty"`
-	Size      *SizeXML      `xml:"w:sz,omitempty"`
-	Font      *FontXML      `xml:"w:rFonts,omitempty"`
+	XMLName   xml.Name            `xml:"w:rPr"`
+	Style     *CharacterStyleXML  `xml:"w:rStyle,omitempty"`
+	Bold      *BoldXML            `xml:"w:b,omitempty"`
+	Italic    *ItalicXML          `xml:"w:i,omitempty"`
+	Underline *UnderlineXML       `xml:"w:u,omitempty"`
+	Size      *SizeXML            `xml:"w:sz,omitempty"`
+	Font      *FontXML            `xml:"w:rFonts,omitempty"`
 }
 
 type TextXML struct {
