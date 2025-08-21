@@ -739,17 +739,8 @@ func (w *DocumentWriter) generateStylesXML() []byte {
 	stylesXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" mc:Ignorable="w14">
   <w:docDefaults>
-    <w:rPrDefault>
-      <w:rPr>
-        <w:rFonts w:ascii="Calibri" w:eastAsia="宋体" w:hAnsi="Calibri" w:cs="Times New Roman"/>
-        <w:sz w:val="22"/>
-        <w:szCs w:val="22"/>
-        <w:lang w:val="en-US" w:eastAsia="zh-CN" w:bidi="ar-SA"/>
-      </w:rPr>
-    </w:rPrDefault>
     <w:pPrDefault>
       <w:pPr>
-        <w:widowControl w:val="0"/>
         <w:spacing w:after="160" w:line="259" w:lineRule="auto"/>
       </w:pPr>
     </w:pPrDefault>
@@ -758,21 +749,16 @@ func (w *DocumentWriter) generateStylesXML() []byte {
     <w:name w:val="Normal"/>
     <w:qFormat/>
     <w:pPr>
-      <w:widowControl w:val="0"/>
       <w:spacing w:after="160" w:line="259" w:lineRule="auto"/>
     </w:pPr>
   </w:style>
   <w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont">
     <w:name w:val="Default Paragraph Font"/>
-    <w:uiPriority w:val="1"/>
-    <w:semiHidden/>
-    <w:unhideWhenUsed/>
+    <w:qFormat/>
   </w:style>
   <w:style w:type="table" w:default="1" w:styleId="TableNormal">
     <w:name w:val="Normal Table"/>
-    <w:uiPriority w:val="99"/>
-    <w:semiHidden/>
-    <w:unhideWhenUsed/>
+    <w:qFormat/>
     <w:tblPr>
       <w:tblInd w:w="0" w:type="dxa"/>
       <w:tblCellMar>
@@ -783,77 +769,39 @@ func (w *DocumentWriter) generateStylesXML() []byte {
       </w:tblCellMar>
     </w:tblPr>
   </w:style>
-  <w:style w:type="numbering" w:default="1" w:styleId="NoList">
-    <w:name w:val="No List"/>
-    <w:uiPriority w:val="99"/>
-    <w:semiHidden/>
-    <w:unhideWhenUsed/>
-  </w:style>
-  <!-- WPS 兼容的批注样式 -->
+  <!-- 简化的批注样式 -->
   <w:style w:type="paragraph" w:styleId="CommentText">
     <w:name w:val="Comment Text"/>
     <w:basedOn w:val="Normal"/>
-    <w:link w:val="CommentTextChar"/>
-    <w:uiPriority w:val="99"/>
-    <w:semiHidden/>
-    <w:unhideWhenUsed/>
+    <w:qFormat/>
     <w:pPr>
       <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
     </w:pPr>
-    <w:rPr>
-      <w:sz w:val="20"/>
-      <w:szCs w:val="20"/>
-    </w:rPr>
   </w:style>
   <w:style w:type="character" w:styleId="CommentTextChar">
     <w:name w:val="Comment Text Char"/>
     <w:basedOn w:val="DefaultParagraphFont"/>
-    <w:link w:val="CommentText"/>
-    <w:uiPriority w:val="99"/>
-    <w:semiHidden/>
-    <w:unhideWhenUsed/>
-    <w:rPr>
-      <w:sz w:val="20"/>
-      <w:szCs w:val="20"/>
-    </w:rPr>
+    <w:qFormat/>
   </w:style>
   <w:style w:type="paragraph" w:styleId="BalloonText">
     <w:name w:val="Balloon Text"/>
     <w:basedOn w:val="Normal"/>
-    <w:link w:val="BalloonTextChar"/>
-    <w:uiPriority w:val="99"/>
-    <w:semiHidden/>
-    <w:unhideWhenUsed"/>
+    <w:qFormat/>
     <w:pPr>
       <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
     </w:pPr>
-    <w:rPr>
-      <w:sz w:val="18"/>
-      <w:szCs w:val="18"/>
-    </w:rPr>
   </w:style>
   <w:style w:type="character" w:styleId="BalloonTextChar">
     <w:name w:val="Balloon Text Char"/>
     <w:basedOn w:val="DefaultParagraphFont"/>
-    <w:link w:val="BalloonText"/>
-    <w:uiPriority w:val="99"/>
-    <w:semiHidden/>
-    <w:unhideWhenUsed"/>
-    <w:rPr>
-      <w:sz w:val="18"/>
-      <w:szCs w:val="18"/>
-    </w:rPr>
+    <w:qFormat/>
   </w:style>
-  <!-- WPS 兼容的批注引用样式 -->
+  <!-- 简化的批注引用样式 -->
   <w:style w:type="character" w:styleId="CommentReference">
     <w:name w:val="Comment Reference"/>
     <w:basedOn w:val="DefaultParagraphFont"/>
-    <w:uiPriority w:val="99"/>
-    <w:semiHidden/>
-    <w:unhideWhenUsed"/>
+    <w:qFormat/>
     <w:rPr>
-      <w:sz w:val="16"/>
-      <w:szCs w:val="16"/>
       <w:color w:val="0000FF"/>
     </w:rPr>
   </w:style>
