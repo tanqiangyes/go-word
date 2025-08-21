@@ -141,6 +141,42 @@ See the `examples/` directory for detailed usage examples:
 
 ### Building
 
+#### 使用构建脚本 (推荐)
+
+我们提供了智能构建脚本来处理不同环境的构建需求：
+
+**Linux/macOS/WSL:**
+```bash
+# 只构建核心包 (默认，推荐用于库开发)
+./build.sh --core-only
+
+# 构建核心包和示例
+./build.sh --with-examples
+
+# 构建所有包 (包括GUI，需要X11支持)
+./build.sh --all
+
+# 查看所有选项
+./build.sh --help
+```
+
+**Windows:**
+```cmd
+# 只构建核心包 (默认，推荐用于库开发)
+build.bat --core-only
+
+# 构建核心包和示例
+build.bat --with-examples
+
+# 构建所有包
+build.bat --all
+
+# 查看所有选项
+build.bat --help
+```
+
+#### 手动构建
+
 ```bash
 # Build all packages
 go build ./...
@@ -151,6 +187,8 @@ go build ./pkg/word
 # Build examples
 go build ./examples/basic_usage/
 ```
+
+**注意**: 在WSL环境中，GUI包可能需要额外的X11库支持。如果遇到编译错误，请使用 `--core-only` 选项。
 
 ### Testing
 

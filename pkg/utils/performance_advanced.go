@@ -141,9 +141,9 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 	
 	// Update access time
 	c.mutex.Lock()
-	if entry, exists := c.data[key]; exists {
+	if e, exists := c.data[key]; exists {
 		entry.AccessTime = time.Now()
-		c.data[key] = entry
+		c.data[key] = e
 	}
 	c.mutex.Unlock()
 	
@@ -388,7 +388,7 @@ func (poa *PerformanceOptimizerAdvanced) GetOptimizationReport() string {
 	
 	// Resource metrics
 	resourceMetrics := poa.resourceManager.GetMetrics()
-	report += fmt.Sprintf("资源使用情况:\n")
+	report += "资源使用情况:\n"
 	report += fmt.Sprintf("  内存使用: %.2f MB\n", float64(resourceMetrics.MemoryUsage)/1024/1024)
 	report += fmt.Sprintf("  堆分配: %.2f MB\n", float64(resourceMetrics.HeapAlloc)/1024/1024)
 	report += fmt.Sprintf("  系统内存: %.2f MB\n", float64(resourceMetrics.HeapSys)/1024/1024)
