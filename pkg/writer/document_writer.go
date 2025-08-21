@@ -377,7 +377,7 @@ func (w *DocumentWriter) generateCommentsXML() []byte {
 
 	for _, comment := range w.CommentManager.Comments {
 		commentsXML += fmt.Sprintf(`
-  <w:comment w:id="%s" w:author="%s" w:date="%s" w:initials="%s">
+  <w:comment w:id="%s" w:author="%s" w:date="%s" w:initials="%s" w:paraId="%s" w:time="%s">
     <w:p>
       <w:pPr>
         <w:pStyle w:val="CommentText"/>
@@ -391,7 +391,7 @@ func (w *DocumentWriter) generateCommentsXML() []byte {
         <w:t xml:space="preserve">%s</w:t>
       </w:r>
     </w:p>
-  </w:comment>`, comment.ID, comment.Author, comment.Date, comment.Initials, comment.Text)
+  </w:comment>`, comment.ID, comment.Author, comment.Date, comment.Initials, comment.ID, comment.Date, comment.Text)
 	}
 
 	commentsXML += `
@@ -723,7 +723,7 @@ func (w *DocumentWriter) generateSettingsXML() []byte {
 // generateStylesXML generates the XML content for word/styles.xml
 func (w *DocumentWriter) generateStylesXML() []byte {
 	stylesXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:styles xmlns:w="http://schemas.openxmlformats.org/word/2006/main">
+<w:styles xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" mc:Ignorable="w14">
   <w:docDefaults>
     <w:rPrDefault>
       <w:rPr>
@@ -773,6 +773,60 @@ func (w *DocumentWriter) generateStylesXML() []byte {
     <w:uiPriority w:val="99"/>
     <w:semiHidden/>
     <w:unhideWhenUsed/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="CommentText">
+    <w:name w:val="Comment Text"/>
+    <w:basedOn w:val="Normal"/>
+    <w:link w:val="CommentTextChar"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+    <w:pPr>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+    </w:pPr>
+    <w:rPr>
+      <w:sz w:val="20"/>
+      <w:szCs w:val="20"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:styleId="CommentTextChar">
+    <w:name w:val="Comment Text Char"/>
+    <w:basedOn w:val="DefaultParagraphFont"/>
+    <w:link w:val="CommentText"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+    <w:rPr>
+      <w:sz w:val="20"/>
+      <w:szCs w:val="20"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="BalloonText">
+    <w:name w:val="Balloon Text"/>
+    <w:basedOn w:val="Normal"/>
+    <w:link w:val="BalloonTextChar"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed"/>
+    <w:pPr>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+    </w:pPr>
+    <w:rPr>
+      <w:sz w:val="18"/>
+      <w:szCs w:val="18"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:styleId="BalloonTextChar">
+    <w:name w:val="Balloon Text Char"/>
+    <w:basedOn w:val="DefaultParagraphFont"/>
+    <w:link w:val="BalloonText"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+    <w:rPr>
+      <w:sz w:val="18"/>
+      <w:szCs w:val="18"/>
+    </w:rPr>
   </w:style>
 </w:styles>`
 	return []byte(stylesXML)
