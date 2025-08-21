@@ -411,23 +411,10 @@ func (w *DocumentWriter) generateDocumentXML() ([]byte, error) {
 	doc := &DocumentXML{
 		XMLName: xml.Name{Local: "w:document"},
 		XMLNS:   "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
-		XMLNSWPC: "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas",
 		XMLNSMC: "http://schemas.openxmlformats.org/markup-compatibility/2006",
-		XMLNSO: "urn:schemas-microsoft-com:office:office",
 		XMLNSR: "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-		XMLNSM: "http://schemas.openxmlformats.org/officeDocument/2006/math",
-		XMLNSV: "urn:schemas-microsoft-com:vml",
-		XMLNSWP14: "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing",
-		XMLNSWP: "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",
 		XMLNSW14: "http://schemas.microsoft.com/office/word/2010/wordml",
-		XMLNSW10: "urn:schemas-microsoft-com:office:word",
-		XMLNSW15: "http://schemas.microsoft.com/office/word/2012/wordml",
-		XMLNSWPG: "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup",
-		XMLNSWPI: "http://schemas.microsoft.com/office/word/2010/wordprocessingInk",
-		XMLNSWNE: "http://schemas.microsoft.com/office/word/2006/wordml",
-		XMLNSWPS: "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
-		XMLNSWPSCustomData: "http://www.wps.cn/officeDocument/2013/wpsCustomData",
-		MCIgnorable: "w14 w15 wp14",
+		MCIgnorable: "w14",
 		Body: DocumentBody{
 			XMLName: xml.Name{Local: "w:body"},
 		},
@@ -836,22 +823,9 @@ func (w *DocumentWriter) generateStylesXML() []byte {
 type DocumentXML struct {
 	XMLName xml.Name `xml:"w:document"`
 	XMLNS   string   `xml:"xmlns:w,attr"`
-	XMLNSWPC string `xml:"xmlns:wpc,attr"`
 	XMLNSMC string `xml:"xmlns:mc,attr"`
-	XMLNSO string `xml:"xmlns:o,attr"`
 	XMLNSR string `xml:"xmlns:r,attr"`
-	XMLNSM string `xml:"xmlns:m,attr"`
-	XMLNSV string `xml:"xmlns:v,attr"`
-	XMLNSWP14 string `xml:"xmlns:wp14,attr"`
-	XMLNSWP string `xml:"xmlns:wp,attr"`
 	XMLNSW14 string `xml:"xmlns:w14,attr"`
-	XMLNSW10 string `xml:"xmlns:w10,attr"`
-	XMLNSW15 string `xml:"xmlns:w15,attr"`
-	XMLNSWPG string `xml:"xmlns:wpg,attr"`
-	XMLNSWPI string `xml:"xmlns:wpi,attr"`
-	XMLNSWNE string `xml:"xmlns:wne,attr"`
-	XMLNSWPS string `xml:"xmlns:wps,attr"`
-	XMLNSWPSCustomData string `xml:"xmlns:wpsCustomData,attr"`
 	MCIgnorable string `xml:"mc:Ignorable,attr"`
 	Body    DocumentBody
 }
