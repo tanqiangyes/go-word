@@ -377,7 +377,7 @@ func (w *DocumentWriter) generateCommentsXML() []byte {
 
 	for _, comment := range w.CommentManager.Comments {
 		commentsXML += fmt.Sprintf(`
-  <w:comment w:id="%s" w:author="%s" w:date="%s" w:initials="%s" w:paraId="%s" w:time="%s">
+  <w:comment w:id="%s" w:author="%s" w:date="%s" w:initials="%s" w:paraId="%s" w:time="%s" w:index="0">
     <w:p>
       <w:pPr>
         <w:pStyle w:val="CommentText"/>
@@ -807,7 +807,7 @@ func (w *DocumentWriter) generateStylesXML() []byte {
     <w:link w:val="BalloonTextChar"/>
     <w:uiPriority w:val="99"/>
     <w:semiHidden/>
-    <w:unhideWhenUsed"/>
+    <w:unhideWhenUsed/>
     <w:pPr>
       <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
     </w:pPr>
