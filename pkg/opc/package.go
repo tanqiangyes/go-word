@@ -15,10 +15,11 @@ import (
 
 // Container represents an OPC container (ZIP-based package)
 type Container struct {
-	Reader *zip.Reader
-	Writer *zip.Writer
-	Buffer *bytes.Buffer
-	Parts  map[string]*Part
+	Reader        *zip.Reader
+	Writer        *zip.Writer
+	Buffer        *bytes.Buffer
+	Parts         map[string]*Part
+	zipReadCloser *zip.ReadCloser // 保存原始的文件句柄
 }
 
 // Part represents a part within the OPC container
@@ -48,14 +49,14 @@ func Open(filename string) (*Container, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open OPC container: %w", err)
 	}
-	defer reader.Close()
 	
 	// Convert to zip.Reader for the container
 	zipReader := &reader.Reader
 	
 	return &Container{
-		Reader: zipReader,
-		Parts:  make(map[string]*Part),
+		Reader:        zipReader,
+		zipReadCloser: reader,
+		Parts:         make(map[string]*Part),
 	}, nil
 }
 
@@ -79,7 +80,15 @@ func OpenFromReader(r io.Reader) (*Container, error) {
 
 // Close closes the container and releases resources
 func (c *Container) Close() error {
-	// zip.Reader doesn't have a Close method, so we just clean up references
+	// Close the zip.ReadCloser if it exists
+	if c.zipReadCloser != nil {
+		if err := c.zipReadCloser.Close(); err != nil {
+			return fmt.Errorf("failed to close zip reader: %w", err)
+		}
+		c.zipReadCloser = nil
+	}
+	
+	// Clean up references
 	c.Reader = nil
 	c.Writer = nil
 	c.Buffer = nil
